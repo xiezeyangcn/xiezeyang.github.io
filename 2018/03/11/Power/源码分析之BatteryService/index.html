@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、启动过程1.1 SystemServer启动BatteryService123private void startCoreServices() &amp;#123;    mSystemServiceManager.startService(BatteryService.class);&amp;#125; 1.2 BatteryService构造函数123456789101112131415161718192">
+<meta name="keywords" content="Framework,Power">
+<meta property="og:type" content="article">
+<meta property="og:title" content="源码分析之BatteryService">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/03/11/Power/源码分析之BatteryService/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="一、启动过程1.1 SystemServer启动BatteryService123private void startCoreServices() &amp;#123;    mSystemServiceManager.startService(BatteryService.class);&amp;#125; 1.2 BatteryService构造函数123456789101112131415161718192">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="源码分析之BatteryService">
+<meta name="twitter:description" content="一、启动过程1.1 SystemServer启动BatteryService123private void startCoreServices() &amp;#123;    mSystemServiceManager.startService(BatteryService.class);&amp;#125; 1.2 BatteryService构造函数123456789101112131415161718192">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/03/11/Power/源码分析之BatteryService/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>源码分析之BatteryService | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/03/11/Power/源码分析之BatteryService/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">源码分析之BatteryService
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-03-11 00:00:00" itemprop="dateCreated datePublished" datetime="2018-03-11T00:00:00+08:00">2018-03-11</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、启动过程"><a href="#一、启动过程" class="headerlink" title="一、启动过程"></a>一、启动过程</h3><h4 id="1-1-SystemServer启动BatteryService"><a href="#1-1-SystemServer启动BatteryService" class="headerlink" title="1.1 SystemServer启动BatteryService"></a>1.1 SystemServer启动BatteryService</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startCoreServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mSystemServiceManager.startService(BatteryService.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-BatteryService构造函数"><a href="#1-2-BatteryService构造函数" class="headerlink" title="1.2 BatteryService构造函数"></a>1.2 BatteryService构造函数</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">BatteryService</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(context);</span><br><span class="line">    mContext = context;</span><br><span class="line">    mHandler = <span class="keyword">new</span> Handler(<span class="keyword">true</span> <span class="comment">/*async*/</span>);</span><br><span class="line">    <span class="comment">// 电源指示灯服务 </span></span><br><span class="line">    mLed = <span class="keyword">new</span> Led(context, getLocalService(LightsManager.class));</span><br><span class="line">    <span class="comment">// 电量统计服务</span></span><br><span class="line">    mBatteryStats = BatteryStatsService.getService();</span><br><span class="line">    <span class="comment">// 从ro.cutoff_voltage_mv属性计算截止电压(默认为3200mV)</span></span><br><span class="line">    <span class="comment">// 如果该属性小于0，则忽略关机逻辑</span></span><br><span class="line">    mWeakChgCutoffVoltageMv = SystemProperties.getInt(<span class="string">"ro.cutoff_voltage_mv"</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (mWeakChgCutoffVoltageMv &gt; <span class="number">2700</span>)</span><br><span class="line">       mVoltageNowFile = <span class="keyword">new</span> File(<span class="string">"/sys/class/power_supply/battery/voltage_now"</span>);</span><br><span class="line">    <span class="comment">// 严重低电量警告值:5%</span></span><br><span class="line">    mCriticalBatteryLevel = mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_criticalBatteryWarningLevel);</span><br><span class="line">    <span class="comment">// 低电量警告值:15%</span></span><br><span class="line">    mLowBatteryWarningLevel = mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_lowBatteryWarningLevel);</span><br><span class="line">    <span class="comment">// 低电量停止警告值:5%</span></span><br><span class="line">    mLowBatteryCloseWarningLevel = mLowBatteryWarningLevel + mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_lowBatteryCloseWarningBump);</span><br><span class="line">    <span class="comment">// 高温关机值:68度</span></span><br><span class="line">    mShutdownBatteryTemperature = mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_shutdownBatteryTemperature);</span><br><span class="line">    <span class="comment">// 如果invalid_charger开关存在，则关注不合法充电器信息</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">new</span> File(<span class="string">"/sys/devices/virtual/switch/invalid_charger/state"</span>).exists()) &#123;</span><br><span class="line">            UEventObserver invalidChargerObserver = <span class="keyword">new</span> UEventObserver() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onUEvent</span><span class="params">(UEvent event)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span> invalidCharger = <span class="string">"1"</span>.equals(event.get(<span class="string">"SWITCH_STATE"</span>)) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">                    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (mInvalidCharger != invalidCharger) &#123;</span><br><span class="line">                            mInvalidCharger = invalidCharger;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            invalidChargerObserver.startObserving(</span><br><span class="line">                    <span class="string">"DEVPATH=/devices/virtual/switch/invalid_charger"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-3-onStart方法"><a href="#1-3-onStart方法" class="headerlink" title="1.3 onStart方法"></a>1.3 onStart方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 获取电源属性服务</span></span><br><span class="line">    IBinder b = ServiceManager.getService(<span class="string">"batteryproperties"</span>);</span><br><span class="line">    <span class="keyword">final</span> IBatteryPropertiesRegistrar batteryPropertiesRegistrar =</span><br><span class="line">            IBatteryPropertiesRegistrar.Stub.asInterface(b);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 注册监听batteryProperties监听器</span></span><br><span class="line">        batteryPropertiesRegistrar.registerListener(<span class="keyword">new</span> BatteryListener());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    mBinderService = <span class="keyword">new</span> BinderService();</span><br><span class="line">    <span class="comment">// 将其注册到ServiceManager进程中</span></span><br><span class="line">    publishBinderService(<span class="string">"battery"</span>, mBinderService);</span><br><span class="line">    publishLocalService(BatteryManagerInternal.class, <span class="keyword">new</span> LocalService());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-BatteryListener"><a href="#1-4-BatteryListener" class="headerlink" title="1.4 BatteryListener"></a>1.4 BatteryListener</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BatteryListener</span> <span class="keyword">extends</span> <span class="title">IBatteryPropertiesListener</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">batteryPropertiesChanged</span><span class="params">(BatteryProperties props)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> identity = Binder.clearCallingIdentity();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 电源属性值变化后，回调update方法</span></span><br><span class="line">            BatteryService.<span class="keyword">this</span>.update(props);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            Binder.restoreCallingIdentity(identity);</span><br><span class="line">        &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(BatteryProperties props)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!mUpdatesStopped) &#123;</span><br><span class="line">            mBatteryProps = props;</span><br><span class="line">            <span class="comment">// 更新新的电源相关信息</span></span><br><span class="line">            processValuesLocked(<span class="keyword">false</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mLastBatteryProps.set(props);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二、onBootPhase"><a href="#二、onBootPhase" class="headerlink" title="二、onBootPhase"></a>二、onBootPhase</h3><h4 id="2-1-onBootPhase方法"><a href="#2-1-onBootPhase方法" class="headerlink" title="2.1 onBootPhase方法"></a>2.1 onBootPhase方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBootPhase</span><span class="params">(<span class="keyword">int</span> phase)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (phase == PHASE_ACTIVITY_MANAGER_READY) &#123;</span><br><span class="line">        <span class="comment">// 检查当前电源状况，安全显示关机对话框</span></span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            ContentObserver obs = <span class="keyword">new</span> ContentObserver(mHandler) &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onChange</span><span class="params">(<span class="keyword">boolean</span> selfChange)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">                        updateBatteryWarningLevelLocked();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            <span class="keyword">final</span> ContentResolver resolver = mContext.getContentResolver();</span><br><span class="line">            resolver.registerContentObserver(Settings.Global.getUriFor(</span><br><span class="line">                    Settings.Global.LOW_POWER_MODE_TRIGGER_LEVEL),</span><br><span class="line">                    <span class="keyword">false</span>, obs, UserHandle.USER_ALL);</span><br><span class="line">            updateBatteryWarningLevelLocked();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-updateBatteryWarningLevelLocked方法"><a href="#2-2-updateBatteryWarningLevelLocked方法" class="headerlink" title="2.2 updateBatteryWarningLevelLocked方法"></a>2.2 updateBatteryWarningLevelLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 更新电量警告值，若用户未改变电量值则为默认值5%，若用户设置值小于严重警告值则取严重警告值5%</span></span><br><span class="line"><span class="comment">// 否则关闭低电量警告为用户设置的低电量警告值+5%</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateBatteryWarningLevelLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ContentResolver resolver = mContext.getContentResolver();</span><br><span class="line">    <span class="keyword">int</span> defWarnLevel = mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_lowBatteryWarningLevel);</span><br><span class="line">    mLowBatteryWarningLevel = Settings.Global.getInt(resolver,</span><br><span class="line">            Settings.Global.LOW_POWER_MODE_TRIGGER_LEVEL, defWarnLevel);</span><br><span class="line">    <span class="keyword">if</span> (mLowBatteryWarningLevel == <span class="number">0</span>) &#123;</span><br><span class="line">        mLowBatteryWarningLevel = defWarnLevel;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mLowBatteryWarningLevel &lt; mCriticalBatteryLevel) &#123;</span><br><span class="line">        mLowBatteryWarningLevel = mCriticalBatteryLevel;</span><br><span class="line">    &#125;</span><br><span class="line">    mLowBatteryCloseWarningLevel = mLowBatteryWarningLevel + mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_lowBatteryCloseWarningBump);</span><br><span class="line">    processValuesLocked(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、processValuesLocked"><a href="#三、processValuesLocked" class="headerlink" title="三、processValuesLocked"></a>三、processValuesLocked</h3><h4 id="3-1-processValuesLocked方法"><a href="#3-1-processValuesLocked方法" class="headerlink" title="3.1 processValuesLocked方法"></a>3.1 processValuesLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">processValuesLocked</span><span class="params">(<span class="keyword">boolean</span> force)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> logOutlier = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">long</span> dischargeDuration = <span class="number">0</span>;</span><br><span class="line">    mBatteryLevelCritical = (mBatteryProps.batteryLevel &lt;= mCriticalBatteryLevel);</span><br><span class="line">    <span class="comment">// 电源充电</span></span><br><span class="line">    <span class="keyword">if</span> (mBatteryProps.chargerAcOnline) &#123;</span><br><span class="line">        mPlugType = BatteryManager.BATTERY_PLUGGED_AC;</span><br><span class="line">    <span class="comment">// USB充电</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mBatteryProps.chargerUsbOnline) &#123;</span><br><span class="line">        mPlugType = BatteryManager.BATTERY_PLUGGED_USB;</span><br><span class="line">    <span class="comment">// 无线充电</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mBatteryProps.chargerWirelessOnline) &#123;</span><br><span class="line">        mPlugType = BatteryManager.BATTERY_PLUGGED_WIRELESS;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 未充电</span></span><br><span class="line">        mPlugType = BATTERY_PLUGGED_NONE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 追踪统计当前电量值</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        mBatteryStats.setBatteryState(mBatteryProps.batteryStatus, mBatteryProps.batteryHealth,</span><br><span class="line">                mPlugType, mBatteryProps.batteryLevel, mBatteryProps.batteryTemperature,</span><br><span class="line">                mBatteryProps.batteryVoltage, mBatteryProps.batteryChargeCounter);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果电量值为0，插入充电器且截止电压不合法，则调用弱充电关机进程。</span></span><br><span class="line">    <span class="keyword">if</span> ((mBatteryProps.batteryLevel == <span class="number">0</span>)</span><br><span class="line">             &amp;&amp; (mWeakChgSocCheckStarted == <span class="number">0</span>)</span><br><span class="line">             &amp;&amp; (mWeakChgCutoffVoltageMv &gt; <span class="number">0</span>)</span><br><span class="line">             &amp;&amp; (mPlugType != BATTERY_PLUGGED_NONE)) &#123;</span><br><span class="line">             mWeakChgSocCheckStarted = <span class="number">1</span>;</span><br><span class="line">             mHandler.removeCallbacks(runnable);</span><br><span class="line">             mHandler.postDelayed(runnable, mVbattSamplingIntervalMsec);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//如果电量值小于严重低电量警告值，且尚未充电，则可正常关闭。且在显示关机对话框前需正常开机</span></span><br><span class="line">    shutdownIfNoPowerLocked();</span><br><span class="line">    <span class="comment">// 如果电池温度过高（比如高于68摄氏度）,可正常关机。且在显示关机对话框前需正常开机</span></span><br><span class="line">    shutdownIfOverTempLocked();</span><br><span class="line">    <span class="keyword">if</span> (force || (mBatteryProps.batteryStatus != mLastBatteryStatus ||</span><br><span class="line">            mBatteryProps.batteryHealth != mLastBatteryHealth ||</span><br><span class="line">            mBatteryProps.batteryPresent != mLastBatteryPresent ||</span><br><span class="line">            mBatteryProps.batteryLevel != mLastBatteryLevel ||</span><br><span class="line">            mPlugType != mLastPlugType ||</span><br><span class="line">            mBatteryProps.batteryVoltage != mLastBatteryVoltage ||</span><br><span class="line">            mBatteryProps.batteryTemperature != mLastBatteryTemperature ||</span><br><span class="line">            mBatteryProps.maxChargingCurrent != mLastMaxChargingCurrent ||</span><br><span class="line">            mBatteryProps.maxChargingVoltage != mLastMaxChargingVoltage ||</span><br><span class="line">            mBatteryProps.batteryChargeCounter != mLastChargeCounter ||</span><br><span class="line">            mInvalidCharger != mLastInvalidCharger)) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mPlugType != mLastPlugType) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mLastPlugType == BATTERY_PLUGGED_NONE) &#123;</span><br><span class="line">                <span class="comment">// 未充电-&gt;充电情况</span></span><br><span class="line">                <span class="comment">// 除非至少一次停充或电量值变化，否则无数据</span></span><br><span class="line">                <span class="keyword">if</span> (mDischargeStartTime != <span class="number">0</span> &amp;&amp; mDischargeStartLevel != mBatteryProps.batteryLevel) &#123;</span><br><span class="line">                    dischargeDuration = SystemClock.elapsedRealtime() - mDischargeStartTime;</span><br><span class="line">                    logOutlier = <span class="keyword">true</span>;</span><br><span class="line">                    EventLog.writeEvent(EventLogTags.BATTERY_DISCHARGE, dischargeDuration,</span><br><span class="line">                            mDischargeStartLevel, mBatteryProps.batteryLevel);</span><br><span class="line">                    <span class="comment">// 在再次记录电量数据前确保发生过一次停充事件</span></span><br><span class="line">                    mDischargeStartTime = <span class="number">0</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mPlugType == BATTERY_PLUGGED_NONE) &#123;</span><br><span class="line">                <span class="comment">// 充电-&gt;停充或只充电情况</span></span><br><span class="line">                mDischargeStartTime = SystemClock.elapsedRealtime();</span><br><span class="line">                mDischargeStartLevel = mBatteryProps.batteryLevel;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mBatteryProps.batteryStatus != mLastBatteryStatus ||</span><br><span class="line">                mBatteryProps.batteryHealth != mLastBatteryHealth ||</span><br><span class="line">                mBatteryProps.batteryPresent != mLastBatteryPresent ||</span><br><span class="line">                mPlugType != mLastPlugType) &#123;</span><br><span class="line">            EventLog.writeEvent(EventLogTags.BATTERY_STATUS,</span><br><span class="line">                    mBatteryProps.batteryStatus, mBatteryProps.batteryHealth, mBatteryProps.batteryPresent ? <span class="number">1</span> : <span class="number">0</span>,</span><br><span class="line">                    mPlugType, mBatteryProps.batteryTechnology);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mBatteryProps.batteryLevel != mLastBatteryLevel) &#123;</span><br><span class="line">            <span class="comment">// 仅电量值变化才执行此操作，即便电压或温度有变化</span></span><br><span class="line">            EventLog.writeEvent(EventLogTags.BATTERY_LEVEL,</span><br><span class="line">                    mBatteryProps.batteryLevel, mBatteryProps.batteryVoltage, mBatteryProps.batteryTemperature);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mBatteryLevelCritical &amp;&amp; !mLastBatteryLevelCritical &amp;&amp;</span><br><span class="line">                mPlugType == BATTERY_PLUGGED_NONE) &#123;</span><br><span class="line">            <span class="comment">// 如果电池损坏，需要确保能记录停充循环曲线</span></span><br><span class="line">            dischargeDuration = SystemClock.elapsedRealtime() - mDischargeStartTime;</span><br><span class="line">            logOutlier = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!mBatteryLevelLow) &#123;</span><br><span class="line">            <span class="comment">// 判断是否需要进入低电量模式(未充电且电量值小于低电量警告值)</span></span><br><span class="line">            <span class="keyword">if</span> (mPlugType == BATTERY_PLUGGED_NONE</span><br><span class="line">                    &amp;&amp; mBatteryProps.batteryLevel &lt;= mLowBatteryWarningLevel) &#123;</span><br><span class="line">                mBatteryLevelLow = <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 判断是否需要退出低电量模式(充电、电量值高于低电量警告值或关闭低电量警告值)</span></span><br><span class="line">            <span class="keyword">if</span> (mPlugType != BATTERY_PLUGGED_NONE) &#123;</span><br><span class="line">                mBatteryLevelLow = <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mBatteryProps.batteryLevel &gt;= mLowBatteryCloseWarningLevel)  &#123;</span><br><span class="line">                mBatteryLevelLow = <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (force &amp;&amp; mBatteryProps.batteryLevel &gt;= mLowBatteryWarningLevel) &#123;</span><br><span class="line">                <span class="comment">// 如果被强制退出，则只会检查是否处于低电量警告范围</span></span><br><span class="line">                mBatteryLevelLow = <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 打包下列电源属性值及广播一起发送：ACTION_BATTERY_CHANGED;粘性广播</span></span><br><span class="line">        sendIntentLocked();</span><br><span class="line">        <span class="comment">// 连接、断开充电器分别发送广播。由于标准intent无法唤醒任何应用，且有些应用可能需要基于此拥有智能行为</span></span><br><span class="line">        <span class="keyword">if</span> (mPlugType != <span class="number">0</span> &amp;&amp; mLastPlugType == <span class="number">0</span>) &#123;</span><br><span class="line">            mHandler.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    Intent statusIntent = <span class="keyword">new</span> Intent(Intent.ACTION_POWER_CONNECTED);</span><br><span class="line">                    statusIntent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);</span><br><span class="line">                    mContext.sendBroadcastAsUser(statusIntent, UserHandle.ALL);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (mPlugType == <span class="number">0</span> &amp;&amp; mLastPlugType != <span class="number">0</span>) &#123;</span><br><span class="line">            mHandler.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    Intent statusIntent = <span class="keyword">new</span> Intent(Intent.ACTION_POWER_DISCONNECTED);</span><br><span class="line">                    statusIntent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);</span><br><span class="line">                    mContext.sendBroadcastAsUser(statusIntent, UserHandle.ALL);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 在以下情况下会发送ACTION_BATTERY_LOW广播：</span></span><br><span class="line">        <span class="comment">//插拔充电器，且电量值小于等于低电量警告值；或未插入充电器，电量值迅速掉入低电量警告值区域</span></span><br><span class="line">        <span class="keyword">if</span> (shouldSendBatteryLowLocked()) &#123;</span><br><span class="line">            mSentLowBatteryBroadcast = <span class="keyword">true</span>;</span><br><span class="line">            mHandler.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    Intent statusIntent = <span class="keyword">new</span> Intent(Intent.ACTION_BATTERY_LOW);</span><br><span class="line">                    statusIntent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);</span><br><span class="line">                    mContext.sendBroadcastAsUser(statusIntent, UserHandle.ALL);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mSentLowBatteryBroadcast &amp;&amp; mLastBatteryLevel &gt;= mLowBatteryCloseWarningLevel) &#123;</span><br><span class="line">            mSentLowBatteryBroadcast = <span class="keyword">false</span>;</span><br><span class="line">            mHandler.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    Intent statusIntent = <span class="keyword">new</span> Intent(Intent.ACTION_BATTERY_OKAY);</span><br><span class="line">                    statusIntent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);</span><br><span class="line">                    mContext.sendBroadcastAsUser(statusIntent, UserHandle.ALL);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 更新电源led灯显示</span></span><br><span class="line">        mLed.updateLightsLocked();</span><br><span class="line">        <span class="comment">// 发送广播后做此操作以便及时更新电源信息</span></span><br><span class="line">        <span class="keyword">if</span> (logOutlier &amp;&amp; dischargeDuration != <span class="number">0</span>) &#123;</span><br><span class="line">            logOutlierLocked(dischargeDuration);</span><br><span class="line">        &#125;</span><br><span class="line">        mLastBatteryStatus = mBatteryProps.batteryStatus;</span><br><span class="line">        mLastBatteryHealth = mBatteryProps.batteryHealth;</span><br><span class="line">        mLastBatteryPresent = mBatteryProps.batteryPresent;</span><br><span class="line">        mLastBatteryLevel = mBatteryProps.batteryLevel;</span><br><span class="line">        mLastPlugType = mPlugType;</span><br><span class="line">        mLastBatteryVoltage = mBatteryProps.batteryVoltage;</span><br><span class="line">        mLastBatteryTemperature = mBatteryProps.batteryTemperature;</span><br><span class="line">        mLastMaxChargingCurrent = mBatteryProps.maxChargingCurrent;</span><br><span class="line">        mLastMaxChargingVoltage = mBatteryProps.maxChargingVoltage;</span><br><span class="line">        mLastChargeCounter = mBatteryProps.batteryChargeCounter;</span><br><span class="line">        mLastBatteryLevelCritical = mBatteryLevelCritical;</span><br><span class="line">        mLastInvalidCharger = mInvalidCharger;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-updateLightsLocked方法"><a href="#3-2-updateLightsLocked方法" class="headerlink" title="3.2 updateLightsLocked方法"></a>3.2 updateLightsLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateLightsLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> level = mBatteryProps.batteryLevel;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> status = mBatteryProps.batteryStatus;</span><br><span class="line">    <span class="comment">// 低电量时</span></span><br><span class="line">    <span class="keyword">if</span> (level &lt; mLowBatteryWarningLevel) &#123;</span><br><span class="line">        <span class="keyword">if</span> (status == BatteryManager.BATTERY_STATUS_CHARGING) &#123;</span><br><span class="line">            <span class="comment">// 电量不足红色指示灯</span></span><br><span class="line">            mBatteryLight.setColor(mBatteryLowARGB);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 电量不足且未充电，红色指示灯闪烁</span></span><br><span class="line">            mBatteryLight.setFlashing(mBatteryLowARGB, Light.LIGHT_FLASH_TIMED,</span><br><span class="line">                    mBatteryLedOn, mBatteryLedOff);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status == BatteryManager.BATTERY_STATUS_CHARGING</span><br><span class="line">            || status == BatteryManager.BATTERY_STATUS_FULL) &#123;</span><br><span class="line">        <span class="comment">//add by ICE2-98 zhangzhen 20170419</span></span><br><span class="line">        <span class="keyword">if</span> (status == BatteryManager.BATTERY_STATUS_FULL || level &gt;= <span class="number">100</span>) &#123;</span><br><span class="line">            <span class="comment">// 充满电绿灯</span></span><br><span class="line">            mBatteryLight.setColor(mBatteryFullARGB);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (isHvdcpPresent()) &#123;</span><br><span class="line">                <span class="comment">// 连接hvdcp充电器闪烁橙色灯</span></span><br><span class="line">                mBatteryLight.setFlashing(mBatteryMediumARGB, Light.LIGHT_FLASH_TIMED,</span><br><span class="line">                        mBatteryLedOn, mBatteryLedOn);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 充电时中橙色</span></span><br><span class="line">                mBatteryLight.setColor(mBatteryMediumARGB);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 未充电且非低点不显示灯</span></span><br><span class="line">        mBatteryLight.turnOff();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/Power/" rel="tag"># Power</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/03/Power/ProximitySensor工作原理/" rel="next" title="ProximitySensor工作原理">
+                <i class="fa fa-chevron-left"></i> ProximitySensor工作原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/24/Power/源码分析之BatteryStatsImpl/" rel="prev" title="源码分析之BatteryStatsImpl">
+                源码分析之BatteryStatsImpl <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、启动过程"><span class="nav-text">一、启动过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-SystemServer启动BatteryService"><span class="nav-text">1.1 SystemServer启动BatteryService</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-BatteryService构造函数"><span class="nav-text">1.2 BatteryService构造函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-onStart方法"><span class="nav-text">1.3 onStart方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-BatteryListener"><span class="nav-text">1.4 BatteryListener</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、onBootPhase"><span class="nav-text">二、onBootPhase</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-onBootPhase方法"><span class="nav-text">2.1 onBootPhase方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-updateBatteryWarningLevelLocked方法"><span class="nav-text">2.2 updateBatteryWarningLevelLocked方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、processValuesLocked"><span class="nav-text">三、processValuesLocked</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-processValuesLocked方法"><span class="nav-text">3.1 processValuesLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-updateLightsLocked方法"><span class="nav-text">3.2 updateLightsLocked方法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

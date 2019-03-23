@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、bootanimtion服务1.1 init阶段bootanimation服务配置从Android 7.0开始，谷歌将bootnimation服务从init.rc中分离出来，单独存放在frameworks/base/cmds/bootanimation/目录下bootanim.rc文件中： 1234567service bootanim /system/bin/bootanimation">
+<meta name="keywords" content="Boot,UI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bootanimation定制及原理剖析">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/12/08/Boot/Bootanimation定制及原理剖析/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="一、bootanimtion服务1.1 init阶段bootanimation服务配置从Android 7.0开始，谷歌将bootnimation服务从init.rc中分离出来，单独存放在frameworks/base/cmds/bootanimation/目录下bootanim.rc文件中： 1234567service bootanim /system/bin/bootanimation">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.790Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Bootanimation定制及原理剖析">
+<meta name="twitter:description" content="一、bootanimtion服务1.1 init阶段bootanimation服务配置从Android 7.0开始，谷歌将bootnimation服务从init.rc中分离出来，单独存放在frameworks/base/cmds/bootanimation/目录下bootanim.rc文件中： 1234567service bootanim /system/bin/bootanimation">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/12/08/Boot/Bootanimation定制及原理剖析/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Bootanimation定制及原理剖析 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/08/Boot/Bootanimation定制及原理剖析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Bootanimation定制及原理剖析
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-08T00:00:00+08:00">2018-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、bootanimtion服务"><a href="#一、bootanimtion服务" class="headerlink" title="一、bootanimtion服务"></a>一、bootanimtion服务</h3><h4 id="1-1-init阶段bootanimation服务配置"><a href="#1-1-init阶段bootanimation服务配置" class="headerlink" title="1.1 init阶段bootanimation服务配置"></a>1.1 init阶段bootanimation服务配置</h4><p>从Android 7.0开始，谷歌将bootnimation服务从init.rc中分离出来，单独存放在frameworks/base/cmds/bootanimation/目录下bootanim.rc文件中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">service bootanim /system/bin/bootanimation</span><br><span class="line">    class core</span><br><span class="line">    user graphics</span><br><span class="line">    group graphics audio</span><br><span class="line">    disabled //init启动时不会启动bootanimation服务</span><br><span class="line">    oneshot</span><br><span class="line">    writepid /dev/stune/top-app/tasks</span><br></pre></td></tr></table></figure>
+<p>bootanimation服务的用户和用户组分别为graphic和graphics audio。需要关注的disabled，即在init启动阶段该服务是不会启动的。oneshot表示该服务只启动一次。</p>
+<a id="more"></a>
+<h4 id="1-2-surfaceflinger服务调用bootnimation"><a href="#1-2-surfaceflinger服务调用bootnimation" class="headerlink" title="1.2 surfaceflinger服务调用bootnimation"></a>1.2 surfaceflinger服务调用bootnimation</h4><p>当SurfaceFlinger服务启动时，它会通过修改系统属性ctl.start的值来通知init进程启动bootanimation服务。</p>
+<p>早期的版本中，SurfaceFlinger服务是在SystemServer服务中启动的；Android 5.0之后变为init.rc脚本中控制其在init阶段启动。Android 7.0之后谷歌又将其独立为surfaceflinger.rc文件，存放在frameworks/native/services/surfaceflinger/目录下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">service surfaceflinger /system/bin/surfaceflinger</span><br><span class="line">    class core</span><br><span class="line">    user system</span><br><span class="line">    group graphics drmrpc readproc</span><br><span class="line">    onrestart restart zygote</span><br><span class="line">    writepid /dev/stune/foreground/tasks</span><br></pre></td></tr></table></figure>
+<p>接下来看看SurfaceFlinger的入口文件main_surfaceflinger.cpp：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">char</span>**)</span> </span>&#123;</span><br><span class="line">    ......</span><br><span class="line">    sp&lt;SurfaceFlinger&gt; flinger = DisplayUtils::getInstance()-&gt;getSFInstance();</span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">// 我们这里只关注init方法</span></span><br><span class="line">    flinger-&gt;init();</span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">// 在该线程中运行surface flinger</span></span><br><span class="line">    flinger-&gt;run();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>main函数主要任务就是：先新建SurfaceFlinger对象，然后调用init方法，接着调用run方法。</p>
+<p>在SurfaceFlinger.cpp的init方法中，创建一系列事件线程后，调用startBootAnim方法启动动画。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> SurfaceFlinger::init() &#123;</span><br><span class="line">    ALOGI(  <span class="string">"SurfaceFlinger's main thread ready to run. "</span></span><br><span class="line">            <span class="string">"Initializing graphics H/W..."</span>);</span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">// 启动boot animation</span></span><br><span class="line">    startBootAnim();</span><br><span class="line">    ALOGV(<span class="string">"Done initializing"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在startBootAnim函数中，将service.bootanim.exit属性置为0，将ctl.start属性置为bootanim。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> SurfaceFlinger::startBootAnim() &#123;</span><br><span class="line">    <span class="comment">// start boot animation</span></span><br><span class="line">    property_set(<span class="string">"service.bootanim.exit"</span>, <span class="string">"0"</span>);</span><br><span class="line">    property_set(<span class="string">"ctl.start"</span>, <span class="string">"bootanim"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-init进程处理属性变化"><a href="#1-3-init进程处理属性变化" class="headerlink" title="1.3 init进程处理属性变化"></a>1.3 init进程处理属性变化</h4><p>下面来看init.cpp的main函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">// 启动系统属性服务</span></span><br><span class="line">    start_property_service();</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接着看property_service.cpp的start_property_service方法，调用register_epoll_handler函数监听属性变化。当属性值变化时，调用handle_property_set_fd</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">start_property_service</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    property_set_fd = create_socket(PROP_SERVICE_NAME, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK,</span><br><span class="line">                                    <span class="number">0666</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (property_set_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        ERROR(<span class="string">"start_property_service socket creation failed: %s\n"</span>, strerror(errno));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    listen(property_set_fd, <span class="number">8</span>);</span><br><span class="line">    register_epoll_handler(property_set_fd, handle_property_set_fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handle_property_set_fd</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 通过socket接收系统属性变化事件</span></span><br><span class="line">    prop_msg msg;</span><br><span class="line">    <span class="keyword">int</span> s;</span><br><span class="line">    <span class="keyword">int</span> r;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ucred</span> <span class="title">cr</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">addr</span>;</span></span><br><span class="line">    <span class="keyword">socklen_t</span> addr_size = <span class="keyword">sizeof</span>(addr);</span><br><span class="line">    <span class="keyword">socklen_t</span> cr_size = <span class="keyword">sizeof</span>(cr);</span><br><span class="line">    <span class="keyword">char</span> * source_ctx = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> <span class="title">ufds</span>[1];</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> timeout_ms = <span class="number">2</span> * <span class="number">1000</span>;</span><br><span class="line">    <span class="keyword">int</span> nr;</span><br><span class="line">    <span class="comment">// 接收TCP连接</span></span><br><span class="line">    <span class="keyword">if</span> ((s = accept(property_set_fd, (struct sockaddr *) &amp;addr, &amp;addr_size)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 取出socket中内容</span></span><br><span class="line">    <span class="keyword">if</span> (getsockopt(s, SOL_SOCKET, SO_PEERCRED, &amp;cr, &amp;cr_size) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        close(s);</span><br><span class="line">        ERROR(<span class="string">"Unable to receive socket options\n"</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ufds[<span class="number">0</span>].fd = s;</span><br><span class="line">    ufds[<span class="number">0</span>].events = POLLIN;</span><br><span class="line">    ufds[<span class="number">0</span>].revents = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 轮询客户端事件</span></span><br><span class="line">    nr = TEMP_FAILURE_RETRY(poll(ufds, <span class="number">1</span>, timeout_ms));</span><br><span class="line">    <span class="comment">// 轮询事件超时</span></span><br><span class="line">    <span class="keyword">if</span> (nr == <span class="number">0</span>) &#123;</span><br><span class="line">        ERROR(<span class="string">"sys_prop: timeout waiting for uid=%d to send property message.\n"</span>, cr.uid);</span><br><span class="line">        close(s);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="comment">// 等待错误</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nr &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        ERROR(<span class="string">"sys_prop: error waiting for uid=%d to send property message: %s\n"</span>, cr.uid, strerror(errno));</span><br><span class="line">        close(s);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 接收socket主体数据</span></span><br><span class="line">    r = TEMP_FAILURE_RETRY(recv(s, &amp;msg, <span class="keyword">sizeof</span>(msg), MSG_DONTWAIT));</span><br><span class="line">    <span class="keyword">if</span>(r != <span class="keyword">sizeof</span>(prop_msg)) &#123;</span><br><span class="line">        ERROR(<span class="string">"sys_prop: mis-match msg size received: %d expected: %zu: %s\n"</span>,</span><br><span class="line">              r, <span class="keyword">sizeof</span>(prop_msg), strerror(errno));</span><br><span class="line">        close(s);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 判断接收条件</span></span><br><span class="line">    <span class="keyword">switch</span>(msg.cmd) &#123;</span><br><span class="line">    <span class="comment">// 系统属性变化</span></span><br><span class="line">    <span class="keyword">case</span> PROP_MSG_SETPROP:</span><br><span class="line">        msg.name[PROP_NAME_MAX<span class="number">-1</span>] = <span class="number">0</span>;</span><br><span class="line">        msg.value[PROP_VALUE_MAX<span class="number">-1</span>] = <span class="number">0</span>;</span><br><span class="line">        <span class="comment">// 检查属性值是否合法</span></span><br><span class="line">        <span class="keyword">if</span> (!is_legal_property_name(msg.name, <span class="built_in">strlen</span>(msg.name))) &#123;</span><br><span class="line">            ERROR(<span class="string">"sys_prop: illegal property name. Got: \"%s\"\n"</span>, msg.name);</span><br><span class="line">            close(s);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        getpeercon(s, &amp;source_ctx);</span><br><span class="line">        <span class="comment">// 判断是否是ctl开头的属性，是则调用handle_control_message方法</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">memcmp</span>(msg.name,<span class="string">"ctl."</span>,<span class="number">4</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">            close(s);</span><br><span class="line">            <span class="keyword">if</span> (check_control_mac_perms(msg.value, source_ctx, &amp;cr)) &#123;</span><br><span class="line">                handle_control_message((<span class="keyword">char</span>*) msg.name + <span class="number">4</span>, (<span class="keyword">char</span>*) msg.value);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                ERROR(<span class="string">"sys_prop: Unable to %s service ctl [%s] uid:%d gid:%d pid:%d\n"</span>,</span><br><span class="line">                        msg.name + <span class="number">4</span>, msg.value, cr.uid, cr.gid, cr.pid);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (check_mac_perms(msg.name, source_ctx, &amp;cr)) &#123;</span><br><span class="line">                property_set((<span class="keyword">char</span>*) msg.name, (<span class="keyword">char</span>*) msg.value);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                ERROR(<span class="string">"sys_prop: permission denied uid:%d  name:%s\n"</span>,</span><br><span class="line">                      cr.uid, msg.name);</span><br><span class="line">            &#125;</span><br><span class="line">            close(s);</span><br><span class="line">        &#125;</span><br><span class="line">        freecon(source_ctx);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        close(s);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用handle_control_message方法启动bootanima服务</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">handle_control_message</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; msg, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name)</span> </span>&#123;</span><br><span class="line">    Service* svc = ServiceManager::GetInstance().FindServiceByName(name);</span><br><span class="line">    <span class="keyword">if</span> (svc == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        ERROR(<span class="string">"no such service '%s'\n"</span>, name.c_str());</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (msg == <span class="string">"start"</span>) &#123;</span><br><span class="line">        svc-&gt;Start();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (msg == <span class="string">"stop"</span>) &#123;</span><br><span class="line">        svc-&gt;Stop();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (msg == <span class="string">"restart"</span>) &#123;</span><br><span class="line">        svc-&gt;Restart();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ERROR(<span class="string">"unknown control msg '%s'\n"</span>, msg.c_str());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二、-开机动画启动"><a href="#二、-开机动画启动" class="headerlink" title="二、 开机动画启动"></a>二、 开机动画启动</h3><h4 id="2-1-开机动画显示流程"><a href="#2-1-开机动画显示流程" class="headerlink" title="2.1 开机动画显示流程"></a>2.1 开机动画显示流程</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    setpriority(PRIO_PROCESS, <span class="number">0</span>, ANDROID_PRIORITY_DISPLAY);</span><br><span class="line">    <span class="keyword">char</span> value[PROPERTY_VALUE_MAX];</span><br><span class="line">    property_get(<span class="string">"debug.sf.nobootanimation"</span>, value, <span class="string">"0"</span>);</span><br><span class="line">    <span class="keyword">int</span> noBootAnimation = atoi(value);</span><br><span class="line">    ALOGI_IF(noBootAnimation,  <span class="string">"boot animation disabled"</span>);</span><br><span class="line">    <span class="comment">// 检查属性debug.sf.nobootanimation是否不等于0</span></span><br><span class="line">    <span class="keyword">if</span> (!noBootAnimation) &#123;</span><br><span class="line">        <span class="comment">// 启动一个binder线程池</span></span><br><span class="line">        sp&lt;ProcessState&gt; proc(ProcessState::self());</span><br><span class="line">        ProcessState::self()-&gt;startThreadPool();</span><br><span class="line">        <span class="comment">// 创建boot animation对象</span></span><br><span class="line">        sp&lt;BootAnimation&gt; boot = <span class="keyword">new</span> BootAnimation();</span><br><span class="line">        IPCThreadState::self()-&gt;joinThreadPool();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来看看BootAnimation.h中的声明：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BootAnimation</span> :</span> <span class="keyword">public</span> Thread, <span class="keyword">public</span> IBinder::DeathRecipient</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">                BootAnimation();</span><br><span class="line">    <span class="keyword">virtual</span>     ~BootAnimation();</span><br><span class="line">    sp&lt;SurfaceComposerClient&gt; session() <span class="keyword">const</span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 每个线程类都要实现的，这个函数如果返回true，且没有requestExist()没有被调用，则该函数会再次执行；如果返回false，则threadloop中的内容仅仅执行一次，线程就会退出。</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span>        <span class="title">threadLoop</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// Thread执行前的初始化工作；</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t    <span class="title">readyToRun</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 属于其父类RefBase，该函数在强引用sp新增引用计数时调用，即有sp包装的类初始化时调用；</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>        <span class="title">onFirstRef</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 当对象死了或其他情况导致该Binder结束时，就会回调binderDied()方法;</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>        <span class="title">binderDied</span><span class="params">(<span class="keyword">const</span> wp&lt;IBinder&gt;&amp; who)</span></span>;</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">status_t</span> initTexture(Texture* texture, AssetManager&amp; asset, <span class="keyword">const</span> <span class="keyword">char</span>* name);</span><br><span class="line">    <span class="keyword">status_t</span> initTexture(FileMap* <span class="built_in">map</span>, <span class="keyword">int</span>* width, <span class="keyword">int</span>* height);</span><br><span class="line">    <span class="keyword">status_t</span> initFont(Font* font, <span class="keyword">const</span> <span class="keyword">char</span>* fallback);</span><br><span class="line">    <span class="comment">// 显示系统默认的开机画面；</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">android</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 显示用户自定义的开机动画。</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">movie</span><span class="params">()</span></span>;</span><br><span class="line">    ......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>接下来看看BootAnimation.cpp中各函数的具体实现：<br>BootAnimation间接继承自RefBase类，并重写了其onFirstRef方法，所以智能指针第一次调用BootAnimation时即先调用onFirstRef方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> BootAnimation::onFirstRef() &#123;</span><br><span class="line">    <span class="comment">// 注册SurfaceFlinger服务的死亡接收通知</span></span><br><span class="line">    <span class="keyword">status_t</span> err = mSession-&gt;linkToComposerDeath(<span class="keyword">this</span>);</span><br><span class="line">    ALOGE_IF(err, <span class="string">"linkToComposerDeath failed (%s) "</span>, strerror(-err));</span><br><span class="line">    <span class="keyword">if</span> (err == NO_ERROR) &#123;</span><br><span class="line">        run(<span class="string">"BootAnimation"</span>, PRIORITY_DISPLAY);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">BootAnimation::BootAnimation() : Thread(<span class="literal">false</span>), mClockEnabled(<span class="literal">true</span>), mTimeIsAccurate(<span class="literal">false</span>),</span><br><span class="line">        mTimeFormat12Hour(<span class="literal">false</span>), mTimeCheckThread(<span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="comment">// 用于同Surfaceflinger进行Binder进程间通信</span></span><br><span class="line">    mSession = <span class="keyword">new</span> SurfaceComposerClient();</span><br><span class="line">    mSystemBoot = !property_get_bool(BOOT_COMPLETED_PROP_NAME, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当onFirstRef调用了父类的run方法后，系统会创建一个新线程，该线程执行前会先调用readyToRun方法执行一系列初始化操作：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> BootAnimation::readyToRun() &#123;</span><br><span class="line">    mAssets.addDefaultAssets();</span><br><span class="line">    <span class="comment">// 检查显示屏信息</span></span><br><span class="line">    sp&lt;IBinder&gt; dtoken(SurfaceComposerClient::getBuiltInDisplay(</span><br><span class="line">            ISurfaceComposer::eDisplayIdMain));</span><br><span class="line">    DisplayInfo dinfo;</span><br><span class="line">    <span class="keyword">status_t</span> status = SurfaceComposerClient::getDisplayInfo(dtoken, &amp;dinfo);</span><br><span class="line">    <span class="keyword">if</span> (status)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">// 获得一个SurfaceControl对象control</span></span><br><span class="line">    sp&lt;SurfaceControl&gt; control = session()-&gt;createSurface(String8(<span class="string">"BootAnimation"</span>),</span><br><span class="line">            dinfo.w, dinfo.h, PIXEL_FORMAT_RGB_565);</span><br><span class="line">    SurfaceComposerClient::openGlobalTransaction();</span><br><span class="line">    control-&gt;setLayer(<span class="number">0x40000000</span>);</span><br><span class="line">    SurfaceComposerClient::closeGlobalTransaction();</span><br><span class="line">    <span class="comment">// control的成员函数会返回一个Surface对象</span></span><br><span class="line">    sp&lt;Surface&gt; s = control-&gt;getSurface();</span><br><span class="line">    <span class="comment">// 初始化OPENEGL和EGL</span></span><br><span class="line">    <span class="keyword">const</span> EGLint attribs[] = &#123;</span><br><span class="line">            EGL_RED_SIZE,   <span class="number">8</span>,</span><br><span class="line">            EGL_GREEN_SIZE, <span class="number">8</span>,</span><br><span class="line">            EGL_BLUE_SIZE,  <span class="number">8</span>,</span><br><span class="line">            EGL_DEPTH_SIZE, <span class="number">0</span>,</span><br><span class="line">            EGL_NONE</span><br><span class="line">    &#125;;</span><br><span class="line">    EGLint w, h;</span><br><span class="line">    EGLint numConfigs;</span><br><span class="line">    EGLConfig config;</span><br><span class="line">    EGLSurface surface;</span><br><span class="line">    EGLContext context;</span><br><span class="line">    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);</span><br><span class="line">    eglInitialize(display, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    eglChooseConfig(display, attribs, &amp;config, <span class="number">1</span>, &amp;numConfigs);</span><br><span class="line">    surface = eglCreateWindowSurface(display, config, s.get(), <span class="literal">NULL</span>);</span><br><span class="line">    context = eglCreateContext(display, config, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">    eglQuerySurface(display, surface, EGL_WIDTH, &amp;w);</span><br><span class="line">    eglQuerySurface(display, surface, EGL_HEIGHT, &amp;h);</span><br><span class="line">    <span class="keyword">if</span> (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE)</span><br><span class="line">        <span class="keyword">return</span> NO_INIT;</span><br><span class="line">    mDisplay = display;</span><br><span class="line">    mContext = context;</span><br><span class="line">    mSurface = surface;</span><br><span class="line">    mWidth = w;</span><br><span class="line">    mHeight = h;</span><br><span class="line">    mFlingerSurfaceControl = control;</span><br><span class="line">    mFlingerSurface = s;</span><br><span class="line">    <span class="comment">// 如果开启加密，则显示加密动画</span></span><br><span class="line">    <span class="keyword">char</span> decrypt[PROPERTY_VALUE_MAX];</span><br><span class="line">    property_get(<span class="string">"vold.decrypt"</span>, decrypt, <span class="string">""</span>);</span><br><span class="line">    <span class="keyword">bool</span> encryptedAnimation = atoi(decrypt) != <span class="number">0</span> || !<span class="built_in">strcmp</span>(<span class="string">"trigger_restart_min_framework"</span>, decrypt);</span><br><span class="line">    <span class="comment">// 选择对应目录下动画文件</span></span><br><span class="line">    <span class="comment">// 加密动画</span></span><br><span class="line">    <span class="keyword">if</span> (encryptedAnimation &amp;&amp; (access(getAnimationFileName(IMG_ENC), R_OK) == <span class="number">0</span>)) &#123;</span><br><span class="line">        mZipFileName = getAnimationFileName(IMG_ENC);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// OEM动画</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (access(getAnimationFileName(IMG_OEM), R_OK) == <span class="number">0</span>) &#123;</span><br><span class="line">        mZipFileName = getAnimationFileName(IMG_OEM);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 系统动画</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (access(getAnimationFileName(IMG_SYS), R_OK) == <span class="number">0</span>) &#123;</span><br><span class="line">        mZipFileName = getAnimationFileName(IMG_SYS);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> NO_ERROR;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *BootAnimation::getAnimationFileName(ImageID image)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *fileName[<span class="number">3</span>] = &#123; OEM_BOOTANIMATION_FILE,</span><br><span class="line">            SYSTEM_BOOTANIMATION_FILE,</span><br><span class="line">            SYSTEM_ENCRYPTED_BOOTANIMATION_FILE &#125;;</span><br><span class="line">    <span class="keyword">if</span> (Environment::isSupported()) &#123;</span><br><span class="line">        Environment* environment = <span class="keyword">new</span> Environment();</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span>* animFile = environment-&gt;getMediaFile(</span><br><span class="line">                Environment::ANIMATION_TYPE, Environment::BOOT_STATUS);</span><br><span class="line">        ALOGE(<span class="string">"Get Carrier Animation type: %d,status:%d"</span>, Environment::ANIMATION_TYPE,Environment::BOOT_STATUS);</span><br><span class="line">        <span class="keyword">if</span> (animFile != <span class="literal">NULL</span> &amp;&amp; <span class="built_in">strcmp</span>(animFile, <span class="string">""</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">           <span class="keyword">return</span> animFile;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">           ALOGD(<span class="string">"Get Carrier Animation file: %s failed"</span>, animFile);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">delete</span> environment;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">           ALOGE(<span class="string">"Get Carrier Animation file,since it's not support carrier"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> fileName[image];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用threadLoop方法显示动画</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> BootAnimation::threadLoop()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">bool</span> r;</span><br><span class="line">    <span class="comment">// 判断动画文件是否存在，存在则调用自定义动画，否则调用系统默认动画</span></span><br><span class="line">    <span class="keyword">if</span> (mZipFileName.isEmpty()) &#123;</span><br><span class="line">        r = android();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        r = movie();</span><br><span class="line">    &#125;</span><br><span class="line">    eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);</span><br><span class="line">    eglDestroyContext(mDisplay, mContext);</span><br><span class="line">    eglDestroySurface(mDisplay, mSurface);</span><br><span class="line">    mFlingerSurface.clear();</span><br><span class="line">    mFlingerSurfaceControl.clear();</span><br><span class="line">    eglTerminate(mDisplay);</span><br><span class="line">    IPCThreadState::self()-&gt;stopProcess();</span><br><span class="line">    <span class="keyword">return</span> r;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-系统默认动画配置"><a href="#2-2-系统默认动画配置" class="headerlink" title="2.2 系统默认动画配置"></a>2.2 系统默认动画配置</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> BootAnimation::android()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 读取开机动画默认图片frameworks/base/core/res/assets/images</span></span><br><span class="line">    <span class="comment">// android字样图标</span></span><br><span class="line">    initTexture(&amp;mAndroid[<span class="number">0</span>], mAssets, <span class="string">"images/android-logo-mask.png"</span>);</span><br><span class="line">    <span class="comment">// 闪光图片</span></span><br><span class="line">    initTexture(&amp;mAndroid[<span class="number">1</span>], mAssets, <span class="string">"images/android-logo-shine.png"</span>);</span><br><span class="line">    <span class="comment">// 清理屏幕</span></span><br><span class="line">    glShadeModel(GL_FLAT);</span><br><span class="line">    glDisable(GL_DITHER);</span><br><span class="line">    glDisable(GL_SCISSOR_TEST);</span><br><span class="line">    glClearColor(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>);</span><br><span class="line">    glClear(GL_COLOR_BUFFER_BIT);</span><br><span class="line">    eglSwapBuffers(mDisplay, mSurface);</span><br><span class="line">    glEnable(GL_TEXTURE_2D);</span><br><span class="line">    glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);</span><br><span class="line">    <span class="comment">// 动画在屏幕显示位置</span></span><br><span class="line">    <span class="keyword">const</span> GLint xc = (mWidth  - mAndroid[<span class="number">0</span>].w) / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> GLint yc = (mHeight - mAndroid[<span class="number">0</span>].h) / <span class="number">2</span>;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> Rect <span class="title">updateRect</span><span class="params">(xc, yc, xc + mAndroid[<span class="number">0</span>].w, yc + mAndroid[<span class="number">0</span>].h)</span></span>;</span><br><span class="line">    glScissor(updateRect.left, mHeight - updateRect.bottom, updateRect.width(),</span><br><span class="line">            updateRect.height());</span><br><span class="line">    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);</span><br><span class="line">    glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">nsecs_t</span> startTime = systemTime();</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="keyword">nsecs_t</span> now = systemTime();</span><br><span class="line">        <span class="keyword">double</span> time = now - startTime;</span><br><span class="line">        <span class="keyword">float</span> t = <span class="number">4.0f</span> * <span class="keyword">float</span>(time / us2ns(<span class="number">16667</span>)) / mAndroid[<span class="number">1</span>].w;</span><br><span class="line">        GLint offset = (<span class="number">1</span> - (t - floorf(t))) * mAndroid[<span class="number">1</span>].w;</span><br><span class="line">        GLint x = xc - offset;</span><br><span class="line">        glDisable(GL_SCISSOR_TEST);</span><br><span class="line">        glClear(GL_COLOR_BUFFER_BIT);</span><br><span class="line">        glEnable(GL_SCISSOR_TEST);</span><br><span class="line">        glDisable(GL_BLEND);</span><br><span class="line">        <span class="comment">// 绘制闪光图片</span></span><br><span class="line">        glBindTexture(GL_TEXTURE_2D, mAndroid[<span class="number">1</span>].name);</span><br><span class="line">        glDrawTexiOES(x,                 yc, <span class="number">0</span>, mAndroid[<span class="number">1</span>].w, mAndroid[<span class="number">1</span>].h);</span><br><span class="line">        glDrawTexiOES(x + mAndroid[<span class="number">1</span>].w, yc, <span class="number">0</span>, mAndroid[<span class="number">1</span>].w, mAndroid[<span class="number">1</span>].h);</span><br><span class="line">        glEnable(GL_BLEND);</span><br><span class="line">        <span class="comment">// 绘制android字样图片</span></span><br><span class="line">        glBindTexture(GL_TEXTURE_2D, mAndroid[<span class="number">0</span>].name);</span><br><span class="line">        glDrawTexiOES(xc, yc, <span class="number">0</span>, mAndroid[<span class="number">0</span>].w, mAndroid[<span class="number">0</span>].h);</span><br><span class="line">        EGLBoolean res = eglSwapBuffers(mDisplay, mSurface);</span><br><span class="line">        <span class="keyword">if</span> (res == EGL_FALSE)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">nsecs_t</span> sleepTime = <span class="number">83333</span> - ns2us(systemTime() - now);</span><br><span class="line">        <span class="keyword">if</span> (sleepTime &gt; <span class="number">0</span>)</span><br><span class="line">            usleep(sleepTime);</span><br><span class="line">        <span class="comment">// 判断是否退出</span></span><br><span class="line">        checkExit();</span><br><span class="line">    &#125; <span class="keyword">while</span> (!exitPending());</span><br><span class="line">    glDeleteTextures(<span class="number">1</span>, &amp;mAndroid[<span class="number">0</span>].name);</span><br><span class="line">    glDeleteTextures(<span class="number">1</span>, &amp;mAndroid[<span class="number">1</span>].name);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> BootAnimation::checkExit() &#123;</span><br><span class="line">    <span class="keyword">char</span> value[PROPERTY_VALUE_MAX];</span><br><span class="line">    property_get(EXIT_PROP_NAME, value, <span class="string">"0"</span>);</span><br><span class="line">    <span class="keyword">int</span> exitnow = atoi(value);</span><br><span class="line">    <span class="comment">// 判断service.bootanim.exit属性，若为1则请求退出线程</span></span><br><span class="line">    <span class="keyword">if</span> (exitnow) &#123;</span><br><span class="line">        requestExit();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-自定义动画配置"><a href="#2-3-自定义动画配置" class="headerlink" title="2.3 自定义动画配置"></a>2.3 自定义动画配置</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> BootAnimation::movie()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 加载动画文件</span></span><br><span class="line">    Animation* animation = loadAnimation(mZipFileName);</span><br><span class="line">    <span class="keyword">if</span> (animation == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">bool</span> anyPartHasClock = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">size_t</span> i=<span class="number">0</span>; i &lt; animation-&gt;parts.size(); i++) &#123;</span><br><span class="line">        <span class="keyword">if</span>(validClock(animation-&gt;parts[i])) &#123;</span><br><span class="line">            anyPartHasClock = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!anyPartHasClock) &#123;</span><br><span class="line">        mClockEnabled = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    mUseNpotTextures = <span class="literal">false</span>;</span><br><span class="line">    String8 gl_extensions;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* exts = <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> <span class="keyword">char</span>*&gt;(glGetString(GL_EXTENSIONS));</span><br><span class="line">    <span class="keyword">if</span> (!exts) &#123;</span><br><span class="line">        glGetError();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        gl_extensions.setTo(exts);</span><br><span class="line">        <span class="keyword">if</span> ((gl_extensions.find(<span class="string">"GL_ARB_texture_non_power_of_two"</span>) != <span class="number">-1</span>) ||</span><br><span class="line">            (gl_extensions.find(<span class="string">"GL_OES_texture_npot"</span>) != <span class="number">-1</span>)) &#123;</span><br><span class="line">            mUseNpotTextures = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);</span><br><span class="line">    <span class="comment">// 清理屏幕</span></span><br><span class="line">    glShadeModel(GL_FLAT);</span><br><span class="line">    glDisable(GL_DITHER);</span><br><span class="line">    glDisable(GL_SCISSOR_TEST);</span><br><span class="line">    glDisable(GL_BLEND);</span><br><span class="line">    glBindTexture(GL_TEXTURE_2D, <span class="number">0</span>);</span><br><span class="line">    glEnable(GL_TEXTURE_2D);</span><br><span class="line">    glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);</span><br><span class="line">    glTexParameterx(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);</span><br><span class="line">    glTexParameterx(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);</span><br><span class="line">    glTexParameterx(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);</span><br><span class="line">    glTexParameterx(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br><span class="line">    <span class="keyword">bool</span> clockFontInitialized = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (mClockEnabled) &#123;</span><br><span class="line">        clockFontInitialized =</span><br><span class="line">            (initFont(&amp;animation-&gt;clockFont, CLOCK_FONT_ASSET) == NO_ERROR);</span><br><span class="line">        mClockEnabled = clockFontInitialized;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mClockEnabled &amp;&amp; !updateIsTimeAccurate()) &#123;</span><br><span class="line">        mTimeCheckThread = <span class="keyword">new</span> TimeCheckThread(<span class="keyword">this</span>);</span><br><span class="line">        mTimeCheckThread-&gt;run(<span class="string">"BootAnimation::TimeCheckThread"</span>, PRIORITY_NORMAL);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 播放动画</span></span><br><span class="line">    playAnimation(*animation);</span><br><span class="line">    <span class="keyword">if</span> (mTimeCheckThread != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        mTimeCheckThread-&gt;requestExit();</span><br><span class="line">        mTimeCheckThread = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 释放动画</span></span><br><span class="line">    releaseAnimation(animation);</span><br><span class="line">    <span class="keyword">if</span> (clockFontInitialized) &#123;</span><br><span class="line">        glDeleteTextures(<span class="number">1</span>, &amp;animation-&gt;clockFont.texture.name);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>loadAnimation方法加载动画</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">BootAnimation::Animation* BootAnimation::loadAnimation(<span class="keyword">const</span> String8&amp; fn)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (mLoadedFiles.indexOf(fn) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"File \"%s\" is already loaded. Cyclic ref is not allowed"</span>,</span><br><span class="line">            fn.<span class="built_in">string</span>());</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ZipFileRO *zip = ZipFileRO::open(fn);</span><br><span class="line">    <span class="keyword">if</span> (zip == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"Failed to open animation zip \"%s\": %s"</span>,</span><br><span class="line">            fn.<span class="built_in">string</span>(), strerror(errno));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Animation *animation =  <span class="keyword">new</span> Animation;</span><br><span class="line">    animation-&gt;fileName = fn;</span><br><span class="line">    animation-&gt;zip = zip;</span><br><span class="line">    animation-&gt;clockFont.<span class="built_in">map</span> = <span class="literal">nullptr</span>;</span><br><span class="line">    mLoadedFiles.add(animation-&gt;fileName);</span><br><span class="line">    <span class="comment">// 解析动画文件</span></span><br><span class="line">    parseAnimationDesc(*animation);</span><br><span class="line">    <span class="keyword">if</span> (!preloadZip(*animation)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    mLoadedFiles.remove(fn);</span><br><span class="line">    <span class="keyword">return</span> animation;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>parseAnimationDesc方法解析desc文件,确定动画大小速度等信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> BootAnimation::parseAnimationDesc(Animation&amp; animation)</span><br><span class="line">&#123;</span><br><span class="line">    String8 desString;</span><br><span class="line">    <span class="comment">// 读取desc.txt内容</span></span><br><span class="line">    <span class="keyword">if</span> (!readFile(animation.zip, <span class="string">"desc.txt"</span>, desString)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">char</span> <span class="keyword">const</span>* s = desString.<span class="built_in">string</span>();</span><br><span class="line">    <span class="comment">// 解析desc.txt文件</span></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span>* <span class="built_in">endl</span> = <span class="built_in">strstr</span>(s, <span class="string">"\n"</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">endl</span> == <span class="literal">NULL</span>) <span class="keyword">break</span>;</span><br><span class="line">        <span class="function">String8 <span class="title">line</span><span class="params">(s, <span class="built_in">endl</span> - s)</span></span>;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span>* l = line.<span class="built_in">string</span>();</span><br><span class="line">        <span class="keyword">int</span> fps = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> width = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> height = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> pause = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">char</span> path[ANIM_ENTRY_NAME_MAX];</span><br><span class="line">        <span class="comment">// 默认黑色</span></span><br><span class="line">        <span class="keyword">char</span> color[<span class="number">7</span>] = <span class="string">"000000"</span>;</span><br><span class="line">        <span class="keyword">char</span> clockPos1[TEXT_POS_LEN_MAX + <span class="number">1</span>] = <span class="string">""</span>;</span><br><span class="line">        <span class="keyword">char</span> clockPos2[TEXT_POS_LEN_MAX + <span class="number">1</span>] = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">char</span> pathType;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">sscanf</span>(l, <span class="string">"%d %d %d"</span>, &amp;width, &amp;height, &amp;fps) == <span class="number">3</span>) &#123;</span><br><span class="line">            animation.width = width;</span><br><span class="line">            animation.height = height;</span><br><span class="line">            animation.fps = fps;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">sscanf</span>(l, <span class="string">" %c %d %d %s #%6s %16s %16s"</span>,</span><br><span class="line">                          &amp;pathType, &amp;count, &amp;pause, path, color, clockPos1, clockPos2) &gt;= <span class="number">4</span>) &#123;</span><br><span class="line">            Animation::Part part;</span><br><span class="line">            part.playUntilComplete = pathType == <span class="string">'c'</span>;</span><br><span class="line">            part.count = count;</span><br><span class="line">            part.pause = pause;</span><br><span class="line">            part.path = path;</span><br><span class="line">            part.audioData = <span class="literal">NULL</span>;</span><br><span class="line">            part.animation = <span class="literal">NULL</span>;</span><br><span class="line">            <span class="keyword">if</span> (!parseColor(color, part.backgroundColor)) &#123;</span><br><span class="line">                ALOGE(<span class="string">"&gt; invalid color '#%s'"</span>, color);</span><br><span class="line">                part.backgroundColor[<span class="number">0</span>] = <span class="number">0.0f</span>;</span><br><span class="line">                part.backgroundColor[<span class="number">1</span>] = <span class="number">0.0f</span>;</span><br><span class="line">                part.backgroundColor[<span class="number">2</span>] = <span class="number">0.0f</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            parsePosition(clockPos1, clockPos2, &amp;part.clockPosX, &amp;part.clockPosY);</span><br><span class="line">            animation.parts.add(part);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">strcmp</span>(l, <span class="string">"$SYSTEM"</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">            Animation::Part part;</span><br><span class="line">            part.playUntilComplete = <span class="literal">false</span>;</span><br><span class="line">            part.count = <span class="number">1</span>;</span><br><span class="line">            part.pause = <span class="number">0</span>;</span><br><span class="line">            part.audioData = <span class="literal">NULL</span>;</span><br><span class="line">            part.animation = loadAnimation(String8(SYSTEM_BOOTANIMATION_FILE));</span><br><span class="line">            <span class="keyword">if</span> (part.animation != <span class="literal">NULL</span>)</span><br><span class="line">                animation.parts.add(part);</span><br><span class="line">        &#125;</span><br><span class="line">        s = ++<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>preloadZip处理片段信息</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> BootAnimation::preloadZip(Animation&amp; animation)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 读取zip文件</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">size_t</span> pcount = animation.parts.size();</span><br><span class="line">    <span class="keyword">void</span> *cookie = <span class="literal">NULL</span>;</span><br><span class="line">    ZipFileRO* zip = animation.zip;</span><br><span class="line">    <span class="keyword">if</span> (!zip-&gt;startIteration(&amp;cookie)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Animation::Part* partWithAudio = <span class="literal">NULL</span>;</span><br><span class="line">    ZipEntryRO entry;</span><br><span class="line">    <span class="keyword">char</span> name[ANIM_ENTRY_NAME_MAX];</span><br><span class="line">    <span class="comment">// 循环遍历每个文件</span></span><br><span class="line">    <span class="keyword">while</span> ((entry = zip-&gt;nextEntry(cookie)) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">int</span> foundEntryName = zip-&gt;getEntryFileName(entry, name, ANIM_ENTRY_NAME_MAX);</span><br><span class="line">        <span class="keyword">if</span> (foundEntryName &gt; ANIM_ENTRY_NAME_MAX || foundEntryName == <span class="number">-1</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"Error fetching entry file name"</span>);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">const</span> String8 <span class="title">entryName</span><span class="params">(name)</span></span>;</span><br><span class="line">        <span class="function"><span class="keyword">const</span> String8 <span class="title">path</span><span class="params">(entryName.getPathDir())</span></span>;</span><br><span class="line">        <span class="function"><span class="keyword">const</span> String8 <span class="title">leaf</span><span class="params">(entryName.getPathLeaf())</span></span>;</span><br><span class="line">        <span class="keyword">if</span> (leaf.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (entryName == CLOCK_FONT_ZIP_NAME) &#123;</span><br><span class="line">                FileMap* <span class="built_in">map</span> = zip-&gt;createEntryFileMap(entry);</span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">map</span>) &#123;</span><br><span class="line">                    animation.clockFont.<span class="built_in">map</span> = <span class="built_in">map</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">size_t</span> j = <span class="number">0</span>; j &lt; pcount; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (path == animation.parts[j].path) &#123;</span><br><span class="line">                    <span class="keyword">uint16_t</span> method;</span><br><span class="line">                    <span class="comment">// 支持png格式文件</span></span><br><span class="line">                    <span class="keyword">if</span> (zip-&gt;getEntryInfo(entry, &amp;method, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>)) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (method == ZipFileRO::kCompressStored) &#123;</span><br><span class="line">                            FileMap* <span class="built_in">map</span> = zip-&gt;createEntryFileMap(entry);</span><br><span class="line">                            <span class="keyword">if</span> (<span class="built_in">map</span>) &#123;</span><br><span class="line">                                Animation::<span class="function">Part&amp; <span class="title">part</span><span class="params">(animation.parts.editItemAt(j))</span></span>;</span><br><span class="line">                                <span class="keyword">if</span> (leaf == <span class="string">"audio.wav"</span>) &#123;</span><br><span class="line">                                    <span class="comment">// 一个片段最多只能包含一个audio文件</span></span><br><span class="line">                                    part.audioData = (<span class="keyword">uint8_t</span> *)<span class="built_in">map</span>-&gt;getDataPtr();</span><br><span class="line">                                    part.audioLength = <span class="built_in">map</span>-&gt;getDataLength();</span><br><span class="line">                                    partWithAudio = &amp;part;</span><br><span class="line">                                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (leaf == <span class="string">"trim.txt"</span>) &#123;</span><br><span class="line">                                    part.trimData.setTo((<span class="keyword">char</span> <span class="keyword">const</span>*)<span class="built_in">map</span>-&gt;getDataPtr(),</span><br><span class="line">                                                        <span class="built_in">map</span>-&gt;getDataLength());</span><br><span class="line">                                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                                    Animation::Frame frame;</span><br><span class="line">                                    frame.name = leaf;</span><br><span class="line">                                    frame.<span class="built_in">map</span> = <span class="built_in">map</span>;</span><br><span class="line">                                    frame.trimWidth = animation.width;</span><br><span class="line">                                    frame.trimHeight = animation.height;</span><br><span class="line">                                    frame.trimX = <span class="number">0</span>;</span><br><span class="line">                                    frame.trimY = <span class="number">0</span>;</span><br><span class="line">                                    part.frames.add(frame);</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            ALOGE(<span class="string">"bootanimation.zip is compressed; must be only stored"</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果存在trimData，则覆盖默认值</span></span><br><span class="line">    <span class="keyword">for</span> (Animation::Part&amp; part : animation.parts) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span>* trimDataStr = part.trimData.<span class="built_in">string</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">size_t</span> frameIdx = <span class="number">0</span>; frameIdx &lt; part.frames.size(); frameIdx++) &#123;</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span>* <span class="built_in">endl</span> = <span class="built_in">strstr</span>(trimDataStr, <span class="string">"\n"</span>);</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">endl</span> == <span class="literal">NULL</span>) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="function">String8 <span class="title">line</span><span class="params">(trimDataStr, <span class="built_in">endl</span> - trimDataStr)</span></span>;</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span>* lineStr = line.<span class="built_in">string</span>();</span><br><span class="line">            trimDataStr = ++<span class="built_in">endl</span>;</span><br><span class="line">            <span class="keyword">int</span> width = <span class="number">0</span>, height = <span class="number">0</span>, x = <span class="number">0</span>, y = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">sscanf</span>(lineStr, <span class="string">"%dx%d+%d+%d"</span>, &amp;width, &amp;height, &amp;x, &amp;y) == <span class="number">4</span>) &#123;</span><br><span class="line">                Animation::<span class="function">Frame&amp; <span class="title">frame</span><span class="params">(part.frames.editItemAt(frameIdx))</span></span>;</span><br><span class="line">                frame.trimWidth = width;</span><br><span class="line">                frame.trimHeight = height;</span><br><span class="line">                frame.trimX = x;</span><br><span class="line">                frame.trimY = y;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                ALOGE(<span class="string">"Error parsing trim.txt, line: %s"</span>, lineStr);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果动画文件中有铃声则创建并初始化audioplay</span></span><br><span class="line">    <span class="keyword">if</span> (partWithAudio != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGD(<span class="string">"found audio.wav, creating playback engine"</span>);</span><br><span class="line">        <span class="keyword">if</span> (!audioplay::create(partWithAudio-&gt;audioData, partWithAudio-&gt;audioLength)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    zip-&gt;endIteration(cookie);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>playAnimation方法播放动画</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> BootAnimation::playAnimation(<span class="keyword">const</span> Animation&amp; animation)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">size_t</span> pcount = animation.parts.size();</span><br><span class="line">    <span class="keyword">nsecs_t</span> frameDuration = s2ns(<span class="number">1</span>) / animation.fps;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> animationX = (mWidth - animation.width) / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> animationY = (mHeight - animation.height) / <span class="number">2</span>;</span><br><span class="line">    <span class="comment">// 显示每个动画片段</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">size_t</span> i=<span class="number">0</span> ; i&lt;pcount ; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> Animation::<span class="function">Part&amp; <span class="title">part</span><span class="params">(animation.parts[i])</span></span>;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">size_t</span> fcount = part.frames.size();</span><br><span class="line">        glBindTexture(GL_TEXTURE_2D, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (part.animation != <span class="literal">NULL</span>) &#123;</span><br><span class="line">            playAnimation(*part.animation);</span><br><span class="line">            <span class="keyword">if</span> (exitPending())</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 循环显示动画片段</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> r=<span class="number">0</span> ; !part.count || r&lt;part.count ; r++) &#123;</span><br><span class="line">            <span class="keyword">if</span>(exitPending() &amp;&amp; !part.playUntilComplete)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">if</span> (r == <span class="number">0</span> &amp;&amp; part.audioData &amp;&amp; playSoundsAllowed()) &#123;</span><br><span class="line">                ALOGD(<span class="string">"playing clip for part%d, size=%d"</span>, (<span class="keyword">int</span>) i, part.audioLength);</span><br><span class="line">                audioplay::playClip(part.audioData, part.audioLength);</span><br><span class="line">            &#125;</span><br><span class="line">            glClearColor(</span><br><span class="line">                    part.backgroundColor[<span class="number">0</span>],</span><br><span class="line">                    part.backgroundColor[<span class="number">1</span>],</span><br><span class="line">                    part.backgroundColor[<span class="number">2</span>],</span><br><span class="line">                    <span class="number">1.0f</span>);</span><br><span class="line">            <span class="comment">// 显示每个片段对应的png文件</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">size_t</span> j=<span class="number">0</span> ; j&lt;fcount &amp;&amp; (!exitPending() || part.playUntilComplete) ; j++) &#123;</span><br><span class="line">                <span class="keyword">const</span> Animation::<span class="function">Frame&amp; <span class="title">frame</span><span class="params">(part.frames[j])</span></span>;</span><br><span class="line">                <span class="keyword">nsecs_t</span> lastFrame = systemTime();</span><br><span class="line">                <span class="keyword">if</span> (r &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    glBindTexture(GL_TEXTURE_2D, frame.tid);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (part.count != <span class="number">1</span>) &#123;</span><br><span class="line">                        glGenTextures(<span class="number">1</span>, &amp;frame.tid);</span><br><span class="line">                        glBindTexture(GL_TEXTURE_2D, frame.tid);</span><br><span class="line">                        glTexParameterx(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);</span><br><span class="line">                        glTexParameterx(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">int</span> w, h;</span><br><span class="line">                    initTexture(frame.<span class="built_in">map</span>, &amp;w, &amp;h);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">const</span> <span class="keyword">int</span> xc = animationX + frame.trimX;</span><br><span class="line">                <span class="keyword">const</span> <span class="keyword">int</span> yc = animationY + frame.trimY;</span><br><span class="line">                <span class="function">Region <span class="title">clearReg</span><span class="params">(Rect(mWidth, mHeight))</span></span>;</span><br><span class="line">                clearReg.subtractSelf(Rect(xc, yc, xc+frame.trimWidth, yc+frame.trimHeight));</span><br><span class="line">                <span class="keyword">if</span> (!clearReg.isEmpty()) &#123;</span><br><span class="line">                    Region::<span class="function">const_iterator <span class="title">head</span><span class="params">(clearReg.begin())</span></span>;</span><br><span class="line">                    Region::<span class="function">const_iterator <span class="title">tail</span><span class="params">(clearReg.end())</span></span>;</span><br><span class="line">                    glEnable(GL_SCISSOR_TEST);</span><br><span class="line">                    <span class="keyword">while</span> (head != tail) &#123;</span><br><span class="line">                        <span class="function"><span class="keyword">const</span> Rect&amp; <span class="title">r2</span><span class="params">(*head++)</span></span>;</span><br><span class="line">                        glScissor(r2.left, mHeight - r2.bottom, r2.width(), r2.height());</span><br><span class="line">                        glClear(GL_COLOR_BUFFER_BIT);</span><br><span class="line">                    &#125;</span><br><span class="line">                    glDisable(GL_SCISSOR_TEST);</span><br><span class="line">                &#125;</span><br><span class="line">                glDrawTexiOES(xc, mHeight - (yc + frame.trimHeight),</span><br><span class="line">                              <span class="number">0</span>, frame.trimWidth, frame.trimHeight);</span><br><span class="line">                <span class="keyword">if</span> (mClockEnabled &amp;&amp; mTimeIsAccurate &amp;&amp; validClock(part)) &#123;</span><br><span class="line">                    drawClock(animation.clockFont, part.clockPosX, part.clockPosY);</span><br><span class="line">                &#125;</span><br><span class="line">                eglSwapBuffers(mDisplay, mSurface);</span><br><span class="line">                <span class="keyword">nsecs_t</span> now = systemTime();</span><br><span class="line">                <span class="keyword">nsecs_t</span> delay = frameDuration - (now - lastFrame);</span><br><span class="line">                lastFrame = now;</span><br><span class="line">                <span class="keyword">if</span> (delay &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">spec</span>;</span></span><br><span class="line">                    spec.tv_sec  = (now + delay) / <span class="number">1000000000</span>;</span><br><span class="line">                    spec.tv_nsec = (now + delay) % <span class="number">1000000000</span>;</span><br><span class="line">                    <span class="keyword">int</span> err;</span><br><span class="line">                    <span class="keyword">do</span> &#123;</span><br><span class="line">                        err = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &amp;spec, <span class="literal">NULL</span>);</span><br><span class="line">                    &#125; <span class="keyword">while</span> (err&lt;<span class="number">0</span> &amp;&amp; errno == EINTR);</span><br><span class="line">                &#125;</span><br><span class="line">                checkExit();</span><br><span class="line">            &#125;</span><br><span class="line">            usleep(part.pause * ns2us(frameDuration));</span><br><span class="line">            <span class="keyword">if</span>(exitPending() &amp;&amp; !part.count)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> Animation::Part&amp; part : animation.parts) &#123;</span><br><span class="line">        <span class="keyword">if</span> (part.count != <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">size_t</span> fcount = part.frames.size();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">size_t</span> j = <span class="number">0</span>; j &lt; fcount; j++) &#123;</span><br><span class="line">                <span class="keyword">const</span> Animation::<span class="function">Frame&amp; <span class="title">frame</span><span class="params">(part.frames[j])</span></span>;</span><br><span class="line">                glDeleteTextures(<span class="number">1</span>, &amp;frame.tid);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    audioplay::setPlaying(<span class="literal">false</span>);</span><br><span class="line">    audioplay::destroy();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>releaseAnimation方法释放动画</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> BootAnimation::releaseAnimation(Animation* animation) <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (Vector&lt;Animation::Part&gt;::iterator it = animation-&gt;parts.begin(),</span><br><span class="line">         e = animation-&gt;parts.end(); it != e; ++it) &#123;</span><br><span class="line">        <span class="keyword">if</span> (it-&gt;animation)</span><br><span class="line">            releaseAnimation(it-&gt;animation);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (animation-&gt;zip)</span><br><span class="line">        <span class="keyword">delete</span> animation-&gt;zip;</span><br><span class="line">    <span class="keyword">delete</span> animation;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当SystemServer进程中关键服务都起来后，就会将Launcher启动起来，待Launcher启动后会发送idle通知给ActivityManagerService,进而传递给SurfaceFlinger,然后将service.bootanim.exit属性置为0，即退出动画播放。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/UI/" rel="tag"># UI</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/25/Boot/开机慢问题分析/" rel="next" title="开机慢问题分析">
+                <i class="fa fa-chevron-left"></i> 开机慢问题分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/15/Filesystem/MTK平台如何新增一个分区/" rel="prev" title="MTK平台如何新增一个分区">
+                MTK平台如何新增一个分区 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、bootanimtion服务"><span class="nav-text">一、bootanimtion服务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-init阶段bootanimation服务配置"><span class="nav-text">1.1 init阶段bootanimation服务配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-surfaceflinger服务调用bootnimation"><span class="nav-text">1.2 surfaceflinger服务调用bootnimation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-init进程处理属性变化"><span class="nav-text">1.3 init进程处理属性变化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、-开机动画启动"><span class="nav-text">二、 开机动画启动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-开机动画显示流程"><span class="nav-text">2.1 开机动画显示流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-系统默认动画配置"><span class="nav-text">2.2 系统默认动画配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-自定义动画配置"><span class="nav-text">2.3 自定义动画配置</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

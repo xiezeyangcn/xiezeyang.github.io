@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Platform: Mediatek 一、Normal Boot之开机时间分析&amp;emsp;mtklog的bootprof文件可以查看开机各个阶段的耗时，以MTK为例分析: 1.1 Preloader启动时间1234-------------------------------------------------------0 BOOT PTOF (unit L msec)-------------">
+<meta name="keywords" content="Boot">
+<meta property="og:type" content="article">
+<meta property="og:title" content="开机慢问题分析">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/11/25/Boot/开机慢问题分析/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="Platform: Mediatek 一、Normal Boot之开机时间分析&amp;emsp;mtklog的bootprof文件可以查看开机各个阶段的耗时，以MTK为例分析: 1.1 Preloader启动时间1234-------------------------------------------------------0 BOOT PTOF (unit L msec)-------------">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="开机慢问题分析">
+<meta name="twitter:description" content="Platform: Mediatek 一、Normal Boot之开机时间分析&amp;emsp;mtklog的bootprof文件可以查看开机各个阶段的耗时，以MTK为例分析: 1.1 Preloader启动时间1234-------------------------------------------------------0 BOOT PTOF (unit L msec)-------------">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/11/25/Boot/开机慢问题分析/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>开机慢问题分析 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/25/Boot/开机慢问题分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">开机慢问题分析
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-25 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-25T00:00:00+08:00">2018-11-25</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Platform: Mediatek</p>
+<h3 id="一、Normal-Boot之开机时间分析"><a href="#一、Normal-Boot之开机时间分析" class="headerlink" title="一、Normal Boot之开机时间分析"></a>一、Normal Boot之开机时间分析</h3><p>&emsp;mtklog的bootprof文件可以查看开机各个阶段的耗时，以MTK为例分析:</p>
+<h4 id="1-1-Preloader启动时间"><a href="#1-1-Preloader启动时间" class="headerlink" title="1.1 Preloader启动时间"></a>1.1 Preloader启动时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-------------------------------------------------------</span><br><span class="line">0 BOOT PTOF (unit L msec)</span><br><span class="line">-------------------------------------------------------</span><br><span class="line">733 : preloader</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-lk启动时间"><a href="#1-2-lk启动时间" class="headerlink" title="1.2 lk启动时间"></a>1.2 lk启动时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2759 : lk</span><br><span class="line">241 : lk -&gt; Kernel</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-3-Kernel初始化时间"><a href="#1-3-Kernel初始化时间" class="headerlink" title="1.3 Kernel初始化时间"></a>1.3 Kernel初始化时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1469.469383 : Kernel_init_done</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-Init阶段启动初始化时间"><a href="#1-4-Init阶段启动初始化时间" class="headerlink" title="1.4 Init阶段启动初始化时间"></a>1.4 Init阶段启动初始化时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">2082.810230 : INIT : on_init_start</span><br><span class="line">2095.409922 : INIT : Mount_START</span><br><span class="line">2756.724999 : INIT : Mount_END</span><br><span class="line">2876.534999 : post-fs-data : on modem start</span><br><span class="line">5577.011845 : post-fs-data : on modem start</span><br><span class="line">6739.629461 : BOOT_ANIMATION : START</span><br></pre></td></tr></table></figure>
+<h4 id="1-5-Zygote预加载资源时间"><a href="#1-5-Zygote预加载资源时间" class="headerlink" title="1.5 Zygote预加载资源时间"></a>1.5 Zygote预加载资源时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">7912.770768 : Zygote : Preload Start</span><br><span class="line">7913.998692 : Zygote : Preload Start</span><br><span class="line">9314.506692 : Zygote : Preload 3005 classes in 1092ms</span><br><span class="line">9398.152384 : Zygote : Preload 3005 classes in 1159ms</span><br><span class="line">9908.091845 : Zygote : Preload 343 obtain resources in 573ms</span><br><span class="line">9913.695076 : Zygote : Preload 41 resources in 5ms</span><br><span class="line">9962.086999 : Zygote : Preload 343 obtain resources in 549ms</span><br><span class="line">9967.643538 : Zygote : Preload 41 resources in 5ms</span><br><span class="line">10059.447845 : Zygote : Preload End</span><br><span class="line">10147.359692 Zygote : Preload End</span><br></pre></td></tr></table></figure>
+<h4 id="1-6-SystemServer阶段PackageManager-scan-app时间"><a href="#1-6-SystemServer阶段PackageManager-scan-app时间" class="headerlink" title="1.6 SystemServer阶段PackageManager scan app时间"></a>1.6 SystemServer阶段PackageManager scan app时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">10854.091307 : Android : PackageManagerService_Start</span><br><span class="line">11107.040307 : Android : PMS_scan_START</span><br><span class="line">11373.247230 : Android : PMS_scan_data_done : /system/framework</span><br><span class="line">12407.727153 : Android : PMS_scan_data_done : /system/priv-app</span><br><span class="line">13809.321000 : Android : PMS_scan_data_done : /system/app</span><br><span class="line">13868.306307 : Android : PMS_scan_data_done : /system/vendor/app</span><br><span class="line">16410.687692 : Android : PMS_scan_data_done : /system/vendor/operator/app</span><br><span class="line">16537.249461 : Android : PMS_scan_data_done : /system/plugin</span><br><span class="line">16869.515231 : Android : PMS_scan_data_done : /data/app</span><br><span class="line">16889.269077 : Android : PMS_scan_END</span><br></pre></td></tr></table></figure>
+<h4 id="1-7-PMS-ready-WMS-enable-screen停止开机动画阶段的时间"><a href="#1-7-PMS-ready-WMS-enable-screen停止开机动画阶段的时间" class="headerlink" title="1.7 PMS ready WMS enable screen停止开机动画阶段的时间"></a>1.7 PMS ready WMS enable screen停止开机动画阶段的时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">16979.932769 : Android : PMS_READY</span><br><span class="line">24504.612539 : BOOT_Animation : END</span><br></pre></td></tr></table></figure>
+<h3 id="二、Normal-Boot之首次开机慢分析"><a href="#二、Normal-Boot之首次开机慢分析" class="headerlink" title="二、Normal Boot之首次开机慢分析"></a>二、Normal Boot之首次开机慢分析</h3><h4 id="2-1-预编译需提取apk的odex文件"><a href="#2-1-预编译需提取apk的odex文件" class="headerlink" title="2.1 预编译需提取apk的odex文件"></a>2.1 预编译需提取apk的odex文件</h4><p>&emsp;需在BoardConfig.mk中定义:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WITH_DEXPREOPT := true</span><br><span class="line">WITH_DEXPREOPT_PIC := true</span><br></pre></td></tr></table></figure>
+<p>&emsp;打开这个宏之后，无论是有源码还是没有源码的预置apk预编译时都会提取odex文件。</p>
+<p>&emsp;如有发现user版本未提取odex，则需检查device.mk文件配置:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifeq</span> (<span class="variable">$(TARGET_BUILD_VARIANT)</span>,user)</span><br><span class="line">WITH_DEXPREOPT := true</span><br><span class="line">DONT_DEXPREOPT_PREBUILTS := true //此行注释掉</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;对于64bit的芯片,若apk只有32bit的lib或者只能作为32bit运行，则需在预置apk时在android.mk中添加下边的TAG标记此apk为32bit:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_MULTILIB :=32</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-预编译需跳过一些apk的odex提取"><a href="#2-2-预编译需跳过一些apk的odex提取" class="headerlink" title="2.2 预编译需跳过一些apk的odex提取"></a>2.2 预编译需跳过一些apk的odex提取</h4><p>&emsp;可在build/core/dex_preopt_odex_install.mk中添加:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifeq</span> (<span class="variable">$(LOCAL_MODULE)</span>,helloworld) LOCAL_DEX_PREOPT:=</span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line">build_odex:=</span><br><span class="line">installed_odex:=</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>&emsp;ifeq包起来的部分为需要添加的,helloworld可替换为需要跳过提取odex的apk的LOCAL_MODULE名字。</p>
+<h4 id="2-3-打开宏WITH-DEXPREOPT-true后使用make命令无法生成odex的说明"><a href="#2-3-打开宏WITH-DEXPREOPT-true后使用make命令无法生成odex的说明" class="headerlink" title="2.3 打开宏WITH_DEXPREOPT:=true后使用make命令无法生成odex的说明"></a>2.3 打开宏WITH_DEXPREOPT:=true后使用make命令无法生成odex的说明</h4><p>&emsp;需确认由于Android.mk中定义了LOCAL_MODULE_TAGS := debug所导致的。</p>
+<p>&emsp;若需要在make命令全编时产生WiFiTest.apk的odex,则要先修改Android.mk:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_MODULE_TAGS := optional</span><br></pre></td></tr></table></figure>
+<p>&emsp;然后修改device/mediatek/common/device.mk(eng版本编入该模块):</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifeq</span> (<span class="variable">$(TARGET_BUILD_VARIANT)</span>, eng)</span><br><span class="line">PRODUCT_PACKAGES += WiFiTest</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-4-实现prebuilt-APK提取odex的需要修改build-core-prebuilt-mk"><a href="#2-4-实现prebuilt-APK提取odex的需要修改build-core-prebuilt-mk" class="headerlink" title="2.4 实现prebuilt APK提取odex的需要修改build/core/prebuilt.mk"></a>2.4 实现prebuilt APK提取odex的需要修改build/core/prebuilt.mk</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># add begin</span></span><br><span class="line"><span class="keyword">ifneq</span> (true,<span class="variable">$(WITH_DEXPREOPT)</span>)</span><br><span class="line">    LOCAL_DEX_PREOPT :=</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">ifndef</span> LOCAL_DEX_PREOPT</span><br><span class="line">    LOCAL_DEX_PREOPT := <span class="variable">$(DEX_PREOPT_DEFAULT)</span></span><br><span class="line">    <span class="keyword">endif</span></span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"><span class="keyword">ifeq</span> (false,<span class="variable">$(LOCAL_DEX_PREOPT)</span>)</span><br><span class="line">    LOCAL_DEX_PREOPT :=</span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"><span class="keyword">ifeq</span> (<span class="variable">$(<span class="built_in">filter</span> APPS,<span class="variable">$(LOCAL_MODULE_CLASS)</span>)</span>,)</span><br><span class="line">    LOCAL_DEX_PREOPT :=</span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"><span class="variable">$(info prebuild <span class="variable">$(LOCAL_MODULE)</span>==&gt; <span class="variable">$(LOCAL_DEX_PREOPT)</span>)</span></span><br><span class="line"><span class="comment"># add end</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="keyword">ifdef</span> LOCAL_IS_HOST_MODULE</span><br><span class="line">    my_prefix := HOST_</span><br><span class="line">    <span class="comment"># add begin</span></span><br><span class="line">    LOCAL_DEX_PREOPT :=</span><br><span class="line">    <span class="comment"># add end</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    my_prefix := TARGET_</span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="keyword">ifneq</span> (<span class="variable">$(<span class="built_in">filter</span> APPS,<span class="variable">$(LOCAL_MODULE_CLASS)</span>)</span>,)</span><br><span class="line">    <span class="comment"># add start</span></span><br><span class="line">    <span class="keyword">ifdef</span> LOCAL_DEX_PREOPT</span><br><span class="line">        <span class="variable">$(built_module)</span>: <span class="variable">$(DEXPREOPT_BOOT_ODEXS)</span> | <span class="variable">$(DEXPREOPT)</span> <span class="variable">$(DEXOPT)</span></span><br><span class="line">    <span class="keyword">endif</span></span><br><span class="line">    <span class="comment"># add end</span></span><br><span class="line">    <span class="comment"># modify begin</span></span><br><span class="line">    <span class="keyword">ifeq</span> (<span class="variable">$(LOCAL_CERTIFICATE)</span>,PRESIGNED)</span><br><span class="line">        <span class="comment"># Ensure that presigned .apks have been aligned.</span></span><br><span class="line">        <span class="variable">$(built_module)</span> : <span class="variable">$(my_prebuilt_src_file)</span> | <span class="variable">$(ACP)</span> <span class="variable">$(ZIPALIGN)</span></span><br><span class="line">        <span class="comment">#$(transform-prebuilt-to-target-with-zipalign)</span></span><br><span class="line">        $(transform-prebuilt-to-target) <span class="keyword">ifdef</span> LOCAL_DEX_PREOPT</span><br><span class="line">        <span class="variable">$(hide)</span> rm -f <span class="variable">$(<span class="built_in">patsubst</span> %.apk,%.odex,<span class="variable">$@</span>)</span></span><br><span class="line">        <span class="variable">$(<span class="built_in">call</span> dexpreopt-one-<span class="built_in">file</span>,<span class="variable">$@</span>,$(<span class="built_in">patsubst</span> %.apk,%.odex,<span class="variable">$@</span>)</span>)</span><br><span class="line">        <span class="keyword">ifneq</span> (nostripping,<span class="variable">$(LOCAL_DEX_PREOPT)</span>)</span><br><span class="line">            <span class="variable">$(<span class="built_in">call</span> dexpreopt-remove-classes.dex,<span class="variable">$@</span>)</span></span><br><span class="line">        <span class="keyword">endif</span></span><br><span class="line">    <span class="keyword">endif</span></span><br><span class="line">    $(align-package)</span><br><span class="line">    <span class="comment"># modify end</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="comment"># Sign and align non-presigned .apks.</span></span><br><span class="line">    <span class="variable">$(built_module)</span> : <span class="variable">$(my_prebuilt_src_file)</span> | <span class="variable">$(ACP)</span> <span class="variable">$(ZIPALIGN)</span> <span class="variable">$(SIGNAPK_JAR)</span></span><br><span class="line">    $(transform-prebuilt-to-target)</span><br><span class="line">    $(sign-package)</span><br><span class="line">    <span class="comment"># add start</span></span><br><span class="line">    <span class="keyword">ifdef</span> LOCAL_DEX_PREOPT</span><br><span class="line">        <span class="variable">$(hide)</span> rm -f <span class="variable">$(<span class="built_in">patsubst</span> %.apk,%.odex,<span class="variable">$@</span>)</span></span><br><span class="line">        <span class="variable">$(<span class="built_in">call</span> dexpreopt-one-<span class="built_in">file</span>,<span class="variable">$@</span>,$(<span class="built_in">patsubst</span> %.apk,%.odex,<span class="variable">$@</span>)</span>)</span><br><span class="line">        <span class="keyword">ifneq</span> (nostripping,<span class="variable">$(LOCAL_DEX_PREOPT)</span>)</span><br><span class="line">        <span class="variable">$(<span class="built_in">call</span> dexpreopt-remove-classes.dex,<span class="variable">$@</span>)</span></span><br><span class="line">        <span class="keyword">endif</span></span><br><span class="line">    <span class="keyword">endif</span></span><br><span class="line">    <span class="comment"># add end</span></span><br><span class="line">    $(align-package)</span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"><span class="comment"># add begin</span></span><br><span class="line"><span class="keyword">ifdef</span> LOCAL_DEX_PREOPT</span><br><span class="line">    built_odex := <span class="variable">$(<span class="built_in">basename</span> <span class="variable">$(built_module)</span>)</span>.odex <span class="variable">$(built_odex)</span>: <span class="variable">$(built_module)</span></span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"><span class="comment"># add end</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>&emsp;注:</p>
+<p>&emsp;(1)user build默认开启dexopt功能，eng build关闭，所以只是build user版本会提取APK的odex文件。</p>
+<p>&emsp;(2)务必不要忘记把预置的module添加到build/target/product/common.mk(或者[proj].mk)中的PRODUCT_PACKAGES。</p>
+<p>&emsp;(3)只有prebuilt预置APK时会生效，放置在vendor下拷贝的方式来预置APK是不会生效的。如一个apk文件放在目录vendor/mediatek/project_name/artifacts/out/target/product/project_name/system/app下通过拷贝式来预置，build过程是不会提取它的odex文件的。</p>
+<h3 id="三、Normal-Boot之非首次开机慢分析"><a href="#三、Normal-Boot之非首次开机慢分析" class="headerlink" title="三、Normal Boot之非首次开机慢分析"></a>三、Normal Boot之非首次开机慢分析</h3><h4 id="3-1-Kernel阶段"><a href="#3-1-Kernel阶段" class="headerlink" title="3.1 Kernel阶段"></a>3.1 Kernel阶段</h4><p>&emsp;kernel init时间长，需先看版本上init.rc文件对应的Driver only版本是否有添加新的init，这些是否都是必须添加的。在uartlog中，需要查关键字–[cut here]–，找到kernel init过程中，频繁打出的这些call stack，排查客制化的点。</p>
+<p>&emsp;在uartlog中排查驱动设备初始化是否完成或延时较长。</p>
+<p>&emsp;kernel启动时间较长，可以先检查emmc性能，其质量不好也会影响performance.若emmc性能良好再进一步排查其它原因。</p>
+<h4 id="3-2-Zygote阶段"><a href="#3-2-Zygote阶段" class="headerlink" title="3.2 Zygote阶段"></a>3.2 Zygote阶段</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dalvikvm : System server process 710 has been created</span><br><span class="line">SystemServer : Entered the Android system server!</span><br><span class="line">dalvikvm : GC_EXPLICIT freed43K (688) , 8% free 569K/616K, pasued 0ms + 0ms, total 3ms</span><br></pre></td></tr></table></figure>
+<p>&emsp;一般有两个耗时点:</p>
+<p>&emsp;(1)预加载class/resource的时间，需确认是否新添加很多系统资源，preloaded classes在framework/base/preloaded-classes中定义，需适当减少不需要的预加载类与资源。</p>
+<p>&emsp;(2)查看这期间是否有很多GC动作。</p>
+<h4 id="3-3-SystemServer阶段"><a href="#3-3-SystemServer阶段" class="headerlink" title="3.3 SystemServer阶段"></a>3.3 SystemServer阶段</h4><p>&emsp;Check各个service开机时间初始化过程的耗时情况。通常耗时点:</p>
+<p>&emsp;(1)pms scan package阶段</p>
+<p>&emsp;通常原因:预置apk过多，有的apk太大扫描时间过长。建议减少elapsedtime &gt; 100ms的apk。</p>
+<p>&emsp;(2)pms dexopt阶段</p>
+<p>&emsp;目前有些apk如facebook,wechat等，本身应用较大且code复查度高，往往会出现安装慢等问题，主要由于dex2oat做得comiler久的原因。</p>
+<p>&emsp;修改方法是将这些apk加到whitelist中，编译的时候让其做得简单些:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((oat_filename_find(<span class="string">"facebook"</span>) != <span class="built_in">std</span>::<span class="built_in">string</span>::npos) || (oat_filename_find(<span class="string">"google"</span>) != <span class="built_in">std</span>::<span class="built_in">string</span>::npos)) &#123;</span><br><span class="line">    compiler_filter_string = <span class="string">"interpre-only"</span>;</span><br><span class="line">    LOG(INFO) &lt;&lt; <span class="string">"This apk is in whitelist from property so set interpret-only"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;(3)其他service初始化过程耗时，需要具体分析相应service。在init.rc里以及其他平台init.plat**.rc里把不需要的service都注释掉不加载。</p>
+<h4 id="3-4-BootAnimation阶段"><a href="#3-4-BootAnimation阶段" class="headerlink" title="3.4 BootAnimation阶段"></a>3.4 BootAnimation阶段</h4><p>&emsp;开机过程中出现camera I2C transfer timeout, 需要排查camera加载慢原因:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[292:mediaservice][mt-i2c] ERROR, 481 : id=0, addr : 10, transfer timeout</span><br></pre></td></tr></table></figure>
+<p>&emsp;google在camera新增1个media.camera.proxy的service，在开机过程中会去连接该service。当连接不上时会try5次，持续5s左右，影响开机的performance。</p>
+<p>&emsp;在framework/av/services/camera/libcameraservice/CameraService.cpp文件中找到pingCameraServiceProxy这个函数并修改:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//sp&lt;IBinder&gt; binder = sm -&gt; getService(String16("media.camera.proxy"))</span></span><br><span class="line">sp&lt;IBinder&gt; binder = sm -&gt; checkService(String16(<span class="string">"media.camera.proxy"</span>))</span><br></pre></td></tr></table></figure>
+<h4 id="3-5-AMS-Ready-WMS-enablescreen阶段"><a href="#3-5-AMS-Ready-WMS-enablescreen阶段" class="headerlink" title="3.5 AMS Ready-WMS enablescreen阶段"></a>3.5 AMS Ready-WMS enablescreen阶段</h4><p>&emsp;通常耗时点:启动permission进程，如果Launcher没有客制化动作，基本上无优化空间。WMS需要在keyguard,launcher都初始化好的前提下才会停止开机动画。Keyguard需check锁屏绘制是否存在延时，若画锁屏时间较长需进一步检查原因。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//keyguardservice start &amp; connect success</span><br><span class="line">KeyguardServiceDelegate: *** keyguard starts</span><br><span class="line">KeyguardServiceDelegate: *** keyguard connected //system ready signal to keyguard</span><br><span class="line">KeyguardViewMediator: onSystemReady</span><br><span class="line">KeyguardViewMediator: doKeyguard : keyguardDisbale query end</span><br><span class="line">KeyguardViewMediator: lockedOrMissing is false, requirsSim-false, provisioned=true,keyguarddisbale=false, antiTheftLock=false KeyguardViewMediator: doKeyguard : showing the lock screen</span><br><span class="line">// send message SHOW</span><br><span class="line">KeyguardViewMediator : showLocked</span><br><span class="line">//receiver message SHOW, start to paint keyguard StatusBarKeyguardViewManager : needsFullscreenBouncer() is false, show &quot;notification keyguard&quot; view</span><br><span class="line">// keyguard paint end</span><br><span class="line">KeyguardViewMediator : handleShow exit</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/16/Security/Userdata分区加密方式/" rel="next" title="Userdata分区加密方式">
+                <i class="fa fa-chevron-left"></i> Userdata分区加密方式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/08/Boot/Bootanimation定制及原理剖析/" rel="prev" title="Bootanimation定制及原理剖析">
+                Bootanimation定制及原理剖析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、Normal-Boot之开机时间分析"><span class="nav-text">一、Normal Boot之开机时间分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Preloader启动时间"><span class="nav-text">1.1 Preloader启动时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-lk启动时间"><span class="nav-text">1.2 lk启动时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-Kernel初始化时间"><span class="nav-text">1.3 Kernel初始化时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-Init阶段启动初始化时间"><span class="nav-text">1.4 Init阶段启动初始化时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-5-Zygote预加载资源时间"><span class="nav-text">1.5 Zygote预加载资源时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-6-SystemServer阶段PackageManager-scan-app时间"><span class="nav-text">1.6 SystemServer阶段PackageManager scan app时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-PMS-ready-WMS-enable-screen停止开机动画阶段的时间"><span class="nav-text">1.7 PMS ready WMS enable screen停止开机动画阶段的时间</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、Normal-Boot之首次开机慢分析"><span class="nav-text">二、Normal Boot之首次开机慢分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-预编译需提取apk的odex文件"><span class="nav-text">2.1 预编译需提取apk的odex文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-预编译需跳过一些apk的odex提取"><span class="nav-text">2.2 预编译需跳过一些apk的odex提取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-打开宏WITH-DEXPREOPT-true后使用make命令无法生成odex的说明"><span class="nav-text">2.3 打开宏WITH_DEXPREOPT:=true后使用make命令无法生成odex的说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-实现prebuilt-APK提取odex的需要修改build-core-prebuilt-mk"><span class="nav-text">2.4 实现prebuilt APK提取odex的需要修改build/core/prebuilt.mk</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、Normal-Boot之非首次开机慢分析"><span class="nav-text">三、Normal Boot之非首次开机慢分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Kernel阶段"><span class="nav-text">3.1 Kernel阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Zygote阶段"><span class="nav-text">3.2 Zygote阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-SystemServer阶段"><span class="nav-text">3.3 SystemServer阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-BootAnimation阶段"><span class="nav-text">3.4 BootAnimation阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-AMS-Ready-WMS-enablescreen阶段"><span class="nav-text">3.5 AMS Ready-WMS enablescreen阶段</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

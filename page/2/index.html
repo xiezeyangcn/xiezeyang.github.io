@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="自在独行">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ZeyangXie&#39;s Blog">
+<meta property="og:url" content="http://www.xiezeyang.com/page/2/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="自在独行">
+<meta property="og:locale" content="zh-CN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ZeyangXie&#39;s Blog">
+<meta name="twitter:description" content="自在独行">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/page/2/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left 
+  page-home">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+  <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/15/Filesystem/MTK平台如何新增一个分区/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/15/Filesystem/MTK平台如何新增一个分区/" class="post-title-link" itemprop="url">MTK平台如何新增一个分区</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-15 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-15T00:00:00+08:00">2018-12-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>下面将以MT6765平台新增oem partition为例：<br>(更多请参考<a href="https://android-review.googlesource.com/q/topic:product_partition+(status:open+OR+status:merged)" target="_blank" rel="noopener">https://android-review.googlesource.com/q/topic:product_partition+(status:open+OR+status:merged)</a>)</p>
+<h3 id="一、device-mediatek目录"><a href="#一、device-mediatek目录" class="headerlink" title="一、device/mediatek目录"></a>一、device/mediatek目录</h3><h4 id="1-1-mt6765-BoardConfig-mk"><a href="#1-1-mt6765-BoardConfig-mk" class="headerlink" title="1.1 mt6765/BoardConfig.mk"></a>1.1 mt6765/BoardConfig.mk</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># oem image大小限制</span></span><br><span class="line">BOARD_OEMIMAGE_PARTITION_SIZE := 314572800</span><br><span class="line"></span><br><span class="line"><span class="comment"># oem image类型定义</span></span><br><span class="line">BOARD_OEMIMAGE_FILE_SYSTEM_TYPE := ext4</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/15/Filesystem/MTK平台如何新增一个分区/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/08/Boot/Bootanimation定制及原理剖析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/08/Boot/Bootanimation定制及原理剖析/" class="post-title-link" itemprop="url">Bootanimation定制及原理剖析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-08T00:00:00+08:00">2018-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、bootanimtion服务"><a href="#一、bootanimtion服务" class="headerlink" title="一、bootanimtion服务"></a>一、bootanimtion服务</h3><h4 id="1-1-init阶段bootanimation服务配置"><a href="#1-1-init阶段bootanimation服务配置" class="headerlink" title="1.1 init阶段bootanimation服务配置"></a>1.1 init阶段bootanimation服务配置</h4><p>从Android 7.0开始，谷歌将bootnimation服务从init.rc中分离出来，单独存放在frameworks/base/cmds/bootanimation/目录下bootanim.rc文件中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">service bootanim /system/bin/bootanimation</span><br><span class="line">    class core</span><br><span class="line">    user graphics</span><br><span class="line">    group graphics audio</span><br><span class="line">    disabled //init启动时不会启动bootanimation服务</span><br><span class="line">    oneshot</span><br><span class="line">    writepid /dev/stune/top-app/tasks</span><br></pre></td></tr></table></figure>
+<p>bootanimation服务的用户和用户组分别为graphic和graphics audio。需要关注的disabled，即在init启动阶段该服务是不会启动的。oneshot表示该服务只启动一次。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/08/Boot/Bootanimation定制及原理剖析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/25/Boot/开机慢问题分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/25/Boot/开机慢问题分析/" class="post-title-link" itemprop="url">开机慢问题分析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-25 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-25T00:00:00+08:00">2018-11-25</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Platform: Mediatek</p>
+<h3 id="一、Normal-Boot之开机时间分析"><a href="#一、Normal-Boot之开机时间分析" class="headerlink" title="一、Normal Boot之开机时间分析"></a>一、Normal Boot之开机时间分析</h3><p>&emsp;mtklog的bootprof文件可以查看开机各个阶段的耗时，以MTK为例分析:</p>
+<h4 id="1-1-Preloader启动时间"><a href="#1-1-Preloader启动时间" class="headerlink" title="1.1 Preloader启动时间"></a>1.1 Preloader启动时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-------------------------------------------------------</span><br><span class="line">0 BOOT PTOF (unit L msec)</span><br><span class="line">-------------------------------------------------------</span><br><span class="line">733 : preloader</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-lk启动时间"><a href="#1-2-lk启动时间" class="headerlink" title="1.2 lk启动时间"></a>1.2 lk启动时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2759 : lk</span><br><span class="line">241 : lk -&gt; Kernel</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/25/Boot/开机慢问题分析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/16/Security/Userdata分区加密方式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/16/Security/Userdata分区加密方式/" class="post-title-link" itemprop="url">Userdata分区加密方式</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-16 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-16T00:00:00+08:00">2018-11-16</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Android系统主要支持FDE/FBE两种加密方式。<br>Android P及更高版本支持元数据加密。该密钥受keymaster保护，而keymaster受verified boot保护。使用元数据加密时，启动出现的单个密钥会加密未通过文件级加密进行加密的任何内容。</p>
+<h3 id="一、-Full-disk-encryption-FDE"><a href="#一、-Full-disk-encryption-FDE" class="headerlink" title="一、 Full-disk encryption(FDE)"></a>一、 Full-disk encryption(FDE)</h3><h4 id="1-1-概述"><a href="#1-1-概述" class="headerlink" title="1.1 概述"></a>1.1 概述</h4><p>Android L及更高版本支持全盘加密。全盘加密是使用密钥（由用户设备密码保护）对设备上用户数据进行编码的过程。设备加密后，所有由用户创建的数据在存入磁盘前都会字典加密，且所有读取操作都会在将数据返回给调用进程之前自动解密数据。用户必须提供credentials才能访问磁盘。</p>
+<p>全盘加密采用128位AES加密算法，支持‘默认’，‘PIN码’，‘密码’，‘Pattern图案解锁’四种加密状态。首次启动，会先随机生成128位主密钥，然后使用默认密码’default_password’（cryptfs.cpp）和存储的salt对其进行hash处理，接着由TEE生成hash签名以加密该主密钥。（16kb）</p>
+<p>快速加密方式：只对userdata分区已使用的分块进行加密，避免首次开机耗时过长。目前仅ext4和f2fs类型文件系统支持该快速加密方式。</p>
+<p>加密过程由init/vold进程管理。init负责调用vold，然后vold来设置相关属性以触发init中事件。系统会使用vdc的cryptfs命令来调用vold中的加密功能。主要命令有：checkpw、restart、enablecrypto、changepw、cryptocomplete、verifypw、setfield、getfield、mountdefaultencrypted、getpwtype、getpw、clearpw等。</p>
+<p>无论加解密还是清除data分区过程，data分区都不能处于挂载状态。所以为了确保framework启动，data分区就需要挂载一个临时文件系统，使得android可提示输入密码以清除数据此类建议。</p>
+<p>在实际工作中可能会遇到一些加解密错误，比如密码匹配无法解密，用户输错密码此次达到30次。若这些错误未解决，则会提示用户清除数据恢复出厂设置。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/16/Security/Userdata分区加密方式/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/11/Filesystem/fs_mgr解析fstab文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/11/Filesystem/fs_mgr解析fstab文件/" class="post-title-link" itemprop="url">fs_mgr解析fstab文件</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-11 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-11T00:00:00+08:00">2018-11-11</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>涉及代码：<br>system/core/fs_mgr/fs_mgr_fstab.cpp<br>system/core/fs_mgr/fs_mgr_slotselect.cpp<br>system/core/fs_mgr/fs_mgr_boot_config.cpp</p>
+<h3 id="1-1-fs-mgr-fstab-cpp-gt-fs-mgr-read-fstab-default"><a href="#1-1-fs-mgr-fstab-cpp-gt-fs-mgr-read-fstab-default" class="headerlink" title="1.1 fs_mgr_fstab.cpp-&gt;fs_mgr_read_fstab_default"></a>1.1 fs_mgr_fstab.cpp-&gt;fs_mgr_read_fstab_default</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 尝试从/odm/etc,/vendor/etc等目录加载fstab.&lt;hardware&gt;文件，并将第1个找到的fstab和从设备树中传入的组合在一起</span></span><br><span class="line"><span class="function">struct fstab *<span class="title">fs_mgr_read_fstab_default</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> hw;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> default_fstab;</span><br><span class="line">    <span class="comment">// 分别用不同fstab路径启动正常启动或recovery启动</span></span><br><span class="line">    <span class="keyword">if</span> (access(<span class="string">"/sbin/recovery"</span>, F_OK) == <span class="number">0</span>) &#123; <span class="comment">// recovery启动</span></span><br><span class="line">        default_fstab = <span class="string">"/etc/recovery.fstab"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (fs_mgr_get_boot_config(<span class="string">"hardware"</span>, &amp;hw)) &#123;  <span class="comment">// 正常启动</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">char</span> *prefix : &#123;<span class="string">"/odm/etc/fstab."</span>,<span class="string">"/vendor/etc/fstab."</span>, <span class="string">"/fstab."</span>&#125;) &#123;</span><br><span class="line">            default_fstab = prefix + hw;</span><br><span class="line">            <span class="keyword">if</span> (access(default_fstab.c_str(), F_OK) == <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        LWARNING &lt;&lt; __FUNCTION__ &lt;&lt; <span class="string">"(): failed to find device hardware name"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将从设备树中传入的fstab条目和从默认fstab找到的条目对应组合在一起</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fstab</span> *<span class="title">fstab_dt</span> = <span class="title">fs_mgr_read_fstab_dt</span>();</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fstab</span> *<span class="title">fstab</span> = <span class="title">fs_mgr_read_fstab</span>(<span class="title">default_fstab</span>.<span class="title">c_str</span>());</span></span><br><span class="line">    <span class="keyword">return</span> in_place_merge(fstab_dt, fstab);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/11/Filesystem/fs_mgr解析fstab文件/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/03/Filesystem/Userdata分区resize功能/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/03/Filesystem/Userdata分区resize功能/" class="post-title-link" itemprop="url">Userdata分区resize功能</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-03 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-03T00:00:00+08:00">2018-11-03</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-挂载分区时添加resize功能"><a href="#1-挂载分区时添加resize功能" class="headerlink" title="1. 挂载分区时添加resize功能"></a>1. 挂载分区时添加resize功能</h3><p>system/core/fs_mgr/fs_mgr.cpp</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cryptfs.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> RESIZE2FS_BIN   <span class="meta-string">"/system/bin/resize2fs"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">resize_fs</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *blk_device, <span class="keyword">char</span> *fs_type, <span class="keyword">char</span> *key_loc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sz;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_ss;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sn;</span><br><span class="line">    <span class="keyword">int</span> status = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    android::base::<span class="function">unique_fd <span class="title">fd</span><span class="params">(TEMP_FAILURE_RETRY(open(blk_device, O_RDONLY | O_CLOEXEC)))</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"Failed to open '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"'"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Cannot use BLKGETSIZE to get the number of sectors,</span></span><br><span class="line"><span class="comment">    * because need to do device_sz -= CRYPT_FOOTER_OFFSET</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKGETSIZE64, &amp;device_sz)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKGETSIZE64) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKSSZGET, &amp;device_ss)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKSSZGET) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Format the partition using the calculated length */</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(key_loc, KEY_IN_FOOTER))</span><br><span class="line">        device_sz -= CRYPT_FOOTER_OFFSET;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (is_extfs(fs_type)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (access(RESIZE2FS_BIN, X_OK)) &#123;</span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Not running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device</span><br><span class="line">            &lt;&lt; <span class="string">" (executable not in system image)"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> size_kb_str(android::base::StringPrintf(<span class="string">"%"</span> PRIu64 <span class="string">"K"</span>, device_sz / <span class="number">1024</span>));</span><br><span class="line"></span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/* extX cmd */</span></span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span> *resize2fs_argv[] = &#123;</span><br><span class="line">                RESIZE2FS_BIN,</span><br><span class="line">                <span class="string">"-f"</span>,</span><br><span class="line">                blk_device,</span><br><span class="line">                size_kb_str.c_str()</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            ret = android_fork_execvp_ext(ARRAY_SIZE(resize2fs_argv),</span><br><span class="line">                <span class="keyword">const_cast</span>&lt;<span class="keyword">char</span> **&gt;(resize2fs_argv),</span><br><span class="line">                &amp;status, <span class="literal">true</span>, LOG_KLOG,</span><br><span class="line">                <span class="literal">false</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">/* No need to check for error in fork, we can't really handle it now */</span></span><br><span class="line">                LERROR &lt;&lt; <span class="string">"Failed trying to run "</span> &lt;&lt; RESIZE2FS_BIN;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">prepare_fs_for_mount</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* blk_device, <span class="keyword">const</span> struct fstab_rec* rec)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> ((rec-&gt;fs_mgr_flags &amp; MF_RESIZE) &amp;&amp; !<span class="built_in">strcmp</span>(blk_device, rec-&gt;blk_device)) &#123;</span><br><span class="line">        resize_fs(blk_device, rec-&gt;fs_type, rec-&gt;key_loc);</span><br><span class="line">        check_fs(blk_device, rec-&gt;fs_type, rec-&gt;mount_point, &amp;fs_stat);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/03/Filesystem/Userdata分区resize功能/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/10/28/Filesystem/Vold之启动流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/10/28/Filesystem/Vold之启动流程/" class="post-title-link" itemprop="url">Vold之启动流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-10-28 00:00:00" itemprop="dateCreated datePublished" datetime="2018-10-28T00:00:00+08:00">2018-10-28</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-init解析rc时启动vold进程"><a href="#1-init解析rc时启动vold进程" class="headerlink" title="1. init解析rc时启动vold进程"></a>1. init解析rc时启动vold进程</h3><p>system/core/rootdir/init.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">on post-fs-data</span><br><span class="line">    start vold</span><br></pre></td></tr></table></figure>
+<p>system/vold/vold.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">service vold /system/bin/vold \</span><br><span class="line">        --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \</span><br><span class="line">        --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0</span><br><span class="line">    class core</span><br><span class="line">    ioprio be 2</span><br><span class="line">    writepid /dev/cpuset/foreground/tasks</span><br><span class="line">    shutdown critical</span><br><span class="line">    group reserved_disk</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/10/28/Filesystem/Vold之启动流程/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/21/Build/Update差分包编译脚本解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/09/21/Build/Update差分包编译脚本解析/" class="post-title-link" itemprop="url">Update差分包编译脚本解析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-21 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-21T00:00:00+08:00">2018-09-21</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、编译指令"><a href="#一、编译指令" class="headerlink" title="一、编译指令"></a>一、编译指令</h3><h4 id="1-1-差分包制作指令"><a href="#1-1-差分包制作指令" class="headerlink" title="1.1 差分包制作指令"></a>1.1 差分包制作指令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ota_from_target_files --block -k release -i source_target_files.zip target_target_file.zip ota_package.zip</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-整包制作指令"><a href="#1-2-整包制作指令" class="headerlink" title="1.2 整包制作指令"></a>1.2 整包制作指令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ota_from_target_files --block -k release input_target_files.zip full_ota_package.zip</span><br></pre></td></tr></table></figure>
+<h3 id="二、指令详解"><a href="#二、指令详解" class="headerlink" title="二、指令详解"></a>二、指令详解</h3><h4 id="2-1-参数解释："><a href="#2-1-参数解释：" class="headerlink" title="2.1 参数解释："></a>2.1 参数解释：</h4><p>&emsp;-k (–package_key) <key></key></p>
+<p>指定OTA包签名文件。Android默认为build/target/product/security/testkey。实际操作中不同项目会使用不同的releasekey。</p>
+<p>&emsp;-i (–incremental_from) <file></file></p>
+<p>指定源版本target_file文件。有该参数则是编译差分包，同理无此参数即编译整包。</p>
+<p>&emsp;–full_radio</p>
+<p>编译差分包时用于限定完全升级radio。</p>
+<p>&emsp;–full_bootloader</p>
+<p>编译差分包时用于限定完全升级booloader。</p>
+<p>&emsp;–verify</p>
+<p>编译Non-A/B差分包时用于限定是否对system/vender分区verify。</p>
+<p>&emsp;–wipe_user_data</p>
+<p>用于指定升级时指定恢复出厂操作。</p>
+<p>&emsp;–downgrade</p>
+<p>允许版本向旧版本“升级”（降级），会执行恢复出厂操作。</p>
+<p>&emsp;-2 (–two_step)</p>
+<p>用于指定制作两步式升级的OTA包。先更新recovery分区再重启通过新recovery分区升级system分区。</p>
+<p>&emsp;–block</p>
+<p>用于指定non-A/B版本基于块方式编译OTA包，相比较文件方式更有优势。</p>
+<p>&emsp;-t (–worker_threads) <int></int></p>
+<p>用于指定patch方式增量升级的工作线程数，默认为3。</p>
+<p>&emsp;–stash_threshold <float></float></p>
+<p>用于指定缓存区最大阀值，默认为0.8。</p>
+<p>&emsp;–log_diff <file></file></p>
+<p>用于指定以log文件形式保存制作差分包的diff信息。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/09/21/Build/Update差分包编译脚本解析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/16/Build/Target-files包编译脚本解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/09/16/Build/Target-files包编译脚本解析/" class="post-title-link" itemprop="url">Target-files包编译脚本解析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-16 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-16T00:00:00+08:00">2018-09-16</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h4 id="1-1-编译target-files依赖的目标"><a href="#1-1-编译target-files依赖的目标" class="headerlink" title="1.1 编译target files依赖的目标"></a>1.1 编译target files依赖的目标</h4><p>首先列出编译target-files依赖的目标。如boot/system/vendor等image，imgdifff/bsdiff/releasetool等编译OTA包的工具。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(BUILT_TARGET_FILES_PACKAGE)</span>: \</span><br><span class="line">        <span class="comment"># boot image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_BOOTIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># radio image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_RADIOIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># recovery image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_RECOVERYIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># system/user image依赖的文件</span></span><br><span class="line">        <span class="variable">$(FULL_SYSTEMIMAGE_DEPS)</span> \</span><br><span class="line">        <span class="comment"># userdata image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_USERDATAIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># cache image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_CACHEIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># vendor image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_VENDORIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># product image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_PRODUCTIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># vbmeta image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_VBMETAIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># dtbo image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_DTBOIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># system image相关目标</span></span><br><span class="line">        <span class="variable">$(INTERNAL_SYSTEMOTHERIMAGE_FILES)</span> \</span><br><span class="line">        <span class="comment"># android-info.txt</span></span><br><span class="line">        <span class="variable">$(INSTALLED_ANDROID_INFO_TXT_TARGET)</span> \</span><br><span class="line">        <span class="comment"># kernel文件</span></span><br><span class="line">        <span class="variable">$(INSTALLED_KERNEL_TARGET)</span> \</span><br><span class="line">        <span class="comment"># 2ndbootloader文件</span></span><br><span class="line">        <span class="variable">$(INSTALLED_2NDBOOTLOADER_TARGET)</span> \</span><br><span class="line">        <span class="comment"># system base fs</span></span><br><span class="line">        $(PRODUCTS.<span class="variable">$(INTERNAL_PRODUCT)</span>.PRODUCT_SYSTEM_BASE_FS_PATH) \</span><br><span class="line">        <span class="comment"># vendor base fs</span></span><br><span class="line">        $(PRODUCTS.<span class="variable">$(INTERNAL_PRODUCT)</span>.PRODUCT_VENDOR_BASE_FS_PATH) \</span><br><span class="line">        <span class="comment"># product base fs</span></span><br><span class="line">        $(PRODUCTS.<span class="variable">$(INTERNAL_PRODUCT)</span>.PRODUCT_PRODUCT_BASE_FS_PATH) \</span><br><span class="line">        <span class="comment"># selinux目录file_contexts.bin</span></span><br><span class="line">        <span class="variable">$(SELINUX_FC)</span> \</span><br><span class="line">        <span class="comment"># apkcerts.txt</span></span><br><span class="line">        <span class="variable">$(APKCERTS_FILE)</span> \</span><br><span class="line">        <span class="comment"># soong_zip文件</span></span><br><span class="line">        <span class="variable">$(SOONG_ZIP)</span> \</span><br><span class="line">        <span class="comment"># fs_config工具</span></span><br><span class="line">        <span class="variable">$(HOST_OUT_EXECUTABLES)</span>/fs_config \</span><br><span class="line">        <span class="comment"># imgdiff工具</span></span><br><span class="line">        <span class="variable">$(HOST_OUT_EXECUTABLES)</span>/imgdiff \</span><br><span class="line">        <span class="comment"># bsdiff工具</span></span><br><span class="line">        <span class="variable">$(HOST_OUT_EXECUTABLES)</span>/bsdiff \</span><br><span class="line">        <span class="comment"># build/make/tools/releasetools目录*.py脚本</span></span><br><span class="line">        <span class="variable">$(BUILD_IMAGE_SRCS)</span> \</span><br><span class="line">        <span class="comment"># vendor_manifest.xml</span></span><br><span class="line">        <span class="variable">$(BUILT_VENDOR_MANIFEST)</span> \</span><br><span class="line">        <span class="comment"># vendor_matrix.xml</span></span><br><span class="line">        <span class="variable">$(BUILT_VENDOR_MATRIX)</span> \</span><br><span class="line">        | <span class="variable">$(ACP)</span></span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/09/16/Build/Target-files包编译脚本解析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/12/OTA/AB升级之bootctrl流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/09/12/OTA/AB升级之bootctrl流程/" class="post-title-link" itemprop="url">AB升级之bootctrl流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-12 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-12T00:00:00+08:00">2018-09-12</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OTA/" itemprop="url" rel="index"><span itemprop="name">OTA</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>涉及代码：</p>
+<p>Google Code:<br>hardware/libhardware/include/hardware/boot_control.h<br>system/extras/bootctl/bootctl.cpp<br>system/extras/boot_control_copy/bootinfo.h<br>system/extras/boot_control_copy/bootinfo.c<br>system/extras/boot_control_copy/boot_control_copy.c</p>
+<p>Qualcomm Code:<br>hardware/qcom/bootctrl/boot_control.cpp</p>
+<p>Mediatek Code:<br>vendor/mediatek/hardware/bootctrl/bootctrl.h<br>vendor/mediatek/hardware/bootctrl/bootctrl.cpp</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/09/12/OTA/AB升级之bootctrl流程/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+  </section>
+
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+  </nav>
+
+
+
+          </div>
+          
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

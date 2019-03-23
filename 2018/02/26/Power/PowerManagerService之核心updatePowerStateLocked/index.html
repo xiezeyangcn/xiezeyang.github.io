@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="&amp;emsp;在前面的博文中，我们介绍到，Android中进程会向PowerMS申请/释放WakeLock。而PowerMS收到申请/释放请求时，均会调用updatePowerStateLocked方法来更新电源状态。下面来分析下它的流程。 1234567891011121314151617181920212223242526272829303132333435protected void upda">
+<meta name="keywords" content="Framework,Power">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PowerManagerService之核心updatePowerStateLocked">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/02/26/Power/PowerManagerService之核心updatePowerStateLocked/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="&amp;emsp;在前面的博文中，我们介绍到，Android中进程会向PowerMS申请/释放WakeLock。而PowerMS收到申请/释放请求时，均会调用updatePowerStateLocked方法来更新电源状态。下面来分析下它的流程。 1234567891011121314151617181920212223242526272829303132333435protected void upda">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PowerManagerService之核心updatePowerStateLocked">
+<meta name="twitter:description" content="&amp;emsp;在前面的博文中，我们介绍到，Android中进程会向PowerMS申请/释放WakeLock。而PowerMS收到申请/释放请求时，均会调用updatePowerStateLocked方法来更新电源状态。下面来分析下它的流程。 1234567891011121314151617181920212223242526272829303132333435protected void upda">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/02/26/Power/PowerManagerService之核心updatePowerStateLocked/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>PowerManagerService之核心updatePowerStateLocked | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/02/26/Power/PowerManagerService之核心updatePowerStateLocked/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PowerManagerService之核心updatePowerStateLocked
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-02-26 00:00:00" itemprop="dateCreated datePublished" datetime="2018-02-26T00:00:00+08:00">2018-02-26</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;在前面的博文中，我们介绍到，Android中进程会向PowerMS申请/释放WakeLock。而PowerMS收到申请/释放请求时，均会调用updatePowerStateLocked方法来更新电源状态。下面来分析下它的流程。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">updatePowerStateLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!mSystemReady || mDirty == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  ......</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 更新基本状态。</span></span><br><span class="line">    updateIsPoweredLocked(mDirty);</span><br><span class="line">    updateStayOnLocked(mDirty);</span><br><span class="line">    updateScreenBrightnessBoostLocked(mDirty);</span><br><span class="line">    <span class="comment">// 更新wakelock和用户活动</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">long</span> now = SystemClock.uptimeMillis();</span><br><span class="line">    <span class="keyword">int</span> dirtyPhase2 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">      <span class="keyword">int</span> dirtyPhase1 = mDirty;</span><br><span class="line">      dirtyPhase2 |= dirtyPhase1;</span><br><span class="line">      mDirty = <span class="number">0</span>;</span><br><span class="line">      updateWakeLockSummaryLocked(dirtyPhase1);</span><br><span class="line">      updateUserActivitySummaryLocked(now, dirtyPhase1);</span><br><span class="line">      <span class="keyword">if</span> (!updateWakefulnessLocked(dirtyPhase1)) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 更新disply power状态。</span></span><br><span class="line">    <span class="keyword">boolean</span> displayBecameReady = updateDisplayPowerStateLocked(dirtyPhase2);</span><br><span class="line">    <span class="comment">// 更新dream状态。</span></span><br><span class="line">    updateDreamLocked(dirtyPhase2, displayBecameReady);</span><br><span class="line">    <span class="comment">// 必要时发送通知。</span></span><br><span class="line">    finishWakefulnessChangeIfNeededLocked();</span><br><span class="line">    <span class="comment">// 更新suspend block。</span></span><br><span class="line">    updateSuspendBlockerLocked();</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    ......</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="一、更新基本状态信息"><a href="#一、更新基本状态信息" class="headerlink" title="一、更新基本状态信息"></a>一、更新基本状态信息</h3><h4 id="1-1-PowerMS类的updateIsPoweredLocked方法"><a href="#1-1-PowerMS类的updateIsPoweredLocked方法" class="headerlink" title="1.1 PowerMS类的updateIsPoweredLocked方法"></a>1.1 PowerMS类的updateIsPoweredLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateIsPoweredLocked</span><span class="params">(<span class="keyword">int</span> dirty)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; DIRTY_BATTERY_STATE) != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">// 记录过去的状态。</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> wasPowered = mIsPowered;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> oldPlugType = mPlugType;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> oldLevelLow = mBatteryLevelLow;</span><br><span class="line">    <span class="comment">// 是否在充电。</span></span><br><span class="line">mIsPowered =</span><br><span class="line">mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_ANY);</span><br><span class="line">    <span class="comment">// 充电类型。</span></span><br><span class="line">    mPlugType = mBatteryManagerInternal.getPlugType();</span><br><span class="line">    <span class="comment">// 当前充电电量。</span></span><br><span class="line">    mBatteryLevel = mBatteryManagerInternal.getBatteryLevel();</span><br><span class="line">    <span class="comment">// 是否低电量。</span></span><br><span class="line">    mBatteryLevelLow = mBatteryManagerInternal.getBatteryLevelLow();</span><br><span class="line">    <span class="comment">// 充电状态或充电类型是否改变。</span></span><br><span class="line">    <span class="keyword">if</span> (wasPowered != mIsPowered || oldPlugType != mPlugType) &#123;</span><br><span class="line">      mDirty |= DIRTY_IS_POWERED;</span><br><span class="line">      <span class="comment">// 无线充电相关。</span></span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">boolean</span> dockedOnWirelessCharger =</span><br><span class="line">        mWirelessChargerDetector.update(</span><br><span class="line">          mIsPowered, mPlugType, mBatteryLevel);</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">long</span> now = SystemClock.uptimeMillis();</span><br><span class="line">      <span class="comment">// 插拔充电器或USB是否唤醒屏幕。</span></span><br><span class="line">      <span class="keyword">if</span> (shouldWakeUpWhenPluggedOrUnpluggedLocked(wasPowered, oldPlugType,</span><br><span class="line">          dockedOnWirelessCharger)) &#123;</span><br><span class="line">        wakeUpNoUpdateLocked(now, <span class="string">"android.server.power:POWER"</span>,</span><br><span class="line"> Process.SYSTEM_UID,</span><br><span class="line">            mContext.getOpPackageName(), Process.SYSTEM_UID);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 出发用户活动，修改PowerMS中记录用户活动事件的时间，同时通知BatteryStatsService等。</span></span><br><span class="line">      userActivityNoUpdateLocked(</span><br><span class="line">          now, PowerManager.USER_ACTIVITY_EVENT_OTHER, <span class="number">0</span>,</span><br><span class="line"> Process.SYSTEM_UID);</span><br><span class="line">      <span class="comment">// 无线充电相关通知。</span></span><br><span class="line">      <span class="keyword">if</span> (dockedOnWirelessCharger) &#123;</span><br><span class="line">        mNotifier.onWirelessChargingStarted();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (wasPowered != mIsPowered || oldLevelLow != mBatteryLevelLow) &#123;</span><br><span class="line">      <span class="keyword">if</span> (oldLevelLow != mBatteryLevelLow &amp;&amp; !mBatteryLevelLow) &#123;</span><br><span class="line">        mAutoLowPowerModeSnoozing = <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 更新低电模式相关操作。</span></span><br><span class="line">      updateLowPowerModeLocked();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 更新低电模式操作</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateLowPowerModeLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ((mIsPowered || !mBatteryLevelLow &amp;&amp; !mBootCompleted) &amp;&amp;</span><br><span class="line"> mLowPowerModeSetting) &#123;</span><br><span class="line">    <span class="comment">// 更新数据库，关闭低电模式。</span></span><br><span class="line">    Settings.Global.putInt(mContext.getContentResolver(),</span><br><span class="line">        Settings.Global.LOW_POWER_MODE, <span class="number">0</span>);</span><br><span class="line">    mLowPowerModeSetting = <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 是否进入自动省电模式。</span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> autoLowPowerModeEnabled = !mIsPowered &amp;&amp;</span><br><span class="line"> mAutoLowPowerModeConfigured</span><br><span class="line">      &amp;&amp; !mAutoLowPowerModeSnoozing &amp;&amp; mBatteryLevelLow;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> lowPowerModeEnabled = mLowPowerModeSetting ||</span><br><span class="line"> autoLowPowerModeEnabled;</span><br><span class="line">  <span class="comment">// 是否低电模式。</span></span><br><span class="line">  <span class="keyword">if</span> (mLowPowerModeEnabled != lowPowerModeEnabled) &#123;</span><br><span class="line">    mLowPowerModeEnabled = lowPowerModeEnabled;</span><br><span class="line">    <span class="comment">// 调用底层动态库的powerHint函数。</span></span><br><span class="line">    powerHintInternal(POWER_HINT_LOW_POWER, lowPowerModeEnabled ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">    postAfterBootCompleted(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">      <span class="meta">@Override</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Intent intent =</span><br><span class="line"><span class="keyword">new</span> Intent(PowerManager.ACTION_POWER_SAVE_MODE_CHANGING)</span><br><span class="line">            .putExtra(PowerManager.EXTRA_POWER_SAVE_MODE, mLowPowerModeEnabled)</span><br><span class="line">            .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);</span><br><span class="line">        <span class="comment">// 发送低电模式充电广播。</span></span><br><span class="line">        mContext.sendBroadcast(intent);</span><br><span class="line">        ArrayList&lt;PowerManagerInternal.LowPowerModeListener&gt; listeners;</span><br><span class="line">        <span class="comment">// registerLowPowerModeObserver接口。</span></span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">          listeners =</span><br><span class="line"><span class="keyword">new</span> ArrayList&lt;PowerManagerInternal.LowPowerModeListener&gt;(</span><br><span class="line">              mLowPowerModeListeners);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;listeners.size(); i++) &#123;</span><br><span class="line">          <span class="comment">// 通知其它进程低电模式发生改变。</span></span><br><span class="line">          listeners.get(i).onLowPowerModeChanged(lowPowerModeEnabled);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 发送CHANGED广播。</span></span><br><span class="line">        intent = <span class="keyword">new</span> Intent(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED);</span><br><span class="line">        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);</span><br><span class="line">        mContext.sendBroadcast(intent);</span><br><span class="line">        <span class="comment">// 发送内部版本请求签名权限。</span></span><br><span class="line">        mContext.sendBroadcastAsUser(<span class="keyword">new</span> Intent(</span><br><span class="line">            PowerManager.ACTION_POWER_SAVE_MODE_CHANGED_INTERNAL), UserHandle.ALL,</span><br><span class="line">            Manifest.permission.DEVICE_POWER);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-PowerMS类的updateStayOnLocked方法"><a href="#1-2-PowerMS类的updateStayOnLocked方法" class="headerlink" title="1.2 PowerMS类的updateStayOnLocked方法"></a>1.2 PowerMS类的updateStayOnLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateStayOnLocked</span><span class="params">(<span class="keyword">int</span> dirty)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 电源状态或电源设置发生变化。</span></span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; (DIRTY_BATTERY_STATE | DIRTY_SETTINGS)) != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> wasStayOn = mStayOn;</span><br><span class="line">    <span class="comment">// 判断插入充电器是否亮屏。</span></span><br><span class="line">    <span class="keyword">if</span> (mStayOnWhilePluggedInSetting != <span class="number">0</span></span><br><span class="line">        &amp;&amp; !isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked()) &#123;</span><br><span class="line">      mStayOn =</span><br><span class="line">        mBatteryManagerInternal.isPowered(mStayOnWhilePluggedInSetting);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      mStayOn = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mStayOn != wasStayOn) &#123;</span><br><span class="line">      mDirty |= DIRTY_STAY_ON;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-PowerMS类的updateScreenBrightnessBoostLocked方法"><a href="#1-3-PowerMS类的updateScreenBrightnessBoostLocked方法" class="headerlink" title="1.3 PowerMS类的updateScreenBrightnessBoostLocked方法"></a>1.3 PowerMS类的updateScreenBrightnessBoostLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateScreenBrightnessBoostLocked</span><span class="params">(<span class="keyword">int</span> dirty)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; DIRTY_SCREEN_BRIGHTNESS_BOOST) != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mScreenBrightnessBoostInProgress) &#123;</span><br><span class="line">      <span class="comment">// 移除旧的超时事件。</span></span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">long</span> now = SystemClock.uptimeMillis();</span><br><span class="line">      mHandler.removeMessages(MSG_SCREEN_BRIGHTNESS_BOOST_TIMEOUT);</span><br><span class="line">      <span class="keyword">if</span> (mLastScreenBrightnessBoostTime &gt; mLastSleepTime) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> boostTimeout = mLastScreenBrightnessBoostTime +</span><br><span class="line">            SCREEN_BRIGHTNESS_BOOST_TIMEOUT;</span><br><span class="line">        <span class="keyword">if</span> (boostTimeout &gt; now) &#123;</span><br><span class="line">          Message msg =</span><br><span class="line"> mHandler.obtainMessage(MSG_SCREEN_BRIGHTNESS_BOOST_TIMEOUT);</span><br><span class="line">          msg.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">          <span class="comment">// 屏幕离开最大亮度状态时该事件将被发送。</span></span><br><span class="line">          mHandler.sendMessageAtTime(msg, boostTimeout);</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      mScreenBrightnessBoostInProgress = <span class="keyword">false</span>;</span><br><span class="line">      mNotifier.onScreenBrightnessBoostChanged();</span><br><span class="line">      userActivityNoUpdateLocked(now,</span><br><span class="line">          PowerManager.USER_ACTIVITY_EVENT_OTHER, <span class="number">0</span>, Process.SYSTEM_UID);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-PowerMS类的BinderService方法"><a href="#1-4-PowerMS类的BinderService方法" class="headerlink" title="1.4 PowerMS类的BinderService方法"></a>1.4 PowerMS类的BinderService方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">boostScreenBrightnessInternal</span><span class="params">(<span class="keyword">long</span> eventTime, <span class="keyword">int</span> uid)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!mSystemReady || mWakefulness == WAKEFULNESS_ASLEEP</span><br><span class="line">        || eventTime &lt; mLastScreenBrightnessBoostTime) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录事件到来的时间，即设备处于最亮屏幕状态起始时间。</span></span><br><span class="line">    mLastScreenBrightnessBoostTime = eventTime;</span><br><span class="line">    <span class="keyword">if</span> (!mScreenBrightnessBoostInProgress) &#123;</span><br><span class="line">      mScreenBrightnessBoostInProgress = <span class="keyword">true</span>;</span><br><span class="line">      mNotifier.onScreenBrightnessBoostChanged();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 修改mDirty值，表示最大屏幕亮度的状态发生变化。</span></span><br><span class="line">    mDirty |= DIRTY_SCREEN_BRIGHTNESS_BOOST;</span><br><span class="line">    userActivityNoUpdateLocked(eventTime,</span><br><span class="line">        PowerManager.USER_ACTIVITY_EVENT_OTHER, <span class="number">0</span>, uid);</span><br><span class="line">    <span class="comment">// 更新电源状态信息。</span></span><br><span class="line">    updatePowerStateLocked();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二、更新WakeLock和用户活动"><a href="#二、更新WakeLock和用户活动" class="headerlink" title="二、更新WakeLock和用户活动"></a>二、更新WakeLock和用户活动</h3><h4 id="2-1-PowerMS类的updateWakeLockSummaryLocked方法"><a href="#2-1-PowerMS类的updateWakeLockSummaryLocked方法" class="headerlink" title="2.1 PowerMS类的updateWakeLockSummaryLocked方法"></a>2.1 PowerMS类的updateWakeLockSummaryLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateWakeLockSummaryLocked</span><span class="params">(<span class="keyword">int</span> dirty)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// PowerMS持有的WakeLock发生变化或唤醒状态发生变化时，才重新进行更新mWakeLockSummary。</span></span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; (DIRTY_WAKE_LOCKS | DIRTY_WAKEFULNESS)) != <span class="number">0</span>) &#123;</span><br><span class="line">    mWakeLockSummary = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> numWakeLocks = mWakeLocks.size();</span><br><span class="line">    <span class="comment">// level对应的wake lock信息。</span></span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">// 若不是dozing状态，移除相应的WakeLock标志位。</span></span><br><span class="line">    <span class="keyword">if</span> (mWakefulness != WAKEFULNESS_DOZING) &#123;</span><br><span class="line">      mWakeLockSummary &amp;= ~(WAKE_LOCK_DOZE | WAKE_LOCK_DRAW);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// asleep或有dozing的WakeLock标志位。</span></span><br><span class="line">    <span class="keyword">if</span> (mWakefulness == WAKEFULNESS_ASLEEP</span><br><span class="line">        || (mWakeLockSummary &amp; WAKE_LOCK_DOZE) != <span class="number">0</span>) &#123;</span><br><span class="line">      mWakeLockSummary &amp;= ~(WAKE_LOCK_SCREEN_BRIGHT | WAKE_LOCK_SCREEN_DIM</span><br><span class="line">          | WAKE_LOCK_BUTTON_BRIGHT);</span><br><span class="line">      <span class="comment">// 休眠时传感器不监听。</span></span><br><span class="line">      <span class="keyword">if</span> (mWakefulness == WAKEFULNESS_ASLEEP) &#123;</span><br><span class="line">        mWakeLockSummary &amp;= ~WAKE_LOCK_PROXIMITY_SCREEN_OFF;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">if</span> ((mWakeLockSummary &amp; (WAKE_LOCK_SCREEN_BRIGHT |</span><br><span class="line"> WAKE_LOCK_SCREEN_DIM)) != <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (mWakefulness == WAKEFULNESS_AWAKE) &#123;</span><br><span class="line">        mWakeLockSummary |= WAKE_LOCK_CPU | WAKE_LOCK_STAY_AWAKE;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mWakefulness == WAKEFULNESS_DREAMING) &#123;</span><br><span class="line">        mWakeLockSummary |= WAKE_LOCK_CPU;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ((mWakeLockSummary &amp; WAKE_LOCK_DRAW) != <span class="number">0</span>) &#123;</span><br><span class="line">      mWakeLockSummary |= WAKE_LOCK_CPU;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-PowerMS类的updateUserActivitySummaryLocked方法"><a href="#2-2-PowerMS类的updateUserActivitySummaryLocked方法" class="headerlink" title="2.2 PowerMS类的updateUserActivitySummaryLocked方法"></a>2.2 PowerMS类的updateUserActivitySummaryLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据用户最后活动决定当前屏幕状态。</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateUserActivitySummaryLocked</span><span class="params">(<span class="keyword">long</span> now, <span class="keyword">int</span> dirty)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; (DIRTY_WAKE_LOCKS | DIRTY_USER_ACTIVITY</span><br><span class="line">      | DIRTY_WAKEFULNESS | DIRTY_SETTINGS)) != <span class="number">0</span>) &#123;</span><br><span class="line">    mHandler.removeMessages(MSG_USER_ACTIVITY_TIMEOUT);</span><br><span class="line">    <span class="keyword">long</span> nextTimeout = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (mWakefulness == WAKEFULNESS_AWAKE</span><br><span class="line">        || mWakefulness == WAKEFULNESS_DREAMING</span><br><span class="line">        || mWakefulness == WAKEFULNESS_DOZING) &#123;</span><br><span class="line">      <span class="comment">// 获取进入休眠状态的时间。</span></span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">int</span> sleepTimeout = getSleepTimeoutLocked();</span><br><span class="line">      <span class="comment">// 获取灭屏时间。</span></span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">int</span> screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout);</span><br><span class="line">      <span class="comment">// 获取屏幕变暗时间。</span></span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">int</span> screenDimDuration =</span><br><span class="line">  getScreenDimDurationLocked(screenOffTimeout);</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">boolean</span> userInactiveOverride =</span><br><span class="line">mUserInactiveOverrideFromWindowManager;</span><br><span class="line">      mUserActivitySummary = <span class="number">0</span>;</span><br><span class="line">      <span class="comment">// 唤醒状态下发生过用户事件。</span></span><br><span class="line">      <span class="keyword">if</span> (mLastUserActivityTime &gt;= mLastWakeTime) &#123;</span><br><span class="line">        <span class="comment">// 重新计算出屏幕变暗的时间。</span></span><br><span class="line">        nextTimeout = mLastUserActivityTime</span><br><span class="line">            + screenOffTimeout - screenDimDuration;</span><br><span class="line">        <span class="comment">// 没到屏幕变暗时间。</span></span><br><span class="line">        <span class="keyword">if</span> (now &lt; nextTimeout) &#123;</span><br><span class="line">          mUserActivitySummary = USER_ACTIVITY_SCREEN_BRIGHT;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          nextTimeout = mLastUserActivityTime + screenOffTimeout;</span><br><span class="line">          <span class="comment">// 没到灭屏时间。</span></span><br><span class="line">          <span class="keyword">if</span> (now &lt; nextTimeout) &#123;</span><br><span class="line">            mUserActivitySummary = USER_ACTIVITY_SCREEN_DIM;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (mUserActivitySummary == <span class="number">0</span></span><br><span class="line">          &amp;&amp; mLastUserActivityTimeNoChangeLights &gt;= mLastWakeTime) &#123;</span><br><span class="line">        <span class="comment">// 计算下次灭屏时间。</span></span><br><span class="line">        nextTimeout = mLastUserActivityTimeNoChangeLights + screenOffTimeout;</span><br><span class="line">        <span class="comment">// 没到灭屏时间。</span></span><br><span class="line">        <span class="keyword">if</span> (now &lt; nextTimeout) &#123;</span><br><span class="line">          <span class="keyword">if</span> (mDisplayPowerRequest.policy ==</span><br><span class="line">DisplayPowerRequest.POLICY_BRIGHT) &#123;</span><br><span class="line">            mUserActivitySummary = USER_ACTIVITY_SCREEN_BRIGHT;</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mDisplayPowerRequest.policy ==</span><br><span class="line">              DisplayPowerRequest.POLICY_DIM) &#123;</span><br><span class="line">            mUserActivitySummary = USER_ACTIVITY_SCREEN_DIM;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (mUserActivitySummary == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (sleepTimeout &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="comment">// 计算用户活动的最后时间。</span></span><br><span class="line">          <span class="keyword">final</span> <span class="keyword">long</span> anyUserActivity = Math.max(mLastUserActivityTime,</span><br><span class="line">              mLastUserActivityTimeNoChangeLights);</span><br><span class="line">          <span class="comment">// 唤醒状态下进行用户活动才会重新更新休眠时间。</span></span><br><span class="line">          <span class="keyword">if</span> (anyUserActivity &gt;= mLastWakeTime) &#123;</span><br><span class="line">            nextTimeout = anyUserActivity + sleepTimeout;</span><br><span class="line">            <span class="keyword">if</span> (now &lt; nextTimeout) &#123;</span><br><span class="line">              mUserActivitySummary = USER_ACTIVITY_SCREEN_DREAM;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          mUserActivitySummary = USER_ACTIVITY_SCREEN_DREAM;</span><br><span class="line">          nextTimeout = -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (mUserActivitySummary != USER_ACTIVITY_SCREEN_DREAM &amp;&amp;</span><br><span class="line"> userInactiveOverride) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((mUserActivitySummary &amp;</span><br><span class="line">            (USER_ACTIVITY_SCREEN_BRIGHT | USER_ACTIVITY_SCREEN_DIM)) != <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (nextTimeout &gt;= now &amp;&amp; mOverriddenTimeout == -<span class="number">1</span>) &#123;</span><br><span class="line">            mOverriddenTimeout = nextTimeout;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        mUserActivitySummary = USER_ACTIVITY_SCREEN_DREAM;</span><br><span class="line">        nextTimeout = -<span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (mUserActivitySummary != <span class="number">0</span> &amp;&amp; nextTimeout &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        Message msg = mHandler.obtainMessage(MSG_USER_ACTIVITY_TIMEOUT);</span><br><span class="line">        msg.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">        mHandler.sendMessageAtTime(msg, nextTimeout);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      mUserActivitySummary = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-PowerMS类的updateWakefulnessLocked方法"><a href="#2-3-PowerMS类的updateWakefulnessLocked方法" class="headerlink" title="2.3 PowerMS类的updateWakefulnessLocked方法"></a>2.3 PowerMS类的updateWakefulnessLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">updateWakefulnessLocked</span><span class="params">(<span class="keyword">int</span> dirty)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">boolean</span> changed = <span class="keyword">false</span>;</span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; (DIRTY_WAKE_LOCKS | DIRTY_USER_ACTIVITY | DIRTY_BOOT_COMPLETED</span><br><span class="line">      | DIRTY_WAKEFULNESS | DIRTY_STAY_ON | DIRTY_PROXIMITY_POSITIVE</span><br><span class="line">      | DIRTY_DOCK_STATE)) != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mWakefulness == WAKEFULNESS_AWAKE &amp;&amp; isItBedTimeYetLocked()) &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">      <span class="comment">// 判断是否进入dream状态。</span></span><br><span class="line">      <span class="keyword">if</span> (shouldNapAtBedTimeLocked()) &#123;</span><br><span class="line">        changed = napNoUpdateLocked(time, Process.SYSTEM_UID);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        changed = goToSleepNoUpdateLocked(time,</span><br><span class="line">            PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, <span class="number">0</span>, Process.SYSTEM_UID);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> changed;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isItBedTimeYetLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> mBootCompleted &amp;&amp; !isBeingKeptAwakeLocked();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isBeingKeptAwakeLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> mStayOn</span><br><span class="line">      || mProximityPositive</span><br><span class="line">      || (mWakeLockSummary &amp; WAKE_LOCK_STAY_AWAKE) != <span class="number">0</span></span><br><span class="line">      || (mUserActivitySummary &amp; (USER_ACTIVITY_SCREEN_BRIGHT</span><br><span class="line">          | USER_ACTIVITY_SCREEN_DIM)) != <span class="number">0</span></span><br><span class="line">      || mScreenBrightnessBoostInProgress;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、更新Display-Power-State"><a href="#三、更新Display-Power-State" class="headerlink" title="三、更新Display Power State"></a>三、更新Display Power State</h3><h4 id="3-1-PowerMS类的updateDisplayPowerStateLocked方法"><a href="#3-1-PowerMS类的updateDisplayPowerStateLocked方法" class="headerlink" title="3.1 PowerMS类的updateDisplayPowerStateLocked方法"></a>3.1 PowerMS类的updateDisplayPowerStateLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">updateDisplayPowerStateLocked</span><span class="params">(<span class="keyword">int</span> dirty)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> oldDisplayReady = mDisplayReady;</span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; (DIRTY_WAKE_LOCKS | DIRTY_USER_ACTIVITY | DIRTY_WAKEFULNESS</span><br><span class="line">      | DIRTY_ACTUAL_DISPLAY_POWER_STATE_UPDATED | DIRTY_BOOT_COMPLETED</span><br><span class="line">      | DIRTY_SETTINGS | DIRTY_SCREEN_BRIGHTNESS_BOOST)) != <span class="number">0</span>) &#123;</span><br><span class="line">    mDisplayPowerRequest.policy = getDesiredScreenPolicyLocked();</span><br><span class="line">    <span class="keyword">boolean</span> brightnessSetByUser = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">int</span> screenBrightness = mScreenBrightnessSettingDefault;</span><br><span class="line">    <span class="keyword">float</span> screenAutoBrightnessAdjustment = <span class="number">0.0f</span>;</span><br><span class="line">    <span class="keyword">boolean</span> autoBrightness = (mScreenBrightnessModeSetting ==</span><br><span class="line">        Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);</span><br><span class="line">    <span class="comment">// 屏幕亮度。</span></span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">// 更新mDisplayPowerRequest参数。</span></span><br><span class="line">    .......</span><br><span class="line">mDisplayReady =</span><br><span class="line"> mDisplayManagerInternal.requestPowerState(mDisplayPowerRequest,</span><br><span class="line">        mRequestWaitForNegativeProximity);</span><br><span class="line">    mRequestWaitForNegativeProximity = <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> mDisplayReady &amp;&amp; !oldDisplayReady;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-DisplayManager类的requestPowerState方法"><a href="#3-2-DisplayManager类的requestPowerState方法" class="headerlink" title="3.2 DisplayManager类的requestPowerState方法"></a>3.2 DisplayManager类的requestPowerState方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">requestPowerState</span><span class="params">(DisplayPowerRequest request,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">boolean</span> waitForNegativeProximity)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">    <span class="keyword">boolean</span> changed = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">// 传感器检测距离。</span></span><br><span class="line">    <span class="keyword">if</span> (waitForNegativeProximity</span><br><span class="line">        &amp;&amp; !mPendingWaitForNegativeProximityLocked) &#123;</span><br><span class="line">      mPendingWaitForNegativeProximityLocked = <span class="keyword">true</span>;</span><br><span class="line">      changed = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mPendingRequestLocked == <span class="keyword">null</span>) &#123;</span><br><span class="line">      mPendingRequestLocked = <span class="keyword">new</span> DisplayPowerRequest(request);</span><br><span class="line">      changed = <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!mPendingRequestLocked.equals(request)) &#123;</span><br><span class="line">      mPendingRequestLocked.copyFrom(request);</span><br><span class="line">      changed = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (changed) &#123;</span><br><span class="line">      mDisplayReadyLocked = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (changed &amp;&amp; !mPendingRequestChangedLocked) &#123;</span><br><span class="line">      mPendingRequestChangedLocked = <span class="keyword">true</span>;</span><br><span class="line">      sendUpdatePowerStateLocked();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> mDisplayReadyLocked;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="四、更新Dream-State"><a href="#四、更新Dream-State" class="headerlink" title="四、更新Dream State"></a>四、更新Dream State</h3><h4 id="4-1-PowerMS类的updateDreamLocked方法"><a href="#4-1-PowerMS类的updateDreamLocked方法" class="headerlink" title="4.1 PowerMS类的updateDreamLocked方法"></a>4.1 PowerMS类的updateDreamLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateDreamLocked</span><span class="params">(<span class="keyword">int</span> dirty, <span class="keyword">boolean</span> displayBecameReady)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ((dirty &amp; (DIRTY_WAKEFULNESS</span><br><span class="line">      | DIRTY_USER_ACTIVITY</span><br><span class="line">      | DIRTY_WAKE_LOCKS</span><br><span class="line">      | DIRTY_BOOT_COMPLETED</span><br><span class="line">      | DIRTY_SETTINGS</span><br><span class="line">      | DIRTY_IS_POWERED</span><br><span class="line">      | DIRTY_STAY_ON</span><br><span class="line">      | DIRTY_PROXIMITY_POSITIVE</span><br><span class="line">      | DIRTY_BATTERY_STATE)) != <span class="number">0</span> || displayBecameReady) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mDisplayReady) &#123;</span><br><span class="line">      scheduleSandmanLocked();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleSandmanLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!mSandmanScheduled) &#123;</span><br><span class="line">    mSandmanScheduled = <span class="keyword">true</span>;</span><br><span class="line">    Message msg = mHandler.obtainMessage(MSG_SANDMAN);</span><br><span class="line">    msg.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">    mHandler.sendMessage(msg);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleSandman</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> startDreaming;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">int</span> wakefulness;</span><br><span class="line">  <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">    mSandmanScheduled = <span class="keyword">false</span>;</span><br><span class="line">    wakefulness = mWakefulness;</span><br><span class="line"><span class="keyword">if</span> (mSandmanSummoned &amp;&amp; mDisplayReady) &#123;</span><br><span class="line">  <span class="comment">// 判断设备是否可以进入Dream/Doze状态。</span></span><br><span class="line">      startDreaming = canDreamLocked() || canDozeLocked();</span><br><span class="line">      mSandmanSummoned = <span class="keyword">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      startDreaming = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> isDreaming;</span><br><span class="line">  <span class="keyword">if</span> (mDreamManager != <span class="keyword">null</span>) &#123;</span><br><span class="line"><span class="keyword">if</span> (startDreaming) &#123;</span><br><span class="line"><span class="comment">// 结束旧梦</span></span><br><span class="line">      mDreamManager.stopDream(<span class="keyword">false</span> <span class="comment">/*immediate*/</span>);</span><br><span class="line">      <span class="comment">// 开始新梦</span></span><br><span class="line">      mDreamManager.startDream(wakefulness == WAKEFULNESS_DOZING);</span><br><span class="line">    &#125;</span><br><span class="line">    isDreaming = mDreamManager.isDreaming();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    isDreaming = <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">    <span class="keyword">if</span> (startDreaming &amp;&amp; isDreaming) &#123;</span><br><span class="line">      mBatteryLevelWhenDreamStarted = mBatteryLevel;</span><br><span class="line">      <span class="keyword">if</span> (wakefulness == WAKEFULNESS_DOZING) &#123;</span><br><span class="line">        Slog.i(TAG, <span class="string">"Dozing..."</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Slog.i(TAG, <span class="string">"Dreaming..."</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mSandmanSummoned || mWakefulness != wakefulness) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (wakefulness == WAKEFULNESS_DREAMING) &#123;</span><br><span class="line">      <span class="keyword">if</span> (isDreaming &amp;&amp; canDreamLocked()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (mDreamsBatteryLevelDrainCutoffConfig &gt;= <span class="number">0</span></span><br><span class="line">            &amp;&amp; mBatteryLevel &lt; mBatteryLevelWhenDreamStarted</span><br><span class="line">                - mDreamsBatteryLevelDrainCutoffConfig</span><br><span class="line">            &amp;&amp; !isBeingKeptAwakeLocked()) &#123;</span><br><span class="line">          ......</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (isItBedTimeYetLocked()) &#123;</span><br><span class="line">        <span class="comment">// 休眠。</span></span><br><span class="line">        goToSleepNoUpdateLocked(SystemClock.uptimeMillis(),</span><br><span class="line">            PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, <span class="number">0</span>, Process.SYSTEM_UID);</span><br><span class="line">        updatePowerStateLocked();</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 唤醒。</span></span><br><span class="line">        wakeUpNoUpdateLocked(SystemClock.uptimeMillis(), <span class="string">"android.server.power:DREAM"</span>,</span><br><span class="line">            Process.SYSTEM_UID, mContext.getOpPackageName(),</span><br><span class="line">Process.SYSTEM_UID);</span><br><span class="line">        updatePowerStateLocked();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (wakefulness == WAKEFULNESS_DOZING) &#123;</span><br><span class="line">      <span class="keyword">if</span> (isDreaming) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      reallyGoToSleepNoUpdateLocked(SystemClock.uptimeMillis(), Process.SYSTEM_UID);</span><br><span class="line">      updatePowerStateLocked();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (isDreaming) &#123;</span><br><span class="line">    mDreamManager.stopDream(<span class="keyword">false</span> <span class="comment">/*immediate*/</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">canDreamLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (mWakefulness != WAKEFULNESS_DREAMING</span><br><span class="line">      <span class="comment">// 设备支持Dreaming。</span></span><br><span class="line">      || !mDreamsSupportedConfig</span><br><span class="line">      <span class="comment">// 设置开启Dreaming开关。</span></span><br><span class="line">      || !mDreamsEnabledSetting</span><br><span class="line">      <span class="comment">// 屏幕熄灭。</span></span><br><span class="line">      || !mDisplayPowerRequest.isBrightOrDim()</span><br><span class="line">      || (mUserActivitySummary &amp; (USER_ACTIVITY_SCREEN_BRIGHT</span><br><span class="line">          | USER_ACTIVITY_SCREEN_DIM | USER_ACTIVITY_SCREEN_DREAM)) == <span class="number">0</span></span><br><span class="line">      || !mBootCompleted) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 非唤醒状态。</span></span><br><span class="line">  <span class="keyword">if</span> (!isBeingKeptAwakeLocked()) &#123;</span><br><span class="line">    <span class="comment">// 未充电，未设置电影选项，不进入Dreaming。</span></span><br><span class="line">    <span class="keyword">if</span> (!mIsPowered &amp;&amp; !mDreamsEnabledOnBatteryConfig) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 没充电，电池电量过低，不进入Dreaming。</span></span><br><span class="line">    <span class="keyword">if</span> (!mIsPowered</span><br><span class="line">        &amp;&amp; mDreamsBatteryLevelMinimumWhenNotPoweredConfig &gt;= <span class="number">0</span></span><br><span class="line">        &amp;&amp; mBatteryLevel &lt; mDreamsBatteryLevelMinimumWhenNotPoweredConfig) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 充电，电池电量过低，不进入Dreaming。</span></span><br><span class="line">    <span class="keyword">if</span> (mIsPowered</span><br><span class="line">        &amp;&amp; mDreamsBatteryLevelMinimumWhenPoweredConfig &gt;= <span class="number">0</span></span><br><span class="line">        &amp;&amp; mBatteryLevel &lt; mDreamsBatteryLevelMinimumWhenPoweredConfig) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">canDozeLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> mWakefulness == WAKEFULNESS_DOZING;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-2-DreamManagerService类"><a href="#4-2-DreamManagerService类" class="headerlink" title="4.2 DreamManagerService类"></a>4.2 DreamManagerService类</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">LocalService</span> <span class="keyword">extends</span> <span class="title">DreamManagerInternal</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startDream</span><span class="params">(<span class="keyword">boolean</span> doze)</span> </span>&#123;</span><br><span class="line">    startDreamInternal(doze);</span><br><span class="line">  &#125;</span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startDreamInternal</span><span class="params">(<span class="keyword">boolean</span> doze)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">int</span> userId = ActivityManager.getCurrentUser();</span><br><span class="line">  <span class="keyword">final</span> ComponentName dream = chooseDreamForUser(doze, userId);</span><br><span class="line">  <span class="keyword">if</span> (dream != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">      startDreamLocked(dream, <span class="keyword">false</span> <span class="comment">/*isTest*/</span>, doze, userId);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startDreamLocked</span><span class="params">(<span class="keyword">final</span> ComponentName name,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">final</span> <span class="keyword">boolean</span> isTest, <span class="keyword">final</span> <span class="keyword">boolean</span> canDoze, <span class="keyword">final</span> <span class="keyword">int</span> userId)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (Objects.equal(mCurrentDreamName, name)</span><br><span class="line">      &amp;&amp; mCurrentDreamIsTest == isTest</span><br><span class="line">      &amp;&amp; mCurrentDreamCanDoze == canDoze</span><br><span class="line">      &amp;&amp; mCurrentDreamUserId == userId) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 停止当前屏保。</span></span><br><span class="line">  stopDreamLocked(<span class="keyword">true</span> <span class="comment">/*immediate*/</span>);</span><br><span class="line">  <span class="keyword">final</span> Binder newToken = <span class="keyword">new</span> Binder();</span><br><span class="line">  mCurrentDreamToken = newToken;</span><br><span class="line">  mCurrentDreamName = name;</span><br><span class="line">  mCurrentDreamIsTest = isTest;</span><br><span class="line">  mCurrentDreamCanDoze = canDoze;</span><br><span class="line">  mCurrentDreamUserId = userId;</span><br><span class="line">  PowerManager.WakeLock wakeLock = mPowerManager</span><br><span class="line">      .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, <span class="string">"startDream"</span>);</span><br><span class="line">  mHandler.post(wakeLock.wrap(</span><br><span class="line">      () -&gt; mController.startDream(newToken, name, isTest, canDoze, userId, wakeLock)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-3-DreamController类"><a href="#4-3-DreamController类" class="headerlink" title="4.3 DreamController类"></a>4.3 DreamController类</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startDream</span><span class="params">(Binder token, ComponentName name,</span></span></span><br><span class="line"><span class="function"><span class="params"><span class="keyword">boolean</span> isTest, <span class="keyword">boolean</span> canDoze, <span class="keyword">int</span> userId, PowerManager.WakeLock wakeLock)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 移除当前屏保</span></span><br><span class="line">  stopDream(<span class="keyword">true</span> <span class="comment">/*immediate*/</span>);</span><br><span class="line">  ......</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    mContext.sendBroadcastAsUser(mCloseNotificationShadeIntent, UserHandle.ALL);</span><br><span class="line">    mCurrentDream = <span class="keyword">new</span> DreamRecord(token, name, isTest, canDoze, userId, wakeLock);</span><br><span class="line">    mDreamStartTime = SystemClock.elapsedRealtime();</span><br><span class="line">    MetricsLogger.visible(mContext,</span><br><span class="line">        mCurrentDream.mCanDoze ? MetricsEvent.DOZING :</span><br><span class="line">     MetricsEvent.DREAMING);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      mIWindowManager.addWindowToken(token, WindowManager.LayoutParams.TYPE_DREAM);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RemoteException ex) &#123;</span><br><span class="line">      stopDream(<span class="keyword">true</span> <span class="comment">/*immediate*/</span>);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Intent intent = <span class="keyword">new</span> Intent(DreamService.SERVICE_INTERFACE);</span><br><span class="line">    intent.setComponent(name);</span><br><span class="line">    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="comment">// 启动屏保服务。</span></span><br><span class="line">      <span class="keyword">if</span> (!mContext.bindServiceAsUser(intent, mCurrentDream,</span><br><span class="line">          Context.BIND_AUTO_CREATE | Context.BIND_FOREGROUND_SERVICE,</span><br><span class="line">          <span class="keyword">new</span> UserHandle(userId))) &#123;</span><br><span class="line">        stopDream(<span class="keyword">true</span> <span class="comment">/*immediate*/</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (SecurityException ex) &#123;</span><br><span class="line">      stopDream(<span class="keyword">true</span> <span class="comment">/*immediate*/</span>);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    mCurrentDream.mBound = <span class="keyword">true</span>;</span><br><span class="line">    mHandler.postDelayed(mStopUnconnectedDreamRunnable, DREAM_CONNECTION_TIMEOUT);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    ......</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="五、更新Suspend-Blocker"><a href="#五、更新Suspend-Blocker" class="headerlink" title="五、更新Suspend Blocker"></a>五、更新Suspend Blocker</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">PowerManagerService.java::updateSuspendBlockerLocked()方法</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateSuspendBlockerLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 是否有CPU的wakelock决定CPU是否唤醒。</span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> needWakeLockSuspendBlocker = ((mWakeLockSummary &amp;</span><br><span class="line">WAKE_LOCK_CPU) != <span class="number">0</span>);</span><br><span class="line">  <span class="comment">// 根据屏幕状态决定是否需持有屏幕锁。</span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> needDisplaySuspendBlocker =</span><br><span class="line">needDisplaySuspendBlockerLocked();</span><br><span class="line">  <span class="comment">// 屏幕若无需自动开启，即可自动熄灭。</span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> autoSuspend = !needDisplaySuspendBlocker;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> interactive = mDisplayPowerRequest.isBrightOrDim();</span><br><span class="line">  <span class="keyword">if</span> (!autoSuspend &amp;&amp; mDecoupleHalAutoSuspendModeFromDisplayConfig) &#123;</span><br><span class="line">    <span class="comment">// native函数调用底层autoSuspend_disable。</span></span><br><span class="line">    setHalAutoSuspendModeLocked(<span class="keyword">false</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 若需要获取CPU\屏幕锁。</span></span><br><span class="line">  <span class="keyword">if</span> (needWakeLockSuspendBlocker &amp;&amp; !mHoldingWakeLockSuspendBlocker) &#123;</span><br><span class="line">    mWakeLockSuspendBlocker.acquire();</span><br><span class="line">    mHoldingWakeLockSuspendBlocker = <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (needDisplaySuspendBlocker &amp;&amp; !mHoldingDisplaySuspendBlocker) &#123;</span><br><span class="line">    mDisplaySuspendBlocker.acquire();</span><br><span class="line">    mHoldingDisplaySuspendBlocker = <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (mDecoupleHalInteractiveModeFromDisplayConfig) &#123;</span><br><span class="line">    <span class="keyword">if</span> (interactive || mDisplayReady) &#123;</span><br><span class="line">      <span class="comment">// 调用底层动态库的setHalInteractive函数决定系统是否可交互。</span></span><br><span class="line">      setHalInteractiveModeLocked(interactive);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 若不需要释放CPU\屏幕锁。</span></span><br><span class="line">  <span class="keyword">if</span> (!needWakeLockSuspendBlocker &amp;&amp; mHoldingWakeLockSuspendBlocker) &#123;</span><br><span class="line">    mWakeLockSuspendBlocker.release();</span><br><span class="line">    mHoldingWakeLockSuspendBlocker = <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!needDisplaySuspendBlocker &amp;&amp; mHoldingDisplaySuspendBlocker) &#123;</span><br><span class="line">    mDisplaySuspendBlocker.release();</span><br><span class="line">    mHoldingDisplaySuspendBlocker = <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 若需要设置自动休眠模式。</span></span><br><span class="line">  <span class="keyword">if</span> (autoSuspend &amp;&amp; mDecoupleHalAutoSuspendModeFromDisplayConfig) &#123;</span><br><span class="line">    setHalAutoSuspendModeLocked(<span class="keyword">true</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/Power/" rel="tag"># Power</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/18/Power/PowerManagerService之启动过程/" rel="next" title="PowerManagerService之启动过程">
+                <i class="fa fa-chevron-left"></i> PowerManagerService之启动过程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/03/Power/ProximitySensor工作原理/" rel="prev" title="ProximitySensor工作原理">
+                ProximitySensor工作原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、更新基本状态信息"><span class="nav-text">一、更新基本状态信息</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-PowerMS类的updateIsPoweredLocked方法"><span class="nav-text">1.1 PowerMS类的updateIsPoweredLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-PowerMS类的updateStayOnLocked方法"><span class="nav-text">1.2 PowerMS类的updateStayOnLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-PowerMS类的updateScreenBrightnessBoostLocked方法"><span class="nav-text">1.3 PowerMS类的updateScreenBrightnessBoostLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-PowerMS类的BinderService方法"><span class="nav-text">1.4 PowerMS类的BinderService方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、更新WakeLock和用户活动"><span class="nav-text">二、更新WakeLock和用户活动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-PowerMS类的updateWakeLockSummaryLocked方法"><span class="nav-text">2.1 PowerMS类的updateWakeLockSummaryLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-PowerMS类的updateUserActivitySummaryLocked方法"><span class="nav-text">2.2 PowerMS类的updateUserActivitySummaryLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-PowerMS类的updateWakefulnessLocked方法"><span class="nav-text">2.3 PowerMS类的updateWakefulnessLocked方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、更新Display-Power-State"><span class="nav-text">三、更新Display Power State</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-PowerMS类的updateDisplayPowerStateLocked方法"><span class="nav-text">3.1 PowerMS类的updateDisplayPowerStateLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-DisplayManager类的requestPowerState方法"><span class="nav-text">3.2 DisplayManager类的requestPowerState方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、更新Dream-State"><span class="nav-text">四、更新Dream State</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-PowerMS类的updateDreamLocked方法"><span class="nav-text">4.1 PowerMS类的updateDreamLocked方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-DreamManagerService类"><span class="nav-text">4.2 DreamManagerService类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-DreamController类"><span class="nav-text">4.3 DreamController类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、更新Suspend-Blocker"><span class="nav-text">五、更新Suspend Blocker</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

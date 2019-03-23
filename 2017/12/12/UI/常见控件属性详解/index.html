@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、控件介绍1.1 文本类控件1.1.1 TextView&amp;emsp;用于向用户显示文本内容，不可编辑。  1.1.2 EditText&amp;emsp;用于向用户显示文本内容，可编辑。">
+<meta name="keywords" content="UI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见控件属性详解">
+<meta property="og:url" content="http://www.xiezeyang.com/2017/12/12/UI/常见控件属性详解/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="一、控件介绍1.1 文本类控件1.1.1 TextView&amp;emsp;用于向用户显示文本内容，不可编辑。  1.1.2 EditText&amp;emsp;用于向用户显示文本内容，可编辑。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/text_view_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/edit_text_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/button_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/check_box_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/radio_button_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/image_view_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/image_button_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/progress_bar_demo.jpg">
+<meta property="og:image" content="http://www.xiezeyang.com/images/seek_bar_demo.jpg">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.782Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="常见控件属性详解">
+<meta name="twitter:description" content="一、控件介绍1.1 文本类控件1.1.1 TextView&amp;emsp;用于向用户显示文本内容，不可编辑。  1.1.2 EditText&amp;emsp;用于向用户显示文本内容，可编辑。">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/text_view_demo.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2017/12/12/UI/常见控件属性详解/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>常见控件属性详解 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/12/UI/常见控件属性详解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">常见控件属性详解
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-12-12 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-12T00:00:00+08:00">2017-12-12</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UI/" itemprop="url" rel="index"><span itemprop="name">UI</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、控件介绍"><a href="#一、控件介绍" class="headerlink" title="一、控件介绍"></a>一、控件介绍</h3><h4 id="1-1-文本类控件"><a href="#1-1-文本类控件" class="headerlink" title="1.1 文本类控件"></a>1.1 文本类控件</h4><h5 id="1-1-1-TextView"><a href="#1-1-1-TextView" class="headerlink" title="1.1.1 TextView"></a>1.1.1 TextView</h5><p>&emsp;用于向用户显示文本内容，不可编辑。</p>
+<p><img src="/images/text_view_demo.jpg" alt></p>
+<h5 id="1-1-2-EditText"><a href="#1-1-2-EditText" class="headerlink" title="1.1.2 EditText"></a>1.1.2 EditText</h5><p>&emsp;用于向用户显示文本内容，可编辑。</p>
+<p><img src="/images/edit_text_demo.jpg" alt></p>
+<a id="more"></a>
+<h4 id="1-2-按钮类控件"><a href="#1-2-按钮类控件" class="headerlink" title="1.2 按钮类控件"></a>1.2 按钮类控件</h4><h5 id="1-2-1-Button"><a href="#1-2-1-Button" class="headerlink" title="1.2.1 Button"></a>1.2.1 Button</h5><p>&emsp;用户可点击的按钮。</p>
+<p><img src="/images/button_demo.jpg" alt></p>
+<h5 id="1-2-2-CheckBox"><a href="#1-2-2-CheckBox" class="headerlink" title="1.2.2 CheckBox"></a>1.2.2 CheckBox</h5><p>&emsp;复选/多选按钮，支持选中/取消选中。</p>
+<p><img src="/images/check_box_demo.jpg" alt></p>
+<h5 id="1-2-3-RadioButton"><a href="#1-2-3-RadioButton" class="headerlink" title="1.2.3 RadioButton"></a>1.2.3 RadioButton</h5><p>&emsp;单选框双状态按钮，支持单击选中，不支持单击取消选中。</p>
+<p><img src="/images/radio_button_demo.jpg" alt></p>
+<h4 id="1-3-图像类控件"><a href="#1-3-图像类控件" class="headerlink" title="1.3 图像类控件"></a>1.3 图像类控件</h4><h5 id="1-3-1-ImageView"><a href="#1-3-1-ImageView" class="headerlink" title="1.3.1 ImageView"></a>1.3.1 ImageView</h5><p>&emsp;图片控件用于显示图片。</p>
+<p><img src="/images/image_view_demo.jpg" alt></p>
+<h5 id="1-3-2-ImageButton"><a href="#1-3-2-ImageButton" class="headerlink" title="1.3.2 ImageButton"></a>1.3.2 ImageButton</h5><p>&emsp;图片和按钮结合的产物。</p>
+<p><img src="/images/image_button_demo.jpg" alt></p>
+<h4 id="1-4-进度类控件"><a href="#1-4-进度类控件" class="headerlink" title="1.4 进度类控件"></a>1.4 进度类控件</h4><h5 id="1-4-1-ProgressBar"><a href="#1-4-1-ProgressBar" class="headerlink" title="1.4.1 ProgressBar"></a>1.4.1 ProgressBar</h5><p>&emsp;进度条，用于显示当前进度。</p>
+<p><img src="/images/progress_bar_demo.jpg" alt></p>
+<h5 id="1-4-2-SeekBar"><a href="#1-4-2-SeekBar" class="headerlink" title="1.4.2 SeekBar"></a>1.4.2 SeekBar</h5><p>&emsp;滑动进度条，用于滑动设置进度。</p>
+<p><img src="/images/seek_bar_demo.jpg" alt></p>
+<h3 id="二、控件共有属性"><a href="#二、控件共有属性" class="headerlink" title="二、控件共有属性"></a>二、控件共有属性</h3><h4 id="2-1-id"><a href="#2-1-id" class="headerlink" title="2.1 id"></a>2.1 id</h4><p>&emsp; 用于定义指定控件对应的ID。<br>android:id=”@+id/test_id”   // ‘+’创建id<br>&emsp;&emsp;<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<h4 id="2-2-width-amp-minWidth-amp-maxHeight"><a href="#2-2-width-amp-minWidth-amp-maxHeight" class="headerlink" title="2.2 width &amp; minWidth &amp; maxHeight"></a>2.2 width &amp; minWidth &amp; maxHeight</h4><p>&emsp;用于定义指定控件的宽度/最小宽度/最大宽度，单位有px,dp.sp等。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">android:width="@dimen/test_width"     // 在dimens.xml中定义test_width宽度大小</span><br><span class="line"><span class="tag">&lt;<span class="name">dimen</span> <span class="attr">name</span>=<span class="string">"test_width"</span>&gt;</span>48dp<span class="tag">&lt;/<span class="name">dimen</span>&gt;</span></span><br><span class="line">android:width="48dp"                  // 直接定义宽度</span><br><span class="line">android:minWidth="56dp"               // 直接定义最小宽度</span><br><span class="line">android:maxWidth="108dp"              // 直接定义最大宽度</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-3-height-amp-minHeight-amp-maxHeight"><a href="#2-3-height-amp-minHeight-amp-maxHeight" class="headerlink" title="2.3 height &amp; minHeight &amp; maxHeight"></a>2.3 height &amp; minHeight &amp; maxHeight</h4><p>&emsp;用于定义指定控件的高度/最小高度/最大高度，单位有px,dp.sp等。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">android:height="@dimen/test_height"       // 在dimens.xml中定义test_height高度大小</span><br><span class="line"><span class="tag">&lt;<span class="name">dimen</span> <span class="attr">name</span>=<span class="string">"test_height"</span>&gt;</span>48dp<span class="tag">&lt;/<span class="name">dimen</span>&gt;</span></span><br><span class="line">android:height="48dp"                     // 直接定义高度</span><br><span class="line">android:minHeight="56dp"                  // 直接定义最小高度</span><br><span class="line">android:maxHeight="108dp"                 // 直接定义最大高度</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-4-background"><a href="#2-4-background" class="headerlink" title="2.4 background"></a>2.4 background</h4><p>&emsp;用于定义指定控件的背景(色)，颜色采用RGB命名法。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">android:background="@color/test_background_color"    // 在colors.xml中定义test_background_color背景色</span><br><span class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"test_background_color"</span>&gt;</span>#000000<span class="tag">&lt;/<span class="name">color</span>&gt;</span></span><br><span class="line">android:background="#000000"    // 直接定义背景色</span><br><span class="line">android:background="@drawable/test_background"    // 在drawable目录新增test_background文件，可用xml绘制，也可直接使用图片资源</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-5-clickable-amp-focusable"><a href="#2-5-clickable-amp-focusable" class="headerlink" title="2.5 clickable &amp; focusable"></a>2.5 clickable &amp; focusable</h4><p>&emsp;用于定义指定控件是否可点击/有焦点。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">android:clickable="true"    // true表示可点击</span><br><span class="line">android:focusable="true"    // true表示有焦点</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-6-alpha"><a href="#2-6-alpha" class="headerlink" title="2.6 alpha"></a>2.6 alpha</h4><p>&emsp;用于定义指定控件的透明度。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:alpha="0"    // 完全透明</span><br><span class="line">android:alpha="0.5"  // 半透明，取值0-1之间，对应代码0-255</span><br><span class="line">android:alpha="1"    // 不透明</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-7-visibility"><a href="#2-7-visibility" class="headerlink" title="2.7 visibility"></a>2.7 visibility</h4><p>&emsp;用于定义控件是否可见。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:visibility="gone"         // 不可见，不占据空间</span><br><span class="line">android:visibility="invisible"    // 不可见，占据控件的大小的空间</span><br><span class="line">android:visibility="visible"      // 可见</span><br></pre></td></tr></table></figure></p>
+<h3 id="三、控件特有属性"><a href="#三、控件特有属性" class="headerlink" title="三、控件特有属性"></a>三、控件特有属性</h3><h4 id="3-1-text"><a href="#3-1-text" class="headerlink" title="3.1 text"></a>3.1 text</h4><p>&emsp;用于定义文本/按钮类控件的文字内容。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:text="@string/test_text_content"    // 在strings.xml中定义test_text_content文字内容</span><br><span class="line"><span class="tag">&lt;<span class="name">string</span> <span class="attr">name</span>=<span class="string">"test_text_content"</span>&gt;</span>"I LOVE YOU!"<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">android:text="I LOVE YOU!"          // 直接定义文字</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-2-textSize"><a href="#3-2-textSize" class="headerlink" title="3.2 textSize"></a>3.2 textSize</h4><p>&emsp;用于定义文本/按钮类控件的文字大小，单位有px,dp.sp等。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:textSize="@string/test_text_size"    // 在dimens.xml中定义test_text_size文字大小</span><br><span class="line"><span class="tag">&lt;<span class="name">dimen</span> <span class="attr">name</span>=<span class="string">"test_text_size"</span>&gt;</span>16sp<span class="tag">&lt;/<span class="name">dimen</span>&gt;</span></span><br><span class="line">android:textSize="16sp"          // 直接定义文字大小</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-3-textColor"><a href="#3-3-textColor" class="headerlink" title="3.3 textColor"></a>3.3 textColor</h4><p>&emsp;用于定义文本/按钮类控件的文字颜色，RGB命名法。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:textColor="@color/test_text_color"    // colors.xml中定义test_text_color文字颜色</span><br><span class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"test_text_color"</span>&gt;</span>#FFFFFF<span class="tag">&lt;/<span class="name">color</span>&gt;</span></span><br><span class="line">android:textColor="#FFFFFF"          // 直接定义文字颜色</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-4-textAllCaps"><a href="#3-4-textAllCaps" class="headerlink" title="3.4 textAllCaps"></a>3.4 textAllCaps</h4><p>&emsp;用于定义文本/按钮类控件的文字是否全部大写。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:textAllCaps="true"    // true表示文字全部转换为大写</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-5-lines-amp-minLines-amp-maxLines-amp-sigleLine"><a href="#3-5-lines-amp-minLines-amp-maxLines-amp-sigleLine" class="headerlink" title="3.5 lines &amp; minLines &amp; maxLines &amp; sigleLine"></a>3.5 lines &amp; minLines &amp; maxLines &amp; sigleLine</h4><p>&emsp;用于定义文本/按钮类控件显示的文字行数/最小行数/最大行数/单行显示。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">android:lines="3"           // 文字行数限制</span><br><span class="line">android:minLines="1"        // 文字支持最小行数</span><br><span class="line">android:maxLines="5"        // 文字支持最大行数</span><br><span class="line">android:sigleLine="true"    // 文字单行显示</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-6-minLength-amp-maxLength"><a href="#3-6-minLength-amp-maxLength" class="headerlink" title="3.6 minLength &amp; maxLength"></a>3.6 minLength &amp; maxLength</h4><p>&emsp;用于定义文本/按钮类控件显示的文字最小/最大长度。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">android:minLength="5"       // 支持文字的最小长度</span><br><span class="line">android:maxLenght="10"      // 支持文字的最大长度</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-7-scaleType"><a href="#3-7-scaleType" class="headerlink" title="3.7 scaleType"></a>3.7 scaleType</h4><p>&emsp;用于定义图像类控件中图像资源的显示方式。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">/* 1.当图片大于控件的宽高:以图片中心和控件中心点为基准，按图片原大小居中显示，不缩放，用控件的大小去截取图片的居中部分</span><br><span class="line">   2.图片小于控件的宽高:直接居中显示图片 */</span><br><span class="line">android:scaleType="center"</span><br><span class="line">/* 1.当图片大于控件的宽高:以图片中心和控件中心点为基准，按比例缩小图片，直至图片的宽高有一边等于控件的宽高；对另一边，图片长度大于/等于控件长度，最后用控件大小居中截取图片</span><br><span class="line">   2.图片小于控件的宽高: */</span><br><span class="line">android:scaleType="centerCrop"</span><br><span class="line">/* 1.当图片大于控件的宽高:以图片中心和控件中心点为基准，按比例缩小图片，使图片宽高等于/小于控件的宽高，直至将图片内容完整居中显示</span><br><span class="line">   2.图片小于控件的宽高:直接居中显示图片 */</span><br><span class="line">android:scaleType="centerInside"</span><br><span class="line">// 把图片按比例扩大/缩小至控件的宽度，居中显示</span><br><span class="line">android:scaleType="fitCenter"</span><br><span class="line">// 把图片按比例扩大/缩小至控件的宽度，居中在控件上方显示</span><br><span class="line">android:scaleType="fitStart"</span><br><span class="line">// 把图片按比例扩大/缩小至控件的宽度，居中在控件下方显示</span><br><span class="line">android:scaleType="fitEnd"</span><br><span class="line">// 把图片拉伸/收缩在控件中填满显示，不保持原比例</span><br><span class="line">android:scaleType="fitXY"</span><br><span class="line">// 从左上角点开始，保持原图大小</span><br><span class="line">android:scaleType="matrix"</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-8-textStyle"><a href="#3-8-textStyle" class="headerlink" title="3.8 textStyle"></a>3.8 textStyle</h4><p>&emsp;用于设置字体形状。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:textStyle="bold"      // 粗体</span><br><span class="line">android:textStyle="italic"    // 斜体</span><br><span class="line">android:textStyle="normal"    // 常规</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-9-hint"><a href="#3-9-hint" class="headerlink" title="3.9 hint"></a>3.9 hint</h4><p>&emsp;用于定义文本/按钮类控件的文本为空时显示的提示型文字。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:hint="@string/test_hint"</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-10-inputType"><a href="#3-10-inputType" class="headerlink" title="3.10 inputType"></a>3.10 inputType</h4><p>&emsp;用于定义文本/按钮类控件的文本类型。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">android:inputType="text"        // 文字</span><br><span class="line">android:inputType="date"        // 日期</span><br><span class="line">android:inputType="datetime"    // 日期+时间</span><br><span class="line">android:inputType="number"      // 数字</span><br><span class="line">android:inputType="phone"       // 号码</span><br><span class="line">android:inputType="time"        // 时间</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-11-src"><a href="#3-11-src" class="headerlink" title="3.11 src"></a>3.11 src</h4><p>&emsp;用于定义图像类控件的图像资源。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:src="@drawable/test_image"    // 显示test_image对应的图片</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-12-progree"><a href="#3-12-progree" class="headerlink" title="3.12 progree"></a>3.12 progree</h4><p>&emsp;用于定义进度类控件的默认进度值。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:progress="50"   // 默认进度为50%</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-13-autoLink"><a href="#3-13-autoLink" class="headerlink" title="3.13 autoLink"></a>3.13 autoLink</h4><p>&emsp;用于定义文本/按钮类控件的中哪类文本自动设为链接。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">android:autoLink="all"      // 全部类型文本置为链接</span><br><span class="line">android:autoLink="phone"    // 号码类型文本置为链接</span><br><span class="line">android:autoLink="email"    // 邮件类型文本置为链接</span><br><span class="line">android:autoLink="web"      // 网页类型文本置为链接</span><br><span class="line">android:autoLink="map"      // 地址类型文本置为链接</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/UI/" rel="tag"># UI</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/04/UI/常见布局属性详解/" rel="next" title="常见布局属性详解">
+                <i class="fa fa-chevron-left"></i> 常见布局属性详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/20/Power/Doze模式概述/" rel="prev" title="Doze模式概述">
+                Doze模式概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、控件介绍"><span class="nav-text">一、控件介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-文本类控件"><span class="nav-text">1.1 文本类控件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-1-TextView"><span class="nav-text">1.1.1 TextView</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-2-EditText"><span class="nav-text">1.1.2 EditText</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-按钮类控件"><span class="nav-text">1.2 按钮类控件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-1-Button"><span class="nav-text">1.2.1 Button</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-2-CheckBox"><span class="nav-text">1.2.2 CheckBox</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-3-RadioButton"><span class="nav-text">1.2.3 RadioButton</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-图像类控件"><span class="nav-text">1.3 图像类控件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-1-ImageView"><span class="nav-text">1.3.1 ImageView</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-2-ImageButton"><span class="nav-text">1.3.2 ImageButton</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-进度类控件"><span class="nav-text">1.4 进度类控件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-4-1-ProgressBar"><span class="nav-text">1.4.1 ProgressBar</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-4-2-SeekBar"><span class="nav-text">1.4.2 SeekBar</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、控件共有属性"><span class="nav-text">二、控件共有属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-id"><span class="nav-text">2.1 id</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-width-amp-minWidth-amp-maxHeight"><span class="nav-text">2.2 width &amp; minWidth &amp; maxHeight</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-height-amp-minHeight-amp-maxHeight"><span class="nav-text">2.3 height &amp; minHeight &amp; maxHeight</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-background"><span class="nav-text">2.4 background</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-clickable-amp-focusable"><span class="nav-text">2.5 clickable &amp; focusable</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-alpha"><span class="nav-text">2.6 alpha</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-7-visibility"><span class="nav-text">2.7 visibility</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、控件特有属性"><span class="nav-text">三、控件特有属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-text"><span class="nav-text">3.1 text</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-textSize"><span class="nav-text">3.2 textSize</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-textColor"><span class="nav-text">3.3 textColor</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-textAllCaps"><span class="nav-text">3.4 textAllCaps</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-lines-amp-minLines-amp-maxLines-amp-sigleLine"><span class="nav-text">3.5 lines &amp; minLines &amp; maxLines &amp; sigleLine</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-6-minLength-amp-maxLength"><span class="nav-text">3.6 minLength &amp; maxLength</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-7-scaleType"><span class="nav-text">3.7 scaleType</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-8-textStyle"><span class="nav-text">3.8 textStyle</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-9-hint"><span class="nav-text">3.9 hint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-10-inputType"><span class="nav-text">3.10 inputType</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-11-src"><span class="nav-text">3.11 src</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-12-progree"><span class="nav-text">3.12 progree</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-13-autoLink"><span class="nav-text">3.13 autoLink</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

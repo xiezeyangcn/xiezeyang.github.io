@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、三种情况处理1.1 System-excidle (system app) : used for doze1234ArrayMap&amp;lt;String, Interger&amp;gt; mPowerSaveWhitelistAppsExceptIdleString: packageNameInterger: app UidFrom etc/permissions/platform.xml tag:">
+<meta name="keywords" content="Framework,Power">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Doze白名单介绍">
+<meta property="og:url" content="http://www.xiezeyang.com/2017/12/27/Power/Doze白名单简介/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="一、三种情况处理1.1 System-excidle (system app) : used for doze1234ArrayMap&amp;lt;String, Interger&amp;gt; mPowerSaveWhitelistAppsExceptIdleString: packageNameInterger: app UidFrom etc/permissions/platform.xml tag:">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.778Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Doze白名单介绍">
+<meta name="twitter:description" content="一、三种情况处理1.1 System-excidle (system app) : used for doze1234ArrayMap&amp;lt;String, Interger&amp;gt; mPowerSaveWhitelistAppsExceptIdleString: packageNameInterger: app UidFrom etc/permissions/platform.xml tag:">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2017/12/27/Power/Doze白名单简介/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Doze白名单介绍 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/27/Power/Doze白名单简介/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Doze白名单介绍
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-12-27 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-27T00:00:00+08:00">2017-12-27</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、三种情况处理"><a href="#一、三种情况处理" class="headerlink" title="一、三种情况处理"></a>一、三种情况处理</h3><h4 id="1-1-System-excidle-system-app-used-for-doze"><a href="#1-1-System-excidle-system-app-used-for-doze" class="headerlink" title="1.1 System-excidle (system app) : used for doze"></a>1.1 System-excidle (system app) : used for doze</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ArrayMap&lt;String, Interger&gt; mPowerSaveWhitelistAppsExceptIdle</span><br><span class="line">String: packageName</span><br><span class="line">Interger: app Uid</span><br><span class="line">From etc/permissions/platform.xml tag: allow-in-power-save-except-idle (SystemConfig.mAllowInPowerSaveExceptIdle)</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-2-System-system-app-used-for-doze-amp-app-standby"><a href="#1-2-System-system-app-used-for-doze-amp-app-standby" class="headerlink" title="1.2 System (system app) : used for doze &amp; app standby"></a>1.2 System (system app) : used for doze &amp; app standby</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ArrayMap&lt;String, Interger&gt; mPowerSaveWhitelistApps</span><br><span class="line">From etc/permissions/platform.xml tag : allow-in-power-save (SystemConfig.mAllowInPowerSave)</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-User-used-for-doze-amp-app-standby"><a href="#1-3-User-used-for-doze-amp-app-standby" class="headerlink" title="1.3 User :  used for doze &amp; app standby"></a>1.3 User :  used for doze &amp; app standby</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ArrayMap&lt;String,Interger&gt; mPowerSaveWhitelistUserApps</span><br><span class="line">From data/system/deviceidle.xml tag: wl</span><br><span class="line">The app uid’s array will be set to PowerMS as wakelock whitelist</span><br></pre></td></tr></table></figure>
+<h3 id="二、Doze白名单"><a href="#二、Doze白名单" class="headerlink" title="二、Doze白名单"></a>二、Doze白名单</h3><h4 id="2-1-onStart方法-Doze白名单服务"><a href="#2-1-onStart方法-Doze白名单服务" class="headerlink" title="2.1 onStart方法 - Doze白名单服务"></a>2.1 onStart方法 - Doze白名单服务</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> PackageManager pm = getContext().getPackageManager();</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">    <span class="comment">// 默认为false,需要GCM相关服务支持；true表示打开自动省电模式。</span></span><br><span class="line">    mLightEnabled = mDeepEnabled = getContext().getResources().getBoolean(</span><br><span class="line">        com.android.internal.R.bool.config_enableAutoPowerModes);</span><br><span class="line">    SystemConfig sysConfig = SystemConfig.getInstance();</span><br><span class="line">    ArraySet&lt;String&gt; allowPowerExceptIdle = sysConfig.getAllowInPowerSaveExceptIdle();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i &lt; allowPowerExceptIdle.size(); i++) &#123;</span><br><span class="line">        String pkg = allowPowerExceptIdle.valueAt(i);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        ApplicationInfo ai = pm.getApplicationInfo(pkg,</span><br><span class="line">            PackageManager.MATCH_SYSTEM_ONLY);</span><br><span class="line">        <span class="keyword">int</span> appid = UserHandle.getAppId(ai.uid);</span><br><span class="line">        mPowerSaveWhitelistAppsExceptIdle.put(ai.packageName, appid);</span><br><span class="line">        mPowerSaveWhitelistSystemAppIdsExceptIdle.put(appid, <span class="keyword">true</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (PackageManager.NameNotFoundException e) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ArraySet&lt;String&gt; allowPower = sysConfig.getAllowInPowerSave();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt; allowPower.size(); i++) &#123;</span><br><span class="line">        String pkg = allowPower.valueAt(i);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        ApplicationInfo ai = pm.getApplicationInfo(pkg,</span><br><span class="line">            PackageManager.MATCH_SYSTEM_ONLY);</span><br><span class="line">        <span class="keyword">int</span> appid = UserHandle.getAppId(ai.uid);</span><br><span class="line">        mPowerSaveWhitelistAppsExceptIdle.put(ai.packageName, appid);</span><br><span class="line">        mPowerSaveWhitelistSystemAppIdsExceptIdle.put(appid, <span class="keyword">true</span>);</span><br><span class="line">        mPowerSaveWhitelistApps.put(ai.packageName, appid);</span><br><span class="line">        mPowerSaveWhitelistSystemAppIds.put(appid, <span class="keyword">true</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (PackageManager.NameNotFoundException e) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    mConstants = <span class="keyword">new</span> Constants(mHandler, getContext().getContentResolver());</span><br><span class="line">    readConfigFileLocked();</span><br><span class="line">    updateWhitelistAppIdsLocked();</span><br><span class="line">    mNetworkConnected = <span class="keyword">true</span>;</span><br><span class="line">    mScreenOn = <span class="keyword">true</span>;</span><br><span class="line">    <span class="comment">// 假定正在充电；电量下降时更新状态。</span></span><br><span class="line">    mCharging = <span class="keyword">true</span>;</span><br><span class="line">    mState = STATE_ACTIVE;</span><br><span class="line">    mLightState = LIGHT_STATE_ACTIVE;</span><br><span class="line">    mInactiveTimeout = mConstants.INACTIVE_TIMEOUT;</span><br><span class="line">    &#125;</span><br><span class="line">    mBinderService = <span class="keyword">new</span> BinderService();</span><br><span class="line">    publishBinderService(Context.DEVICE_IDLE_CONTROLLER, mBinderService);</span><br><span class="line">    publishLocalService(LocalService.class, <span class="keyword">new</span> LocalService());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-BinderService-处理Doze白名单"><a href="#2-2-BinderService-处理Doze白名单" class="headerlink" title="2.2 BinderService - 处理Doze白名单"></a>2.2 BinderService - 处理Doze白名单</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BinderService</span> <span class="keyword">extends</span> <span class="title">IDeviceIdleController</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addPowerSaveWhitelistApp</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    getContext().enforceCallingOrSelfPermission(android.Manifest.permission.DEVICE_POWER,</span><br><span class="line">        <span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">long</span> ident = Binder.clearCallingIdentity();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        addPowerSaveWhitelistAppInternal(name);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        Binder.restoreCallingIdentity(ident);</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">removePowerSaveWhitelistApp</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    getContext().enforceCallingOrSelfPermission(android.Manifest.permission.DEVICE_POWER,</span><br><span class="line">        <span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">long</span> ident = Binder.clearCallingIdentity();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        removePowerSaveWhitelistAppInternal(name);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        Binder.restoreCallingIdentity(ident);</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span> <span class="keyword">public</span> String[] getSystemPowerWhitelistExceptIdle() &#123;</span><br><span class="line">    <span class="keyword">return</span> getSystemPowerWhitelistExceptIdleInternal();</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-addPowerSaveWhitelistAppInternal方法-将其加入到Doze白名单"><a href="#2-3-addPowerSaveWhitelistAppInternal方法-将其加入到Doze白名单" class="headerlink" title="2.3 addPowerSaveWhitelistAppInternal方法-将其加入到Doze白名单"></a>2.3 addPowerSaveWhitelistAppInternal方法-将其加入到Doze白名单</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">addPowerSaveWhitelistAppInternal</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ApplicationInfo ai = getContext().getPackageManager().getApplicationInfo(name,</span><br><span class="line">            PackageManager.MATCH_UNINSTALLED_PACKAGES);</span><br><span class="line">        <span class="keyword">if</span> (mPowerSaveWhitelistUserApps.put(name, UserHandle.getAppId(ai.uid)) == <span class="keyword">null</span>) &#123;</span><br><span class="line">        reportPowerSaveWhitelistChangedLocked();</span><br><span class="line">        updateWhitelistAppIdsLocked();</span><br><span class="line">        writeConfigFileLocked();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (PackageManager.NameNotFoundException e) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-4-removePowerSaveWhitelistAppInternal方法-从Doze白名单中移除"><a href="#2-4-removePowerSaveWhitelistAppInternal方法-从Doze白名单中移除" class="headerlink" title="2.4 removePowerSaveWhitelistAppInternal方法-从Doze白名单中移除"></a>2.4 removePowerSaveWhitelistAppInternal方法-从Doze白名单中移除</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">removePowerSaveWhitelistAppInternal</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mPowerSaveWhitelistUserApps.remove(name) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        reportPowerSaveWhitelistChangedLocked();</span><br><span class="line">        updateWhitelistAppIdsLocked();</span><br><span class="line">        writeConfigFileLocked();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-5-reportPowerSaveWhitelistChangedLocked方法-发送Doze白名单变化广播"><a href="#2-5-reportPowerSaveWhitelistChangedLocked方法-发送Doze白名单变化广播" class="headerlink" title="2.5 reportPowerSaveWhitelistChangedLocked方法-发送Doze白名单变化广播"></a>2.5 reportPowerSaveWhitelistChangedLocked方法-发送Doze白名单变化广播</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">reportPowerSaveWhitelistChangedLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Intent intent = <span class="keyword">new</span> Intent(PowerManager.ACTION_POWER_SAVE_WHITELIST_CHANGED);</span><br><span class="line">    intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);</span><br><span class="line">    getContext().sendBroadcastAsUser(intent, UserHandle.SYSTEM);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-6-updateWhitelistAppIdsLocked方法-更新Doze白名单信息"><a href="#2-6-updateWhitelistAppIdsLocked方法-更新Doze白名单信息" class="headerlink" title="2.6 updateWhitelistAppIdsLocked方法-更新Doze白名单信息"></a>2.6 updateWhitelistAppIdsLocked方法-更新Doze白名单信息</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateWhitelistAppIdsLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mPowerSaveWhitelistExceptIdleAppIdArray = buildAppIdArray(mPowerSaveWhitelistAppsExceptIdle,</span><br><span class="line">        mPowerSaveWhitelistUserApps, mPowerSaveWhitelistExceptIdleAppIds);</span><br><span class="line">    mPowerSaveWhitelistAllAppIdArray = buildAppIdArray(mPowerSaveWhitelistApps,</span><br><span class="line">        mPowerSaveWhitelistUserApps, mPowerSaveWhitelistAllAppIds);</span><br><span class="line">    mPowerSaveWhitelistUserAppIdArray = buildAppIdArray(<span class="keyword">null</span>,</span><br><span class="line">        mPowerSaveWhitelistUserApps, mPowerSaveWhitelistUserAppIds);</span><br><span class="line">    <span class="keyword">if</span> (mLocalPowerManager != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">        Slog.d(TAG, <span class="string">"Setting wakelock whitelist to "</span></span><br><span class="line">            + Arrays.toString(mPowerSaveWhitelistAllAppIdArray));</span><br><span class="line">    &#125;</span><br><span class="line">    mLocalPowerManager.setDeviceIdleWhitelist(mPowerSaveWhitelistAllAppIdArray);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mLocalAlarmManager != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">        Slog.d(TAG, <span class="string">"Setting alarm whitelist to "</span></span><br><span class="line">            + Arrays.toString(mPowerSaveWhitelistUserAppIdArray));</span><br><span class="line">    &#125;</span><br><span class="line">    mLocalAlarmManager.setDeviceIdleUserWhitelist(mPowerSaveWhitelistUserAppIdArray);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-7-writeConfigFileLocked方法-写入config文件"><a href="#2-7-writeConfigFileLocked方法-写入config文件" class="headerlink" title="2.7 writeConfigFileLocked方法-写入config文件"></a>2.7 writeConfigFileLocked方法-写入config文件</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">writeConfigFileLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mHandler.removeMessages(MSG_WRITE_CONFIG);</span><br><span class="line">    mHandler.sendEmptyMessageDelayed(MSG_WRITE_CONFIG, <span class="number">5000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/Power/" rel="tag"># Power</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/20/Power/Doze模式概述/" rel="next" title="Doze模式概述">
+                <i class="fa fa-chevron-left"></i> Doze模式概述
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/08/Power/Doze的启动流程/" rel="prev" title="Doze的启动流程">
+                Doze的启动流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、三种情况处理"><span class="nav-text">一、三种情况处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-System-excidle-system-app-used-for-doze"><span class="nav-text">1.1 System-excidle (system app) : used for doze</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-System-system-app-used-for-doze-amp-app-standby"><span class="nav-text">1.2 System (system app) : used for doze &amp; app standby</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-User-used-for-doze-amp-app-standby"><span class="nav-text">1.3 User :  used for doze &amp; app standby</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、Doze白名单"><span class="nav-text">二、Doze白名单</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-onStart方法-Doze白名单服务"><span class="nav-text">2.1 onStart方法 - Doze白名单服务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-BinderService-处理Doze白名单"><span class="nav-text">2.2 BinderService - 处理Doze白名单</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-addPowerSaveWhitelistAppInternal方法-将其加入到Doze白名单"><span class="nav-text">2.3 addPowerSaveWhitelistAppInternal方法-将其加入到Doze白名单</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-removePowerSaveWhitelistAppInternal方法-从Doze白名单中移除"><span class="nav-text">2.4 removePowerSaveWhitelistAppInternal方法-从Doze白名单中移除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-reportPowerSaveWhitelistChangedLocked方法-发送Doze白名单变化广播"><span class="nav-text">2.5 reportPowerSaveWhitelistChangedLocked方法-发送Doze白名单变化广播</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-updateWhitelistAppIdsLocked方法-更新Doze白名单信息"><span class="nav-text">2.6 updateWhitelistAppIdsLocked方法-更新Doze白名单信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-7-writeConfigFileLocked方法-写入config文件"><span class="nav-text">2.7 writeConfigFileLocked方法-写入config文件</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

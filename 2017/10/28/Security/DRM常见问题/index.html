@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框1.1 DrmLayerpackages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmLayer.java 1234567891011121314private boolean showDrmDialog() &amp;#123;    ...    if">
+<meta name="keywords" content="Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DRM常见问题">
+<meta property="og:url" content="http://www.xiezeyang.com/2017/10/28/Security/DRM常见问题/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框1.1 DrmLayerpackages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmLayer.java 1234567891011121314private boolean showDrmDialog() &amp;#123;    ...    if">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DRM常见问题">
+<meta name="twitter:description" content="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框1.1 DrmLayerpackages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmLayer.java 1234567891011121314private boolean showDrmDialog() &amp;#123;    ...    if">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2017/10/28/Security/DRM常见问题/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>DRM常见问题 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/28/Security/DRM常见问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">DRM常见问题
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-10-28 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-28T00:00:00+08:00">2017-10-28</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框"><a href="#一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框" class="headerlink" title="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框"></a>一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框</h3><h4 id="1-1-DrmLayer"><a href="#1-1-DrmLayer" class="headerlink" title="1.1 DrmLayer"></a>1.1 DrmLayer</h4><p>packages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmLayer.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">showDrmDialog</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (OmaDrmStore.RightsStatus.RIGHTS_VALID == rights) &#123;</span><br><span class="line">        OmaDrmUiUtils.showConsumeDialog(mActivity,</span><br><span class="line">            <span class="keyword">new</span> DialogInterface.OnClickListener() &#123;</span><br><span class="line">              ...</span><br><span class="line">         &#125;);</span><br><span class="line">     drmManagerClient.consumeRights(imageItem.filePath,OmaDrmStore.Action.DISPLAY);</span><br><span class="line">        mModel.enterConsumeMode();</span><br><span class="line">        hideBars();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        …</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-2-OmaDrmUiUtils"><a href="#1-2-OmaDrmUiUtils" class="headerlink" title="1.2 OmaDrmUiUtils"></a>1.2 OmaDrmUiUtils</h4><p>vendor/mediatek/proprietary/frameworks/base/drm/java/com/mediatek/drm/OmaDrmUiUtils.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Dialog <span class="title">showConsumeDialog</span><span class="params">(Context context,</span></span></span><br><span class="line"><span class="function"><span class="params">        DialogInterface.OnClickListener listener,</span></span></span><br><span class="line"><span class="function"><span class="params">        DialogInterface.OnDismissListener dismissListener)</span> </span>&#123;</span><br><span class="line">    …</span><br><span class="line">    <span class="comment">//dialog.show();</span></span><br><span class="line">    <span class="keyword">return</span> dialog;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Dialog <span class="title">showConsumeRightsDialogForVideoPlayer</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        OmaDrmClient client, Context context,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">final</span> DrmOperationListener listener)</span> </span>&#123;</span><br><span class="line">    …</span><br><span class="line">    <span class="comment">//dialog.show();</span></span><br><span class="line">    <span class="keyword">if</span> (listener != <span class="keyword">null</span>) &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"showConsumeRights: start to consume rights"</span>);</span><br><span class="line">        listener.onOperated(DrmOperationListener.CONTINUE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dialog;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二、下载FL类型文件显示小锁标识（下载管理器、图库、文件管理器）"><a href="#二、下载FL类型文件显示小锁标识（下载管理器、图库、文件管理器）" class="headerlink" title="二、下载FL类型文件显示小锁标识（下载管理器、图库、文件管理器）"></a>二、下载FL类型文件显示小锁标识（下载管理器、图库、文件管理器）</h3><h4 id="2-1-DrmHelper"><a href="#2-1-DrmHelper" class="headerlink" title="2.1 DrmHelper"></a>2.1 DrmHelper</h4><p>packages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmHelper.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getDrmIconResourceID</span><span class="params">(Context context, MediaData data)</span> </span>&#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    if (data.drmMethod == OmaDrmStore.DrmMethod.METHOD_FL)</span></span><br><span class="line"><span class="comment">        return 0;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-OmaDrmUiUtils"><a href="#2-2-OmaDrmUiUtils" class="headerlink" title="2.2 OmaDrmUiUtils"></a>2.2 OmaDrmUiUtils</h4><p>vendor/mediatek/proprietary/frameworks/base/drm/java/com/mediatek/drm/OmaDrmUiUtils.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Bitmap <span class="title">overlayDrmIconSkew</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        OmaDrmClient client, Resources res, String path, <span class="keyword">int</span> action, Bitmap bgdBmp)</span> </span>&#123;</span><br><span class="line">   ...</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    if (method == OmaDrmStore.DrmMethod.METHOD_FL) &#123;</span></span><br><span class="line"><span class="comment">        Log.d(TAG, "overlayDrmIconSkew : method FL, no icon overlayed");</span></span><br><span class="line"><span class="comment">        return bgdBmp;</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Bitmap <span class="title">overlayDrmIcon</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            OmaDrmClient client, Resources res, String path, <span class="keyword">int</span> action, Bitmap bgdBmp)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    if (method == OmaDrmStore.DrmMethod.METHOD_FL) &#123;</span></span><br><span class="line"><span class="comment">        Log.d(TAG, "overlayDrmIcon : method FL, no icon overlayed");</span></span><br><span class="line"><span class="comment">        return bgdBmp;</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-3-DirectoryFragment"><a href="#2-3-DirectoryFragment" class="headerlink" title="2.3 DirectoryFragment"></a>2.3 DirectoryFragment</h3><p>frameworks/base/packages/DocumentsUI/src/com/android/documentsui/DirectoryFragment.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">if (DocumentsFeatureOption.IS_SUPPORT_DRM &amp;&amp; isDrm</span></span><br><span class="line"><span class="comment">       &amp;&amp; (drmMethod &gt; 0 &amp;&amp; drmMethod != OmaDrmStore.DrmMethod.METHOD_FL)) &#123;</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">if</span> (DocumentsFeatureOption.IS_SUPPORT_DRM &amp;&amp; isDrm &amp;&amp; (drmMethod &gt; <span class="number">0</span> )) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、图库打开CD、SD类型文件，弹出Dialog后点击Cancel按钮显示小图"><a href="#三、图库打开CD、SD类型文件，弹出Dialog后点击Cancel按钮显示小图" class="headerlink" title="三、图库打开CD、SD类型文件，弹出Dialog后点击Cancel按钮显示小图"></a>三、图库打开CD、SD类型文件，弹出Dialog后点击Cancel按钮显示小图</h3><h4 id="3-1-PhotoPage"><a href="#3-1-PhotoPage" class="headerlink" title="3.1 PhotoPage"></a>3.1 PhotoPage</h4><p>packages/apps/Gallery2/src/com/android/gallery3d/app/PhotoPage.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> LayerManager.IBackwardContoller mBackwardContollerForLayer =</span><br><span class="line">         <span class="keyword">new</span> LayerManager.IBackwardContoller() &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setFilmMode</span><span class="params">(<span class="keyword">boolean</span> isFilmMode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">null</span> != mPhotoView) &#123;</span><br><span class="line">            Log.d(TAG,<span class="string">" isFilmMode = "</span>+isFilmMode);</span><br><span class="line">            mPhotoView.setFilmMode(isFilmMode);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-LayerManager"><a href="#3-2-LayerManager" class="headerlink" title="3.2 LayerManager"></a>3.2 LayerManager</h4><p>packages/apps/Gallery2/mtkgallery/mtkgallery/src/com/mediatek/galleryframework/base/LayerManager.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IBackwardContoller</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyDataChange</span><span class="params">(MediaData mediaData)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setFilmMode</span><span class="params">(<span class="keyword">boolean</span> isFilmMode)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-3-DrmTexture"><a href="#3-3-DrmTexture" class="headerlink" title="3.3 DrmTexture"></a>3.3 DrmTexture</h4><p>packages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmTexture.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">(MGLCanvas canvas, <span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span> w, <span class="keyword">int</span> h)</span> </span>&#123;</span><br><span class="line">    x = x + w/<span class="number">4</span>;</span><br><span class="line">    y = y + h/<span class="number">4</span>;</span><br><span class="line">    w = w/<span class="number">2</span>;</span><br><span class="line">    h = h/<span class="number">2</span>;</span><br><span class="line">    mTexture.draw(canvas, x, y, w, h);</span><br><span class="line">    drawDrmIcon(canvas, x, y, w, h);</span><br><span class="line">    drawStringAtCenter(canvas, x, y, w, h);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-4-DrmItem"><a href="#3-4-DrmItem" class="headerlink" title="3.4 DrmItem"></a>3.4 DrmItem</h4><p>packages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmItem.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Bitmap <span class="title">getDrmThumbnail</span><span class="params">(ThumbType thumbType, <span class="keyword">boolean</span> beforeConsume)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (thumbType == ThumbType.MICRO) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (thumbType == ThumbType.MIDDLE || thumbType ==</span><br><span class="line">            ThumbType.HIGHQUALITY) &#123;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">        if (mMediaData.drmMethod == OmaDrmStore.DrmMethod.METHOD_FL</span></span><br><span class="line"><span class="comment">                || beforeConsume == false) &#123;</span></span><br><span class="line"><span class="comment">            int targetSize = thumbType.getTargetSize();</span></span><br><span class="line"><span class="comment">            return mRealItem.getOriginRatioThumbnailFromBuffer(buffer,</span></span><br><span class="line"><span class="comment">targetSize);</span></span><br><span class="line"><span class="comment">        &#125; else &#123;</span></span><br><span class="line"><span class="comment">            return mRealItem.getOriginRatioThumbnailFromBuffer(buffer,</span></span><br><span class="line"><span class="comment">                    ThumbType.MICRO.getTargetSize());</span></span><br><span class="line"><span class="comment">        &#125;</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="keyword">if</span> (mMediaData.drmMethod == OmaDrmStore.DrmMethod.METHOD_FL) &#123;</span><br><span class="line">            <span class="keyword">int</span> targetSize = thumbType.getTargetSize();</span><br><span class="line">            <span class="keyword">return</span> mRealItem.getOriginRatioThumbnailFromBuffer(buffer, targetSize);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (beforeConsume == <span class="keyword">false</span> )&#123;</span><br><span class="line">            <span class="keyword">return</span> mRealItem.getOriginRatioThumbnailFromBuffer(buffer,</span><br><span class="line">                     ThumbType.MICRO.getTargetSize());</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-5-DrmLayer"><a href="#3-5-DrmLayer" class="headerlink" title="3.5 DrmLayer"></a>3.5 DrmLayer</h4><p>packages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmLayer.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">showDrmDialog</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  ...</span><br><span class="line">    <span class="keyword">if</span> (OmaDrmStore.RightsStatus.RIGHTS_VALID == rights) &#123;</span><br><span class="line">        OmaDrmUiUtils.showConsumeDialog(mActivity,</span><br><span class="line">                <span class="keyword">new</span> DialogInterface.OnClickListener() &#123;</span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(DialogInterface dialog, <span class="keyword">int</span> which)</span> </span>&#123;</span><br><span class="line">                        <span class="keyword">if</span> (DialogInterface.BUTTON_POSITIVE == which) &#123;</span><br><span class="line">                             mPlayer.consumeRights();</span><br><span class="line">                            <span class="keyword">if</span> (<span class="keyword">null</span> != mBackwardContoller) &#123;</span><br><span class="line">                                 mBackwardContoller.setFilmMode(<span class="keyword">false</span>);</span><br><span class="line">                            &#125;</span><br><span class="line">                            drmManagerClient.consumeRights(</span><br><span class="line">                                    mMediaData.filePath,</span><br><span class="line">                                    OmaDrmStore.Action.DISPLAY);</span><br><span class="line">                        &#125;</span><br><span class="line">                        dialog.dismiss();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;, <span class="keyword">new</span> DialogInterface.OnDismissListener() &#123;</span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDismiss</span><span class="params">(DialogInterface dialog)</span> </span>&#123;</span><br><span class="line">                    &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="四、添加第三方应用支持打开DRM类型文件"><a href="#四、添加第三方应用支持打开DRM类型文件" class="headerlink" title="四、添加第三方应用支持打开DRM类型文件"></a>四、添加第三方应用支持打开DRM类型文件</h3><p>把有需要的APK 名称添加到TRUSTED_APP数组中,不建议直接把IsDrmTrustedAPP 函数返回true，这样不确定是否所有的apk 都能保证遵守DRM spec,如有需求，请check APP并添加到TRUSTED_APP数组中。<br>如果是视频文件，也可以使用类似的方式修改，把播放视频APK 添加到TRUSTED_VIDEO_APP中。</p>
+<p>vendor/mediatek/proprietary/frameworks/av/drm/mtkwhitelist/DrmMtkDef.cpp<br>vendor/mediatek/proprietary/frameworks/av/include/drm/DrmMtkDef.h</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> DrmTrustedApp::init() &#123;</span><br><span class="line">    ...</span><br><span class="line">    TRUSTED_APP.push_back(String8(<span class="string">"com.android.gallery3d:widgetservice"</span>));<span class="comment">//for gallery widget</span></span><br><span class="line">    <span class="comment">//Add your special process name here</span></span><br><span class="line">    TRUSTED_APP.push_back(String8(<span class="string">"com.android.google.photo"</span>));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> DrmTrustedClient::init() &#123;</span><br><span class="line">    TRUSTED_PROC.push_back(String8(<span class="string">"com.android.gallery3d:widgetservice"</span>));<span class="comment">//for gallery widget </span></span><br><span class="line">    <span class="comment">//Add your special process name here</span></span><br><span class="line">TRUSTED_PROC.push_back(String8(<span class="string">"com.android.google.photo"</span>));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> DrmTrustedVideoApp::init() &#123;</span><br><span class="line">    TRUSTED_VIDEO_APP.push_back(String8(<span class="string">"com.mediatek.dataprotection"</span>));</span><br><span class="line">    <span class="comment">//Add your special process name here</span></span><br><span class="line">TRUSTED_VIDEO_APP.push_back(String8(<span class="string">"com.android.google.photo"</span>));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/21/Security/ICU那点事儿/" rel="next" title="ICU那点事儿">
+                <i class="fa fa-chevron-left"></i> ICU那点事儿
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/03/Security/DRM基本介绍/" rel="prev" title="DRM基本介绍">
+                DRM基本介绍 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框"><span class="nav-text">一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-DrmLayer"><span class="nav-text">1.1 DrmLayer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-OmaDrmUiUtils"><span class="nav-text">1.2 OmaDrmUiUtils</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、下载FL类型文件显示小锁标识（下载管理器、图库、文件管理器）"><span class="nav-text">二、下载FL类型文件显示小锁标识（下载管理器、图库、文件管理器）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-DrmHelper"><span class="nav-text">2.1 DrmHelper</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-OmaDrmUiUtils"><span class="nav-text">2.2 OmaDrmUiUtils</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-DirectoryFragment"><span class="nav-text">2.3 DirectoryFragment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、图库打开CD、SD类型文件，弹出Dialog后点击Cancel按钮显示小图"><span class="nav-text">三、图库打开CD、SD类型文件，弹出Dialog后点击Cancel按钮显示小图</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-PhotoPage"><span class="nav-text">3.1 PhotoPage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-LayerManager"><span class="nav-text">3.2 LayerManager</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-DrmTexture"><span class="nav-text">3.3 DrmTexture</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-DrmItem"><span class="nav-text">3.4 DrmItem</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-DrmLayer"><span class="nav-text">3.5 DrmLayer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、添加第三方应用支持打开DRM类型文件"><span class="nav-text">四、添加第三方应用支持打开DRM类型文件</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

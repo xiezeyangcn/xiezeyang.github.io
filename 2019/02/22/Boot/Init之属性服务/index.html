@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、初始化property12345678910void property_init() &amp;#123;    mkdir(&quot;/dev/__properties__&quot;, S_IRWXU | S_IXGRP | S_IXOTH);    CreateSerializedPropertyInfo();    if (__system_property_area_init()) &amp;#123;">
+<meta name="keywords" content="Boot,Init">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Init之属性服务">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/02/22/Boot/Init之属性服务/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="一、初始化property12345678910void property_init() &amp;#123;    mkdir(&quot;/dev/__properties__&quot;, S_IRWXU | S_IXGRP | S_IXOTH);    CreateSerializedPropertyInfo();    if (__system_property_area_init()) &amp;#123;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.786Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Init之属性服务">
+<meta name="twitter:description" content="一、初始化property12345678910void property_init() &amp;#123;    mkdir(&quot;/dev/__properties__&quot;, S_IRWXU | S_IXGRP | S_IXOTH);    CreateSerializedPropertyInfo();    if (__system_property_area_init()) &amp;#123;">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/02/22/Boot/Init之属性服务/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Init之属性服务 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/02/22/Boot/Init之属性服务/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Init之属性服务
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-02-22 00:00:00" itemprop="dateCreated datePublished" datetime="2019-02-22T00:00:00+08:00">2019-02-22</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、初始化property"><a href="#一、初始化property" class="headerlink" title="一、初始化property"></a>一、初始化property</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">property_init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mkdir(<span class="string">"/dev/__properties__"</span>, S_IRWXU | S_IXGRP | S_IXOTH);</span><br><span class="line">    CreateSerializedPropertyInfo();</span><br><span class="line">    <span class="keyword">if</span> (__system_property_area_init()) &#123;</span><br><span class="line">        LOG(FATAL) &lt;&lt; <span class="string">"Failed to initialize property area"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!property_info_area.LoadDefaultPath()) &#123;</span><br><span class="line">        LOG(FATAL) &lt;&lt; <span class="string">"Failed to load serialized property info file"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="二、序列化property信息"><a href="#二、序列化property信息" class="headerlink" title="二、序列化property信息"></a>二、序列化property信息</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CreateSerializedPropertyInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> property_infos = <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;PropertyInfoEntry&gt;();</span><br><span class="line">    <span class="keyword">if</span> (access(<span class="string">"/system/etc/selinux/plat_property_contexts"</span>, R_OK) != <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!LoadPropertyInfoFromFile(<span class="string">"/system/etc/selinux/plat_property_contexts"</span>,</span><br><span class="line">                                      &amp;property_infos)) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Don't check for failure here, so we always have a sane list of properties.</span></span><br><span class="line">        <span class="comment">// E.g. In case of recovery, the vendor partition will not have mounted and we</span></span><br><span class="line">        <span class="comment">// still need the system / platform properties to function.</span></span><br><span class="line">        <span class="keyword">if</span> (!LoadPropertyInfoFromFile(<span class="string">"/vendor/etc/selinux/vendor_property_contexts"</span>,</span><br><span class="line">                                      &amp;property_infos)) &#123;</span><br><span class="line">            <span class="comment">// Fallback to nonplat_* if vendor_* doesn't exist.</span></span><br><span class="line">            LoadPropertyInfoFromFile(<span class="string">"/vendor/etc/selinux/nonplat_property_contexts"</span>,</span><br><span class="line">                                     &amp;property_infos);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!LoadPropertyInfoFromFile(<span class="string">"/plat_property_contexts"</span>, &amp;property_infos)) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!LoadPropertyInfoFromFile(<span class="string">"/vendor_property_contexts"</span>, &amp;property_infos)) &#123;</span><br><span class="line">            <span class="comment">// Fallback to nonplat_* if vendor_* doesn't exist.</span></span><br><span class="line">            LoadPropertyInfoFromFile(<span class="string">"/nonplat_property_contexts"</span>, &amp;property_infos);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> serialized_contexts = <span class="built_in">std</span>::<span class="built_in">string</span>();</span><br><span class="line">    <span class="keyword">auto</span> error = <span class="built_in">std</span>::<span class="built_in">string</span>();</span><br><span class="line">    <span class="keyword">if</span> (!BuildTrie(property_infos, <span class="string">"u:object_r:default_prop:s0"</span>, <span class="string">"string"</span>, &amp;serialized_contexts,</span><br><span class="line">                   &amp;error)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Unable to serialize property contexts: "</span> &lt;&lt; error;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">constexpr</span> <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> kPropertyInfosPath[] = <span class="string">"/dev/__properties__/property_info"</span>;</span><br><span class="line">    <span class="keyword">if</span> (!WriteStringToFile(serialized_contexts, kPropertyInfosPath, <span class="number">0444</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">false</span>)) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Unable to write serialized property infos to file"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    selinux_android_restorecon(kPropertyInfosPath, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、启动property服务"><a href="#三、启动property服务" class="headerlink" title="三、启动property服务"></a>三、启动property服务</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">start_property_service</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    selinux_callback cb;</span><br><span class="line">    cb.func_audit = SelinuxAuditCallback;</span><br><span class="line">    selinux_set_callback(SELINUX_CB_AUDIT, cb);</span><br><span class="line">    property_set(<span class="string">"ro.property_service.version"</span>, <span class="string">"2"</span>);</span><br><span class="line">    property_set_fd = CreateSocket(PROP_SERVICE_NAME, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK,</span><br><span class="line">                                   <span class="literal">false</span>, <span class="number">0666</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">nullptr</span>);</span><br><span class="line">    <span class="keyword">if</span> (property_set_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(FATAL) &lt;&lt; <span class="string">"start_property_service socket creation failed"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    listen(property_set_fd, <span class="number">8</span>);</span><br><span class="line">    register_epoll_handler(property_set_fd, handle_property_set_fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="四、设置属性"><a href="#四、设置属性" class="headerlink" title="四、设置属性"></a>四、设置属性</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handle_property_set_fd</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">uint32_t</span> kDefaultSocketTimeout = <span class="number">2000</span>; <span class="comment">/* ms */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> s = accept4(property_set_fd, <span class="literal">nullptr</span>, <span class="literal">nullptr</span>, SOCK_CLOEXEC);</span><br><span class="line">    <span class="keyword">if</span> (s == <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ucred cr;</span><br><span class="line">    <span class="keyword">socklen_t</span> cr_size = <span class="keyword">sizeof</span>(cr);</span><br><span class="line">    <span class="keyword">if</span> (getsockopt(s, SOL_SOCKET, SO_PEERCRED, &amp;cr, &amp;cr_size) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        close(s);</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"sys_prop: unable to get SO_PEERCRED"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">SocketConnection <span class="title">socket</span><span class="params">(s, cr)</span></span>;</span><br><span class="line">    <span class="keyword">uint32_t</span> timeout_ms = kDefaultSocketTimeout;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> cmd = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (!socket.RecvUint32(&amp;cmd, &amp;timeout_ms)) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"sys_prop: error while reading command from the socket"</span>;</span><br><span class="line">        socket.SendUint32(PROP_ERROR_READ_CMD);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">    <span class="keyword">case</span> PROP_MSG_SETPROP: &#123;</span><br><span class="line">        <span class="keyword">char</span> prop_name[PROP_NAME_MAX];</span><br><span class="line">        <span class="keyword">char</span> prop_value[PROP_VALUE_MAX];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!socket.RecvChars(prop_name, PROP_NAME_MAX, &amp;timeout_ms) ||</span><br><span class="line">            !socket.RecvChars(prop_value, PROP_VALUE_MAX, &amp;timeout_ms)) &#123;</span><br><span class="line">          PLOG(ERROR) &lt;&lt; <span class="string">"sys_prop(PROP_MSG_SETPROP): error while reading name/value from the socket"</span>;</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        prop_name[PROP_NAME_MAX<span class="number">-1</span>] = <span class="number">0</span>;</span><br><span class="line">        prop_value[PROP_VALUE_MAX<span class="number">-1</span>] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; cr = socket.cred();</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> error;</span><br><span class="line">        <span class="keyword">uint32_t</span> result =</span><br><span class="line">            HandlePropertySet(prop_name, prop_value, socket.source_context(), cr, &amp;error);</span><br><span class="line">        <span class="keyword">if</span> (result != PROP_SUCCESS) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Unable to set property '"</span> &lt;&lt; prop_name &lt;&lt; <span class="string">"' to '"</span> &lt;&lt; prop_value</span><br><span class="line">                       &lt;&lt; <span class="string">"' from uid:"</span> &lt;&lt; cr.uid &lt;&lt; <span class="string">" gid:"</span> &lt;&lt; cr.gid &lt;&lt; <span class="string">" pid:"</span> &lt;&lt; cr.pid &lt;&lt; <span class="string">": "</span></span><br><span class="line">                       &lt;&lt; error;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> PROP_MSG_SETPROP2: &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> value;</span><br><span class="line">        <span class="keyword">if</span> (!socket.RecvString(&amp;name, &amp;timeout_ms) ||</span><br><span class="line">            !socket.RecvString(&amp;value, &amp;timeout_ms)) &#123;</span><br><span class="line">          PLOG(ERROR) &lt;&lt; <span class="string">"sys_prop(PROP_MSG_SETPROP2): error while reading name/value from the socket"</span>;</span><br><span class="line">          socket.SendUint32(PROP_ERROR_READ_DATA);</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; cr = socket.cred();</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> error;</span><br><span class="line">        <span class="keyword">uint32_t</span> result = HandlePropertySet(name, value, socket.source_context(), cr, &amp;error);</span><br><span class="line">        <span class="keyword">if</span> (result != PROP_SUCCESS) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Unable to set property '"</span> &lt;&lt; name &lt;&lt; <span class="string">"' to '"</span> &lt;&lt; value</span><br><span class="line">                       &lt;&lt; <span class="string">"' from uid:"</span> &lt;&lt; cr.uid &lt;&lt; <span class="string">" gid:"</span> &lt;&lt; cr.gid &lt;&lt; <span class="string">" pid:"</span> &lt;&lt; cr.pid &lt;&lt; <span class="string">": "</span></span><br><span class="line">                       &lt;&lt; error;</span><br><span class="line">        &#125;</span><br><span class="line">        socket.SendUint32(result);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"sys_prop: invalid command "</span> &lt;&lt; cmd;</span><br><span class="line">        socket.SendUint32(PROP_ERROR_INVALID_CMD);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Init/" rel="tag"># Init</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/16/Boot/Zygote之启动流程/" rel="next" title="Zygote之启动流程">
+                <i class="fa fa-chevron-left"></i> Zygote之启动流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/10/Boot/SystemServer之启动流程/" rel="prev" title="SystemServer之启动流程">
+                SystemServer之启动流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、初始化property"><span class="nav-text">一、初始化property</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、序列化property信息"><span class="nav-text">二、序列化property信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、启动property服务"><span class="nav-text">三、启动property服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、设置属性"><span class="nav-text">四、设置属性</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、布局介绍1.1 线性布局LinearLayout&amp;emsp;LinearLayout是一个用于使所有子视图在单个方向（垂直/水平）保持对齐的视图组，可以使用android:orientation属性指定布局方向，默认为垂直方向。另外，还可以使用android:layout_weight属性为各个视图分配权重，默认为0。 1.2 相对布局RelativeLayout&amp;emsp;RelativeL">
+<meta name="keywords" content="UI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见布局属性详解">
+<meta property="og:url" content="http://www.xiezeyang.com/2017/12/04/UI/常见布局属性详解/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="一、布局介绍1.1 线性布局LinearLayout&amp;emsp;LinearLayout是一个用于使所有子视图在单个方向（垂直/水平）保持对齐的视图组，可以使用android:orientation属性指定布局方向，默认为垂直方向。另外，还可以使用android:layout_weight属性为各个视图分配权重，默认为0。 1.2 相对布局RelativeLayout&amp;emsp;RelativeL">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/margin_padding_difference.jpg">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.782Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="常见布局属性详解">
+<meta name="twitter:description" content="一、布局介绍1.1 线性布局LinearLayout&amp;emsp;LinearLayout是一个用于使所有子视图在单个方向（垂直/水平）保持对齐的视图组，可以使用android:orientation属性指定布局方向，默认为垂直方向。另外，还可以使用android:layout_weight属性为各个视图分配权重，默认为0。 1.2 相对布局RelativeLayout&amp;emsp;RelativeL">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/margin_padding_difference.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2017/12/04/UI/常见布局属性详解/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>常见布局属性详解 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/04/UI/常见布局属性详解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">常见布局属性详解
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-12-04 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-04T00:00:00+08:00">2017-12-04</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UI/" itemprop="url" rel="index"><span itemprop="name">UI</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、布局介绍"><a href="#一、布局介绍" class="headerlink" title="一、布局介绍"></a>一、布局介绍</h3><h4 id="1-1-线性布局LinearLayout"><a href="#1-1-线性布局LinearLayout" class="headerlink" title="1.1 线性布局LinearLayout"></a>1.1 线性布局LinearLayout</h4><p>&emsp;LinearLayout是一个用于使所有子视图在单个方向（垂直/水平）保持对齐的视图组，可以使用android:orientation属性指定布局方向，默认为垂直方向。另外，还可以使用android:layout_weight属性为各个视图分配权重，默认为0。</p>
+<h4 id="1-2-相对布局RelativeLayout"><a href="#1-2-相对布局RelativeLayout" class="headerlink" title="1.2 相对布局RelativeLayout"></a>1.2 相对布局RelativeLayout</h4><p>&emsp;RelativeLayout是一个以相对位置显示子视图的视图组。它允许子视图指定它们相对于相对于父元素或其它位置的位置。其嵌套的视图组能保持布局层次，故而能提高性能，相比较嵌套的LinearLayout。默认都是在左上角绘制。</p>
+<a id="more"></a>
+<h3 id="二、布局共有属性"><a href="#二、布局共有属性" class="headerlink" title="二、布局共有属性"></a>二、布局共有属性</h3><h4 id="2-1-layout-width-amp-layout-height"><a href="#2-1-layout-width-amp-layout-height" class="headerlink" title="2.1 layout_width &amp; layout_height"></a>2.1 layout_width &amp; layout_height</h4><p>&emsp;分别用于设置Layout组件的宽度和高度。取值方式主要包含以下几种：</p>
+<p>&emsp;&emsp;(1)固定像素值<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:layout_width="8dp"</span><br></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;(2)wrap_content:视图的宽高会被设置为以适应视图中内容的最小尺寸<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:layout_width="wrap_content"</span><br></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;(3)match_parent:视图的宽高会延伸至充满整个父布局<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:layout_width="match_parent"</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-2-layout-margin-方向"><a href="#2-2-layout-margin-方向" class="headerlink" title="2.2 layout_margin$方向"></a>2.2 layout_margin$方向</h4><p>&emsp;用于设置子控件的边缘相对父控件的边距。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">android:layout_marginStart=“16dp”       // 距离开始边缘的边距</span><br><span class="line">android:layout_marginEnd=“16dp”         // 距离结束边缘的边距</span><br><span class="line">android:layout_marginTop=“8dp”          // 距离上面边缘的边距</span><br><span class="line">android:layout_marginBottom=“8dp”       // 距离下面边缘的边距</span><br><span class="line">android:layout_margin=“8dp”             // 距离各个方向边缘的边距</span><br><span class="line">android:layout_marginVertical=“8dp”     // 距离垂直方向的边距（上下）</span><br><span class="line">android:layout_marginHorizontal=“16dp”   // 距离水平方向的边距（左右）</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-3-padding-方向"><a href="#2-3-padding-方向" class="headerlink" title="2.3 padding$方向"></a>2.3 padding$方向</h4><p>&emsp;用于设置控件的内容相对控件的边缘的边距。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">android:paddingStart=“8dp”        // 距离控件头部的边距</span><br><span class="line">android:paddingEnd=“8dp”          // 距离控件尾部的边距</span><br><span class="line">android:paddingTop=“4dp”          // 距离控件顶部的边距</span><br><span class="line">android:paddingBottom=“4dp”       // 距离控件底部的边距</span><br><span class="line">android:padding=“4dp”             // 距离各个方向的边距</span><br><span class="line">android:paddingVertical=“4dp”     // 距离垂直方向的边距（上下）</span><br><span class="line">android:paddingHorizontal=“8dp”   // 距离水平方向的边距（左右）</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/margin_padding_difference.jpg" alt></p>
+<h4 id="2-4-layout-gravity"><a href="#2-4-layout-gravity" class="headerlink" title="2.4 layout_gravity"></a>2.4 layout_gravity</h4><p>&emsp;用于设置子控件在父控件中的位置，基本用于设置居中。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">android:layout_gravity="start"               // 起始</span><br><span class="line">android:layout_gravity="end"                 // 结束</span><br><span class="line">android:layout_gravity="top"                 // 顶部</span><br><span class="line">android:layout_gravity="bottom"              // 底部</span><br><span class="line">android:layout_gravity="center"              // 正中</span><br><span class="line">android:layout_gravity="center_horizontal"   // 水平居中</span><br><span class="line">android:layout_gravity="center_vertical"     // 垂直居中</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-5-gravity"><a href="#2-5-gravity" class="headerlink" title="2.5 gravity"></a>2.5 gravity</h4><p>&emsp;用于设置控件内容在控件中的位置，基本用于设置居中。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">android:gravity="start"               // 起始</span><br><span class="line">android:gravity="end"                 // 结束</span><br><span class="line">android:gravity="top"                 // 顶部</span><br><span class="line">android:gravity="bottom"              // 底部</span><br><span class="line">android:gravity="center"              // 正中</span><br><span class="line">android:gravity="center_horizontal"   // 水平居中</span><br><span class="line">android:gravity="center_vertical"     // 垂直居中</span><br></pre></td></tr></table></figure></p>
+<h3 id="三、布局特有属性"><a href="#三、布局特有属性" class="headerlink" title="三、布局特有属性"></a>三、布局特有属性</h3><h4 id="3-1-LinearLayout"><a href="#3-1-LinearLayout" class="headerlink" title="3.1 LinearLayout"></a>3.1 LinearLayout</h4><h5 id="3-1-1-orientation"><a href="#3-1-1-orientation" class="headerlink" title="3.1.1 orientation"></a>3.1.1 orientation</h5><p>&emsp;用于指定父控件下子控件按垂直还是水平方向排列。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">android:orientation="vertical"        // 父控件下子控件按垂直方向排列</span><br><span class="line">android:orientation="horizontal"      // 父控件下子控件按水平方向排列</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-1-2-layout-weight"><a href="#3-1-2-layout-weight" class="headerlink" title="3.1.2 layout_weight"></a>3.1.2 layout_weight</h5><p>&emsp;权重值更大的视图可以填充父视图中任何剩余的空间。子视图可以指定权重值，然后系统会按照子视图声明的权重值的比例，将视图组中的任何剩余空间分配给子视图。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">android:layout_weith="0"    // 默认值</span><br><span class="line">android:layout_weight="1"   // 一份划分父控件空间</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-2-RelativeLayout"><a href="#3-2-RelativeLayout" class="headerlink" title="3.2 RelativeLayout"></a>3.2 RelativeLayout</h4><h5 id="3-2-1-layout-align-方向"><a href="#3-2-1-layout-align-方向" class="headerlink" title="3.2.1 layout_align$方向"></a>3.2.1 layout_align$方向</h5><p>&emsp;用于指定控件的几个方向是否分别同父控件的重合。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">android:layout_alignStart="@id/start_view"    // 当前控件头部和指定控件start_view的头部重合</span><br><span class="line">android:layout_alignEnd="@id/end_view"        // 当前控件尾部和指定控件end_view的尾部重合</span><br><span class="line">android:layout_alignTop="@id/top_view"        // 当前控件顶部和指定控件top_view的顶部重合</span><br><span class="line">android:layout_alignBottom="@id/bottom_view"  // 当前控件底部和指定控件bottom_view的底部重合</span><br><span class="line">android:layout_alignBaseline="id/base_view"   // 当前控件的Baseline指定控件base_view的Baseline重合</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-2-2-layout-alignParent-方向"><a href="#3-2-2-layout-alignParent-方向" class="headerlink" title="3.2.2 layout_alignParent$方向"></a>3.2.2 layout_alignParent$方向</h5><p>&emsp;用于指定控件的几个方向是否分别同父控件的对齐。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">android:layout_alignParentStart="true"      // 当前控件头部和父控件的头部对齐</span><br><span class="line">android:layout_alignParentEnd="true"        // 当前控件尾部和父控件的尾部对齐</span><br><span class="line">android:layout_alignParentTop="true"        // 当前控件顶部和父控件的顶部对齐</span><br><span class="line">android:layout_alignParentBottom="true"     // 当前控件底部和父控件的底部对齐</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-2-3-layout-centerVertical-amp-layout-centerHorizontal-amp-layout-centerInParent"><a href="#3-2-3-layout-centerVertical-amp-layout-centerHorizontal-amp-layout-centerInParent" class="headerlink" title="3.2.3 layout_centerVertical &amp; layout_centerHorizontal &amp; layout_centerInParent"></a>3.2.3 layout_centerVertical &amp; layout_centerHorizontal &amp; layout_centerInParent</h5><p>&emsp;用于指定控件在父控件的位置。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:layout_centerVertical="true"        // 当前控件位于父控件的垂直居中位置</span><br><span class="line">android:layout_centerHorizontal="true"      // 当前控件位于父控件的水平居中位置</span><br><span class="line">android:layout_centerInParent="true"        // 当前控件位于父控件的正中位置</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-2-4-layout-above-amp-layout-below"><a href="#3-2-4-layout-above-amp-layout-below" class="headerlink" title="3.2.4 layout_above &amp; layout_below"></a>3.2.4 layout_above &amp; layout_below</h5><p>&emsp;用于指定控件相对兄弟控件的位置。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">android:layout_above="@id/above_view"     // 当前控件位于指定控件above_view的上方</span><br><span class="line">android:layout_below="@id/below_view"     // 当前控件位于指定控件below_view的下方</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-2-5-layout-toStartOf-amp-layout-toEndOf"><a href="#3-2-5-layout-toStartOf-amp-layout-toEndOf" class="headerlink" title="3.2.5 layout_toStartOf &amp; layout_toEndOf"></a>3.2.5 layout_toStartOf &amp; layout_toEndOf</h5><p>&emsp;用于指定控件同兄弟控件的位置。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">android:layout_toStartOf="@id/start_view"   // 当前控件位于指定控件start_view的头部</span><br><span class="line">android:layout_toEndOf="@id/end_view"       // 当前控件位于指定控件end_view的尾部</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-2-6-layout-alignWithParentIfMissing"><a href="#3-2-6-layout-alignWithParentIfMissing" class="headerlink" title="3.2.6 layout_alignWithParentIfMissing"></a>3.2.6 layout_alignWithParentIfMissing</h5><p>&emsp;用于指定控件同兄弟控件/父控件的位置。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android:layout_alignWithParentIfMissing="true"    // 若当前控件的兄弟控件找不到，则以父控件为参照</span><br></pre></td></tr></table></figure></p>
+<p>&emsp;注：开发过国际化的应用童鞋都知道，阿拉伯语等语言文字方向为从右向左，故此处不介绍Left/Right相关属性，而是采用Google推荐的Start/End。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/UI/" rel="tag"># UI</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/30/Build/Android.mk语法介绍/" rel="next" title="Android mk的语法介绍">
+                <i class="fa fa-chevron-left"></i> Android mk的语法介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/12/UI/常见控件属性详解/" rel="prev" title="常见控件属性详解">
+                常见控件属性详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、布局介绍"><span class="nav-text">一、布局介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-线性布局LinearLayout"><span class="nav-text">1.1 线性布局LinearLayout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-相对布局RelativeLayout"><span class="nav-text">1.2 相对布局RelativeLayout</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、布局共有属性"><span class="nav-text">二、布局共有属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-layout-width-amp-layout-height"><span class="nav-text">2.1 layout_width &amp; layout_height</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-layout-margin-方向"><span class="nav-text">2.2 layout_margin$方向</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-padding-方向"><span class="nav-text">2.3 padding$方向</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-layout-gravity"><span class="nav-text">2.4 layout_gravity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-gravity"><span class="nav-text">2.5 gravity</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、布局特有属性"><span class="nav-text">三、布局特有属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-LinearLayout"><span class="nav-text">3.1 LinearLayout</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1-1-orientation"><span class="nav-text">3.1.1 orientation</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1-2-layout-weight"><span class="nav-text">3.1.2 layout_weight</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-RelativeLayout"><span class="nav-text">3.2 RelativeLayout</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-1-layout-align-方向"><span class="nav-text">3.2.1 layout_align$方向</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-2-layout-alignParent-方向"><span class="nav-text">3.2.2 layout_alignParent$方向</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-3-layout-centerVertical-amp-layout-centerHorizontal-amp-layout-centerInParent"><span class="nav-text">3.2.3 layout_centerVertical &amp; layout_centerHorizontal &amp; layout_centerInParent</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-4-layout-above-amp-layout-below"><span class="nav-text">3.2.4 layout_above &amp; layout_below</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-5-layout-toStartOf-amp-layout-toEndOf"><span class="nav-text">3.2.5 layout_toStartOf &amp; layout_toEndOf</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-6-layout-alignWithParentIfMissing"><span class="nav-text">3.2.6 layout_alignWithParentIfMissing</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

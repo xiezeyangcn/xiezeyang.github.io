@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. DRM定义 DRM(Digital Rights Management), 是便于内容提供商对其提供的媒体对象(比如图片、音频、视频等)进行保护和控制的一种技术。内容提供商会给媒体对象授予相应的版权对象，版权对象中包含了媒体对象的密钥，使用方式等信息。在手机中,版权对象以文件的形式被存储在系统盘中的@DRM\ro\中，对用户是不可见的。一般来说，在打开有版权限制的媒体文件时，会先去相应的检查">
+<meta name="keywords" content="Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DRM基本介绍">
+<meta property="og:url" content="http://www.xiezeyang.com/2017/11/03/Security/DRM基本介绍/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="1. DRM定义 DRM(Digital Rights Management), 是便于内容提供商对其提供的媒体对象(比如图片、音频、视频等)进行保护和控制的一种技术。内容提供商会给媒体对象授予相应的版权对象，版权对象中包含了媒体对象的密钥，使用方式等信息。在手机中,版权对象以文件的形式被存储在系统盘中的@DRM\ro\中，对用户是不可见的。一般来说，在打开有版权限制的媒体文件时，会先去相应的检查">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-23T07:10:08.798Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DRM基本介绍">
+<meta name="twitter:description" content="1. DRM定义 DRM(Digital Rights Management), 是便于内容提供商对其提供的媒体对象(比如图片、音频、视频等)进行保护和控制的一种技术。内容提供商会给媒体对象授予相应的版权对象，版权对象中包含了媒体对象的密钥，使用方式等信息。在手机中,版权对象以文件的形式被存储在系统盘中的@DRM\ro\中，对用户是不可见的。一般来说，在打开有版权限制的媒体文件时，会先去相应的检查">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2017/11/03/Security/DRM基本介绍/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>DRM基本介绍 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/03/Security/DRM基本介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">DRM基本介绍
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-11-03 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-03T00:00:00+08:00">2017-11-03</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-DRM定义"><a href="#1-DRM定义" class="headerlink" title="1. DRM定义"></a>1. DRM定义</h3><p> DRM(Digital Rights Management), 是便于内容提供商对其提供的媒体对象(比如图片、音频、视频等)进行保护和控制的一种技术。内容提供商会给媒体对象授予相应的版权对象，版权对象中包含了媒体对象的密钥，使用方式等信息。在手机中,版权对象以文件的形式被存储在系统盘中的@DRM\ro\中，对用户是不可见的。一般来说，在打开有版权限制的媒体文件时，会先去相应的检查版权文件中的版权信息，用来获得是否被允许访问的权限(每个有版权限制的媒体文件都会有且仅有的一个版权文件相关联)。如果有权限则可以进一步打开相应的媒体文件，如果没有权限，则会有”Locked”的提示，从而无法打开媒体文件。在打开有版权限制的文件之后，版权文件会有相应的更新，例如若媒体文件只能被打开3次，这次打开后就会减少1次，还剩下2次被打开的权限，若是再打开两次后，则由于没有了打开权限从而无法再打开此媒体文件。</p>
+<a id="more"></a>
+<h3 id="2-DRM的协议以及是否支持DRM"><a href="#2-DRM的协议以及是否支持DRM" class="headerlink" title="2. DRM的协议以及是否支持DRM"></a>2. DRM的协议以及是否支持DRM</h3><p>目前国际上主流DRM技术标准主要包括:OMA DRM, Microsoft DRM, 3GPP DRM。MTK平台主要是支持OMA DRM。OMA DRM协议有两个版本：OMA DRM 1.0和OMA DRM 2.0，MTK提供的是V1.0方案。若想了解项目对DRM的支持情况，请查看make file中的DRM_SUPPORT和DRM_VERSION的定义，若DRM_SUPPORT= NONE, 说明此项目没有开DRM功能；若DRM_SUPPORT = MTK(此时DRM_VERSION必须为V01)，说明支持OMA DRM 1.0。因此客户如果想开DRM功能，请向MTK申请flavor build。 若是想支持OMA DRM 2.0，是使用BACI的方案，此时需要先购买第三方的license。</p>
+<p>如果无法确定从某个网站获取到的是DRM文件，可以去检查HTTP response header中的content type字段，如果是以上的任何一种，说明获取到得是DRM文件。提取HTTP协议数据的方法请参见FAQ00547。</p>
+<p>测试网址：<a href="http://202.108.92.230" target="_blank" rel="noopener">http://202.108.92.230</a></p>
+<h3 id="3-DRM重置"><a href="#3-DRM重置" class="headerlink" title="3. DRM重置"></a>3. DRM重置</h3><p>DRM是用在处理受保护的媒体文件（例如音乐，图片，视频）,它的使用需要基于OMA DRM v1.0标准的服务器的支持。例如，使用者先从服务器端下载一个受保护的mp3文件，由于此文件是加密的，所以需要获取license才可以播放。这时使用者再向内容提供商付费后得到license文件（例如通过wap push message获取），经过DRM engine处理之后，就可以播放之前的mp3文件了。这个license同时也限制媒体文件的使用，例如限制最多只能播放3次，或是只能在某个时间段内播放等。更详细的内容需要了解OMA DRM v1.0 “数字版权管理”标准，以及向内容提供商（例如运营商）了解相关要求。</p>
+<p>注：“DRM 重置”是指可以一次性全部清空保存在手机上的license，在清空之后原有的受保护的媒体文件就都不能播放或者是观看了。</p>
+<h3 id="4-License-Manager-DRM-Right-Manager-菜单"><a href="#4-License-Manager-DRM-Right-Manager-菜单" class="headerlink" title="4. License Manager(DRM Right Manager)菜单"></a>4. License Manager(DRM Right Manager)菜单</h3><p>RO指DRM权限文件。<br>▪    License list<br>–    List all the RO in the file system<br>▪    Status<br>–    Version info etc.<br>▪    Advance<br>–    Sweep<br>•    Remove the useless RO<br>–    Space check<br>•    Check whether the storage for RO is enough or not</p>
+<h3 id="5-DRM类型说明"><a href="#5-DRM类型说明" class="headerlink" title="5. DRM类型说明"></a>5. DRM类型说明</h3><p><1>FL(Forward Lock):<br>    媒体对象被置于DRM Message被下载到移动终端。用IMEI做为唯一的识别码.由于DRM Message没有带版权对象，所以通过这种方式获得到的媒体文件的使用是不收限制的，唯一的限制是不能够被转发出手机。<br>    FL文件可以设置为铃声,壁纸(OmaDrmStore.java)等。<br>    MimeType: application/vnd.oma.drm.message</1></p>
+<p><2>CD(Combined Delivery):<br>    媒体对象和相应的版权对象组合在DRM message中，被同时下载到手机中，通过DRM agent的处理后，会形成媒体文件和相应的版权文件来配合使用。<br>    目前的CD文件大致包括以下几类：<br>    a.有次数限制的，如count 5 times，只允许播放5次<br>    b.有期限限制的，如2016年7月8日12点—2016年7月10日18点<br>    c.期限截止的，  如2016年9月5日之前.<br>    d.次数和期限结合的，如2016年7月10日—-2016年7月13日,count 5,,就是在这期间只能播放5次且用户不可以手动更改时间来把已过期的CD文件变为有效的文件<br>    MimeType: application/vnd.oma.drm.message</2></p>
+<p><3>SD(Separate Delivery):<br>媒体对象和相应的版权对象是分开的，能各自独立被手机获得。比如手机端会通过http下载的方式先得到媒体对象，此时由于没有版权文件，是不能使用此媒体对象的。若需要使用还得花钱去购买权限RO，只有获得有效的RO，才可以播放SD文件,同CD一样,SD文件也是无法通过更改手机时间来把已过期的SD文件变为有效的文件。<br>SD文件可以通过MMS进行发送.但是发送之前,用户必须购买SD的RO权限才可以经过MMS,BT,EMAIL等发送。<br>    如果用户只是用SD的内容文件去发送,可以发送出去,但是接收端的用户也是无法使用该SD文件的。<br>    MimeType:<br>application/vnd.oma.drm.content<br>application/vnd.oma.drm.rights+xml<br>application/vnd.oma.drm.rights+wbxml</3></p>
+<h3 id="6-DRM基本信息"><a href="#6-DRM基本信息" class="headerlink" title="6. DRM基本信息"></a>6. DRM基本信息</h3><p><1>MTK DRM 支持版本：<br>    OMA DRM V1.0<br>    Widevine L3.</1></p>
+<p><2>OMA DRM 支持 MIME格式：<br>    a.DRM content MIME:<br>        application/vnd.oma.drm.content —- .dcf<br>        application/vnd.oma.drm.message —- .dm<br>    b.权限文件的MIME:<br>        application/vnd.oma.drm.rights+wbxml —- .drc<br>        application/vnd.oma.drm.rights+xml —– .dr<br>    c.MTK支持的非DRM protected的Image/Audio/Video格式，DRM就支持此media格式。DRM只是<br>做了权限控制而已，DRM能支持的media格式就是Decoder能支持的格式。</2></p>
+<p><3>OMA DRM 支持类型：<br>    默认支持FL、CD、SD类型（MTK_DRM_APP=yes）<br>    ifeq ($(strip $(MTK_DRM_APP)),yes)<br>        PRODUCT_PACKAGES += \<br>            libdrmmtkplugin \<br>            drm_chmod \<br>            libdcfdecoderjni<br>    endif<br>    PRODUCT_PACKAGES += libdrmmtkplugin<br>ifeq ($(strip $(MTK_DRM_APP)),yes)<br>PRODUCT_PACKAGES += \<br>drm_chmod \<br>            libdcfdecoderjni<br>    endif</3></p>
+<pre><code>改为只支持FL类型：
+</code></pre><p>ifeq ($(strip $(MTK_DRM_APP)),yes)<br>        PRODUCT_PROPERTY_OVERRIDES += \<br>        drm.forwardlock.only=true<br>    endif</p>
+<h3 id="7-Widevine和OMA"><a href="#7-Widevine和OMA" class="headerlink" title="7. Widevine和OMA"></a>7. Widevine和OMA</h3><p>两者是独立的，可通过宏控制Widevine L3的开关：<br>    <1>L3:<br>         MTK_WVDRM_SUPPORT = yes<br>         MTK_WVDRM_L1_SUPPORT = no<br>    <2>L1:<br>         MTK_WVDRM_SUPPORT = yes<br>         MTK_WVDRM_L1_SUPPORT = yes<br>    <3>disable widevine：<br>         MTK_WVDRM_SUPPORT = no<br>         MTK_WVDRM_L1_SUPPORT = no</3></2></1></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/28/Security/DRM常见问题/" rel="next" title="DRM常见问题">
+                <i class="fa fa-chevron-left"></i> DRM常见问题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/11/Tool/Git常用命令详解/" rel="prev" title="Git常用命令详解">
+                Git常用命令详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">53</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-DRM定义"><span class="nav-text">1. DRM定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-DRM的协议以及是否支持DRM"><span class="nav-text">2. DRM的协议以及是否支持DRM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-DRM重置"><span class="nav-text">3. DRM重置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-License-Manager-DRM-Right-Manager-菜单"><span class="nav-text">4. License Manager(DRM Right Manager)菜单</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-DRM类型说明"><span class="nav-text">5. DRM类型说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-DRM基本信息"><span class="nav-text">6. DRM基本信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-Widevine和OMA"><span class="nav-text">7. Widevine和OMA</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
