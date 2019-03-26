@@ -493,7 +493,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/02/22/Boot/Init属性服务/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/02/22/Boot/Zygote的启动流程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="ZeyangXie">
@@ -513,7 +513,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/02/22/Boot/Init属性服务/" class="post-title-link" itemprop="url">Init属性服务</a>
+                <a href="/2019/02/22/Boot/Zygote的启动流程/" class="post-title-link" itemprop="url">Zygote的启动流程</a>
               
             
           </h1>
@@ -592,11 +592,12 @@
 
       
         
-          <h3 id="一、初始化property"><a href="#一、初始化property" class="headerlink" title="一、初始化property"></a>一、初始化property</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">property_init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mkdir(<span class="string">"/dev/__properties__"</span>, S_IRWXU | S_IXGRP | S_IXOTH);</span><br><span class="line">    CreateSerializedPropertyInfo();</span><br><span class="line">    <span class="keyword">if</span> (__system_property_area_init()) &#123;</span><br><span class="line">        LOG(FATAL) &lt;&lt; <span class="string">"Failed to initialize property area"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!property_info_area.LoadDefaultPath()) &#123;</span><br><span class="line">        LOG(FATAL) &lt;&lt; <span class="string">"Failed to load serialized property info file"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <h3 id="一、init解析rc时启动zygote"><a href="#一、init解析rc时启动zygote" class="headerlink" title="一、init解析rc时启动zygote"></a>一、init解析rc时启动zygote</h3><p>system/core/rootdir/init.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># ro.zygote表示支持32/64位</span><br><span class="line">import /init.$&#123;ro.zygote&#125;.rc</span><br><span class="line">on late-init</span><br><span class="line">    #若有打开FBE功能，则在此处启动zygote</span><br><span class="line">    trigger zygote-start</span><br><span class="line">...</span><br><span class="line"># 建议将不必要的/data初始化从post-fs-data挪到start-zygote，以避免阻塞zygote进程</span><br><span class="line"># 处于未加密状态</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=unencrypted</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line"># 不支持加密</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=unsupported</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line"># 文件级加密且处于加密状态</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=encrypted &amp;&amp; property:ro.crypto.type=file</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line">...</span><br><span class="line">on property:vold.decrypt=trigger_post_fs_data</span><br><span class="line">    # 解密状态下在此处启动zygote</span><br><span class="line">    trigger zygote-start</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2019/02/22/Boot/Init属性服务/#more" rel="contents">
+              <a class="btn" href="/2019/02/22/Boot/Zygote的启动流程/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -656,7 +657,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/02/16/Boot/Zygote的启动流程/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/02/16/Boot/Init属性服务/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="ZeyangXie">
@@ -676,7 +677,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/02/16/Boot/Zygote的启动流程/" class="post-title-link" itemprop="url">Zygote的启动流程</a>
+                <a href="/2019/02/16/Boot/Init属性服务/" class="post-title-link" itemprop="url">Init属性服务</a>
               
             
           </h1>
@@ -755,12 +756,11 @@
 
       
         
-          <h3 id="一、init解析rc时启动zygote"><a href="#一、init解析rc时启动zygote" class="headerlink" title="一、init解析rc时启动zygote"></a>一、init解析rc时启动zygote</h3><p>system/core/rootdir/init.rc</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># ro.zygote表示支持32/64位</span><br><span class="line">import /init.$&#123;ro.zygote&#125;.rc</span><br><span class="line">on late-init</span><br><span class="line">    #若有打开FBE功能，则在此处启动zygote</span><br><span class="line">    trigger zygote-start</span><br><span class="line">...</span><br><span class="line"># 建议将不必要的/data初始化从post-fs-data挪到start-zygote，以避免阻塞zygote进程</span><br><span class="line"># 处于未加密状态</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=unencrypted</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line"># 不支持加密</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=unsupported</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line"># 文件级加密且处于加密状态</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=encrypted &amp;&amp; property:ro.crypto.type=file</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line">...</span><br><span class="line">on property:vold.decrypt=trigger_post_fs_data</span><br><span class="line">    # 解密状态下在此处启动zygote</span><br><span class="line">    trigger zygote-start</span><br></pre></td></tr></table></figure>
+          <h3 id="一、初始化property"><a href="#一、初始化property" class="headerlink" title="一、初始化property"></a>一、初始化property</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">property_init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mkdir(<span class="string">"/dev/__properties__"</span>, S_IRWXU | S_IXGRP | S_IXOTH);</span><br><span class="line">    CreateSerializedPropertyInfo();</span><br><span class="line">    <span class="keyword">if</span> (__system_property_area_init()) &#123;</span><br><span class="line">        LOG(FATAL) &lt;&lt; <span class="string">"Failed to initialize property area"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!property_info_area.LoadDefaultPath()) &#123;</span><br><span class="line">        LOG(FATAL) &lt;&lt; <span class="string">"Failed to load serialized property info file"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2019/02/16/Boot/Zygote的启动流程/#more" rel="contents">
+              <a class="btn" href="/2019/02/16/Boot/Init属性服务/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
