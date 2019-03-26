@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="LK的全称是litter kernel，同u-boot类似，它也是一种bootloader程序。 lk代码通常位于bootable/bootloader/lk目录，其树结构如下：├── AndroidBoot.mk├── app                   :lk中应用，如fastboot，shell等├── arch                  :架构相关，如arm，x86等├──">
+<meta name="keywords" content="Boot,LK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LK初始化流程">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/01/03/Boot/LK初始化流程/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="LK的全称是litter kernel，同u-boot类似，它也是一种bootloader程序。 lk代码通常位于bootable/bootloader/lk目录，其树结构如下：├── AndroidBoot.mk├── app                   :lk中应用，如fastboot，shell等├── arch                  :架构相关，如arm，x86等├──">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-26T12:54:45.912Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LK初始化流程">
+<meta name="twitter:description" content="LK的全称是litter kernel，同u-boot类似，它也是一种bootloader程序。 lk代码通常位于bootable/bootloader/lk目录，其树结构如下：├── AndroidBoot.mk├── app                   :lk中应用，如fastboot，shell等├── arch                  :架构相关，如arm，x86等├──">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/01/03/Boot/LK初始化流程/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>LK初始化流程 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/03/Boot/LK初始化流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">LK初始化流程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-03 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-03T00:00:00+08:00">2019-01-03</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>LK的全称是litter kernel，同u-boot类似，它也是一种bootloader程序。</p>
+<p>lk代码通常位于bootable/bootloader/lk目录，其树结构如下：<br>├── AndroidBoot.mk<br>├── app                   :lk中应用，如fastboot，shell等<br>├── arch                  :架构相关，如arm，x86等<br>├── dev                   :通用设备接口，如usb，lcm等<br>├── include               :头文件<br>├── kernel                :lk核心模块，包括thread，timer等<br>├── lib                   :–&gt;一些c库<br>├── LICENSE<br>├── make                  :lk编译脚本<br>├── makefile<br>├── platform              :不同平台/芯片对应的mtk驱动<br>├── project               :不同项目的makefile文件<br>├── scripts               :JTAG脚本<br>├── target                :具体目标设备的定义及初始化</p>
+<p>lk主要完成以下工作：<br>1.初始化硬件，设置中断向量表，初始化MMU，Cache，USB等。<br>2.加载boot.img，引导系统启动。<br>3.对不同boot模式的支持，如fastboot，recovery，download mode等。</p>
+<a id="more"></a>
+<h3 id="一、CPU初始化"><a href="#一、CPU初始化" class="headerlink" title="一、CPU初始化"></a>一、CPU初始化</h3><h4 id="1-1-链接文件"><a href="#1-1-链接文件" class="headerlink" title="1.1 链接文件"></a>1.1 链接文件</h4><p>在链接脚本<code>arch/arm/system-onesegment.ld</code>或<code>arch/arm/system-twosegment.ld</code>中定义了入口地址ENTRY:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(_start)</span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">    . = %MEMBASE%;</span><br><span class="line">    .text.boot : &#123; *(.text.boot) &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-汇编文件"><a href="#1-2-汇编文件" class="headerlink" title="1.2 汇编文件"></a>1.2 汇编文件</h4><p>在汇编文件<code>arch/arm/crt0.S</code>中定义了<code>_start</code>:</p>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">//初始化向量表</span><br><span class="line"><span class="symbol">.section</span> <span class="string">".text.boot"</span></span><br><span class="line"><span class="symbol">.globl</span> _start</span><br><span class="line"><span class="symbol">_start</span>:</span><br><span class="line">    <span class="keyword">b </span>   reset</span><br><span class="line">    <span class="keyword">b </span>   arm_undefined</span><br><span class="line">    <span class="keyword">b </span>   arm_syscall</span><br><span class="line">    <span class="keyword">b </span>   arm_prefetch_abort</span><br><span class="line">    <span class="keyword">b </span>   arm_data_abort</span><br><span class="line">    <span class="keyword">b </span>   arm_reserved</span><br><span class="line">    <span class="keyword">b </span>   arm_irq</span><br><span class="line">    <span class="keyword">b </span>   arm_fiq</span><br><span class="line"><span class="symbol">...</span></span><br><span class="line">//为irq，fiq等模式设置栈stack，最终切换到supervisor模式</span><br><span class="line"><span class="symbol">.Lstack_setup</span>:</span><br><span class="line">    <span class="keyword">mrs </span>    <span class="built_in">r0</span>, <span class="keyword">cpsr</span></span><br><span class="line"><span class="keyword"> </span>   <span class="keyword">bic </span>    <span class="built_in">r0</span>, <span class="built_in">r0</span>, <span class="number">#0x1f</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">ldr </span>       <span class="built_in">r2</span>, <span class="symbol">=abort_stack_top</span></span><br><span class="line">    <span class="keyword">orr </span>    <span class="built_in">r1</span>, <span class="built_in">r0</span>, <span class="number">#0x12</span> // irq</span><br><span class="line">    <span class="keyword">msr </span>    <span class="keyword">cpsr_c, </span><span class="built_in">r1</span></span><br><span class="line">    <span class="keyword">ldr </span>       <span class="built_in">r13</span>, <span class="symbol">=irq_save_spot</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">orr </span>    <span class="built_in">r1</span>, <span class="built_in">r0</span>, <span class="number">#0x11</span> // fiq</span><br><span class="line">    <span class="keyword">msr </span>    <span class="keyword">cpsr_c, </span><span class="built_in">r1</span></span><br><span class="line">    <span class="keyword">mov </span>       <span class="built_in">sp</span>, <span class="built_in">r2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">orr </span>    <span class="built_in">r1</span>, <span class="built_in">r0</span>, <span class="number">#0x17</span> // abort</span><br><span class="line">    <span class="keyword">msr </span>    <span class="keyword">cpsr_c, </span><span class="built_in">r1</span></span><br><span class="line">    <span class="keyword">mov </span>       <span class="built_in">sp</span>, <span class="built_in">r2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">orr </span>    <span class="built_in">r1</span>, <span class="built_in">r0</span>, <span class="number">#0x1b</span> // undefined</span><br><span class="line">    <span class="keyword">msr </span>    <span class="keyword">cpsr_c, </span><span class="built_in">r1</span></span><br><span class="line">    <span class="keyword">mov </span>       <span class="built_in">sp</span>, <span class="built_in">r2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">orr </span>    <span class="built_in">r1</span>, <span class="built_in">r0</span>, <span class="number">#0x1f</span> // system</span><br><span class="line">    <span class="keyword">msr </span>    <span class="keyword">cpsr_c, </span><span class="built_in">r1</span></span><br><span class="line">    <span class="keyword">mov </span>       <span class="built_in">sp</span>, <span class="built_in">r2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">orr </span>       <span class="built_in">r1</span>, <span class="built_in">r0</span>, <span class="number">#0x13</span> // supervisor</span><br><span class="line">    <span class="keyword">msr </span>       <span class="keyword">cpsr_c, </span><span class="built_in">r1</span></span><br><span class="line">    <span class="keyword">mov </span>       <span class="built_in">sp</span>, <span class="built_in">r2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">ldr </span>       <span class="built_in">r0</span>, <span class="symbol">=__data_start_rom</span></span><br><span class="line">    <span class="keyword">ldr </span>       <span class="built_in">r1</span>, <span class="symbol">=__data_start</span></span><br><span class="line">    <span class="keyword">ldr </span>       <span class="built_in">r2</span>, <span class="symbol">=__data_end</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">cmp </span>       <span class="built_in">r0</span>, <span class="built_in">r1</span></span><br><span class="line">    <span class="keyword">beq </span>       .L__do_bss</span><br><span class="line"><span class="symbol">...</span></span><br><span class="line">//进入c代码入口kmain函数</span><br><span class="line">    <span class="keyword">bl </span>       kmain</span><br><span class="line">    <span class="keyword">b </span>       .</span><br><span class="line"><span class="symbol">...</span></span><br></pre></td></tr></table></figure>
+<h3 id="二、kmain初始化"><a href="#二、kmain初始化" class="headerlink" title="二、kmain初始化"></a>二、kmain初始化</h3><p>C代码<code>kernel/main.c</code>的kmain函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">kmain</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 线程上下文初始化</span></span><br><span class="line">    thread_init_early();</span><br><span class="line">    <span class="comment">// 架构初始化</span></span><br><span class="line">    arch_early_init();</span><br><span class="line">    <span class="comment">// 超早期平台初始化</span></span><br><span class="line">    platform_early_init();</span><br><span class="line">    <span class="comment">// 超早期目标设备初始化，预留空函数</span></span><br><span class="line">    target_early_init();</span><br><span class="line">    <span class="comment">// 设置boot时间</span></span><br><span class="line">    <span class="comment">// Qualcomm Platform</span></span><br><span class="line">    <span class="comment">//bs_set_timestamp(BS_BL_START);</span></span><br><span class="line">    <span class="comment">// Mediatek Platform</span></span><br><span class="line">    <span class="comment">//boot_time = get_timer(0);</span></span><br><span class="line">    <span class="comment">// 处理静态构造函数</span></span><br><span class="line">    call_constructors();</span><br><span class="line">    <span class="comment">// 内核堆初始化</span></span><br><span class="line">    heap_init();</span><br><span class="line">    <span class="comment">// 线程系统初始化</span></span><br><span class="line">    thread_init();</span><br><span class="line">    <span class="comment">// 直接数字控制器初始化</span></span><br><span class="line">    dpc_init();</span><br><span class="line">    <span class="comment">// 初始化内核定时器</span></span><br><span class="line">    timer_init();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> (!ENABLE_NANDWRITE)</span></span><br><span class="line">    <span class="comment">// 创建一个bootstrap2线程完成系统初始化</span></span><br><span class="line">    <span class="keyword">thread_t</span> *thread_bs2 = thread_create(<span class="string">"bootstrap2"</span>, &amp;bootstrap2, <span class="literal">NULL</span>, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE);</span><br><span class="line">    <span class="keyword">if</span> (thread_bs2)</span><br><span class="line">        thread_resume(thread_bs2);</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        assert(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 使能中断</span></span><br><span class="line">    exit_critical_section();</span><br><span class="line">    <span class="comment">// 成为闲置的线程</span></span><br><span class="line">    thread_become_idle();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    bootstrap_nandwrite();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<h4 id="2-1-thread-init-early函数"><a href="#2-1-thread-init-early函数" class="headerlink" title="2.1 thread_init_early函数"></a>2.1 thread_init_early函数</h4><p><code>kernel/thread.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">thread_init_early</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="comment">// 初始化运行队列</span></span><br><span class="line">    <span class="keyword">for</span> (i=<span class="number">0</span>; i &lt; NUM_PRIORITIES; i++)</span><br><span class="line">        list_initialize(&amp;run_queue[i]);</span><br><span class="line">    <span class="comment">// 初始化线程列表</span></span><br><span class="line">    list_initialize(&amp;thread_list);</span><br><span class="line">    <span class="comment">// 创建一个能cover当前运行状态的线程</span></span><br><span class="line">    <span class="keyword">thread_t</span> *t = &amp;bootstrap_thread;</span><br><span class="line">    init_thread_struct(t, <span class="string">"bootstrap"</span>);</span><br><span class="line">    <span class="comment">// 线程已运行</span></span><br><span class="line">    t-&gt;priority = HIGHEST_PRIORITY;</span><br><span class="line">    t-&gt;state = THREAD_RUNNING;</span><br><span class="line">    t-&gt;saved_critical_section_count = <span class="number">1</span>;</span><br><span class="line">    list_add_head(&amp;thread_list, &amp;t-&gt;thread_list_node);</span><br><span class="line">    current_thread = t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-arch-early-init函数"><a href="#2-2-arch-early-init函数" class="headerlink" title="2.2 arch_early_init函数"></a>2.2 arch_early_init函数</h4><p><code>arch/arm/arch.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">arch_early_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 关闭cache</span></span><br><span class="line">    arch_disable_cache(UCACHE);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ARM_CPU_CORTEX_A8</span></span><br><span class="line">    <span class="comment">// 设置异常向量基地址，即在0处无需重复映射</span></span><br><span class="line">    set_vector_base(MEMBASE);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ARM_WITH_MMU</span></span><br><span class="line">    <span class="comment">// MMU初始化</span></span><br><span class="line">    platform_init_mmu();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// 重新打开cache</span></span><br><span class="line">    arch_enable_cache(UCACHE);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ARM_WITH_NEON</span></span><br><span class="line">    <span class="comment">// 启用cp10和cp11</span></span><br><span class="line">    <span class="keyword">uint32_t</span> val;</span><br><span class="line">    __<span class="function">asm__ <span class="title">volatile</span><span class="params">(<span class="string">"mrc    p15, 0, %0, c1, c0, 2"</span> : <span class="string">"=r"</span> (val))</span></span>;</span><br><span class="line">    val |= (<span class="number">3</span>&lt;&lt;<span class="number">22</span>)|(<span class="number">3</span>&lt;&lt;<span class="number">20</span>);</span><br><span class="line">    __<span class="function">asm__ <span class="title">volatile</span><span class="params">(<span class="string">"mcr    p15, 0, %0, c1, c0, 2"</span> :: <span class="string">"r"</span> (val))</span></span>;</span><br><span class="line">    <span class="comment">// 使能fpexc位</span></span><br><span class="line">    __<span class="function">asm__ <span class="title">volatile</span><span class="params">(<span class="string">"mrc  p10, 7, %0, c8, c0, 0"</span> : <span class="string">"=r"</span> (val))</span></span>;</span><br><span class="line">    val |= (<span class="number">1</span>&lt;&lt;<span class="number">30</span>);</span><br><span class="line">    __<span class="function">asm__ <span class="title">volatile</span><span class="params">(<span class="string">"mcr  p10, 7, %0, c8, c0, 0"</span> :: <span class="string">"r"</span> (val))</span></span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ARM_CPU_CORTEX_A8</span></span><br><span class="line">    <span class="comment">// 启用循环计数寄存器</span></span><br><span class="line">    <span class="keyword">uint32_t</span> en;</span><br><span class="line">    __<span class="function">asm__ <span class="title">volatile</span><span class="params">(<span class="string">"mrc    p15, 0, %0, c9, c12, 0"</span> : <span class="string">"=r"</span> (en))</span></span>;</span><br><span class="line">    <span class="comment">// 每轮循环计数</span></span><br><span class="line">    en &amp;= ~(<span class="number">1</span>&lt;&lt;<span class="number">3</span>);</span><br><span class="line">    <span class="comment">// 启用所有性能计数器</span></span><br><span class="line">    en |= <span class="number">1</span>;</span><br><span class="line">    __<span class="function">asm__ <span class="title">volatile</span><span class="params">(<span class="string">"mcr    p15, 0, %0, c9, c12, 0"</span> :: <span class="string">"r"</span> (en))</span></span>;</span><br><span class="line">    <span class="comment">// 启用循环计数器</span></span><br><span class="line">    en = (<span class="number">1</span>&lt;&lt;<span class="number">31</span>);</span><br><span class="line">    __<span class="function">asm__ <span class="title">volatile</span><span class="params">(<span class="string">"mcr    p15, 0, %0, c9, c12, 1"</span> :: <span class="string">"r"</span> (en))</span></span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-platform-early-init函数"><a href="#2-3-platform-early-init函数" class="headerlink" title="2.3 platform_early_init函数"></a>2.3 platform_early_init函数</h4><p><code>platform/${PLATFORM}/platform.c</code></p>
+<h5 id="2-3-1-Qualcomm平台"><a href="#2-3-1-Qualcomm平台" class="headerlink" title="2.3.1 Qualcomm平台"></a>2.3.1 Qualcomm平台</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">platform_early_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 主板初始化</span></span><br><span class="line">    board_init();</span><br><span class="line">    <span class="comment">// 平台时钟初始化</span></span><br><span class="line">    platform_clock_init();</span><br><span class="line">    <span class="comment">// 初始化高通通用中断控制器</span></span><br><span class="line">    qgic_init();</span><br><span class="line">    <span class="comment">// 高通定时器初始化</span></span><br><span class="line">    qtimer_init();</span><br><span class="line">    <span class="comment">// 初始化安全通道管理</span></span><br><span class="line">    scm_init();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-3-2-Mediatek平台"><a href="#2-3-2-Mediatek平台" class="headerlink" title="2.3.2 Mediatek平台"></a>2.3.2 Mediatek平台</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">platform_early_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> MTK_LK_REGISTER_WDT</span></span><br><span class="line">    <span class="comment">// 注册wdt</span></span><br><span class="line">    lk_register_wdt_callback();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// 初始化uart</span></span><br><span class="line">    uart_init_early();</span><br><span class="line">    <span class="comment">// 初始化设备数据</span></span><br><span class="line">    init_devinfo_data();</span><br><span class="line">    <span class="comment">// 初始化中断</span></span><br><span class="line">    platform_init_interrupts();</span><br><span class="line">    <span class="comment">// 早期初始化定时器</span></span><br><span class="line">    platform_early_init_timer();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> !defined(USE_DTB_NO_DWS) &amp;&amp; !defined(MACH_FPGA)</span></span><br><span class="line">    <span class="comment">// 默认mtk gpio引脚设置</span></span><br><span class="line">    mt_gpio_set_default();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">//mtk wdt初始化</span></span><br><span class="line">    mtk_wdt_init();</span><br><span class="line">    <span class="comment">//i2c初始化</span></span><br><span class="line">    i2c_hw_init();</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> MACH_FPGA</span></span><br><span class="line">    <span class="comment">// 在preloader之后初始化GPT4</span></span><br><span class="line">    mtk_timer_init();</span><br><span class="line">    <span class="comment">// 在FPGA上解压缩linux镜像会出发WDT</span></span><br><span class="line">    mtk_wdt_disable();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// pmic wrap初始化</span></span><br><span class="line">    pwrap_init_lk();</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> !defined(MACH_FPGA) &amp;&amp; !defined(NO_PMIC)</span></span><br><span class="line">    pmic_init();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-4-heap-init函数"><a href="#2-4-heap-init函数" class="headerlink" title="2.4 heap_init函数"></a>2.4 heap_init函数</h4><p><code>lib/heap/heap.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">heap_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    LTRACE_ENTRY;</span><br><span class="line">    <span class="comment">// 设置堆范围</span></span><br><span class="line">    theheap.base = (<span class="keyword">void</span> *)HEAP_START;</span><br><span class="line">    theheap.len = HEAP_LEN;</span><br><span class="line">    <span class="comment">// 初始化释放列表</span></span><br><span class="line">    list_initialize(&amp;theheap.free_list);</span><br><span class="line">    <span class="comment">// 创建初始化释放块</span></span><br><span class="line">    heap_insert_free_chunk(heap_create_free_chunk(theheap.base, theheap.len));</span><br><span class="line">    <span class="comment">// dump堆信息</span></span><br><span class="line">    <span class="comment">//heap_dump();</span></span><br><span class="line">    <span class="comment">//heap_test();</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-5-dpc-init函数"><a href="#2-5-dpc-init函数" class="headerlink" title="2.5 dpc_init函数"></a>2.5 dpc_init函数</h4><p><code>kernel/dpc.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dpc_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">thread_t</span> *thread_dpc;</span><br><span class="line">    event_init(&amp;dpc_event, <span class="literal">false</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 创建dpc线程</span></span><br><span class="line">    thread_dpc = thread_create(<span class="string">"dpc"</span>, &amp;dpc_thread_routine, <span class="literal">NULL</span>, DPC_PRIORITY, DEFAULT_STACK_SIZE);</span><br><span class="line">    <span class="keyword">if</span> (thread_dpc)</span><br><span class="line">        thread_resume(thread_dpc);</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        assert(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-6-bootstrap2函数"><a href="#2-6-bootstrap2函数" class="headerlink" title="2.6 bootstrap2函数"></a>2.6 bootstrap2函数</h4><p><code>kernel/main.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">bootstrap2</span><span class="params">(<span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    arch_init();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> WITH_LIB_BIO</span></span><br><span class="line">    <span class="comment">// bio初始化</span></span><br><span class="line">    bio_init();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> WITH_LIB_FS</span></span><br><span class="line">    <span class="comment">// fs初始化</span></span><br><span class="line">    fs_init();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// Mediatek Platform</span></span><br><span class="line">    <span class="comment">// 从memory block中分配lk memory，在跳转到kernel之前释放</span></span><br><span class="line">    <span class="comment">//mboot_allocate_lk_scratch_from_mblock();</span></span><br><span class="line">    <span class="comment">// 初始化平台其余部分</span></span><br><span class="line">    platform_init();</span><br><span class="line">    <span class="comment">// 初始化目标设备，如flash，partition等</span></span><br><span class="line">    target_init();</span><br><span class="line">    <span class="comment">// 开始apps初始化</span></span><br><span class="line">    apps_init();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、app初始化"><a href="#三、app初始化" class="headerlink" title="三、app初始化"></a>三、app初始化</h3><p>先来看看<code>app/app.c</code>文件的app_init定义。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">apps_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">app_descriptor</span> *<span class="title">app</span>;</span></span><br><span class="line">    <span class="comment">// 调用所有初始化的例程</span></span><br><span class="line">    <span class="keyword">for</span> (app = &amp;__apps_start; app != &amp;__apps_end; app++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (app-&gt;init)</span><br><span class="line">            app-&gt;init(app);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 启动所有boo时想启动的</span></span><br><span class="line">    <span class="keyword">for</span> (app = &amp;__apps_start; app != &amp;__apps_end; app++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (app-&gt;entry &amp;&amp; (app-&gt;flags &amp; APP_FLAG_DONT_START_ON_BOOT) == <span class="number">0</span>) &#123;</span><br><span class="line">            start_app(app);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再搜索lk目录发现<code>__apps_start</code>和<code>__apps_end</code>均在链接文件<code>system-onesegment.lg</code>或<code>system-twosegment.lg</code>有定义，<code>KEEP (*(.apps))</code>表示所有<code>.apps</code>段都定义在<code>__apps_start</code>和<code>__apps_end</code>之间。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    .rodata : &#123;</span><br><span class="line">        ...</span><br><span class="line">        __apps_start = .;</span><br><span class="line">        KEEP (*(.apps))</span><br><span class="line">        __apps_end = .;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而头文件<code>include/app.h</code>中有对<code>.apps</code>段的定义，即此处会执行<code>APP_START(appname)</code>中的所有<code>appname</code>。再通过搜索<code>APP_START</code>即可发现在高通平台在<code>app/aboot/aboot.c</code>中有调用<code>aboot_init</code>函数，而联发科平台则在<code>app/mt_boot/mt_boot.c</code>中有调用<code>mt_boot_init</code>函数。</p>
+<figure class="highlight h"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> APP_START(appname) struct app_descriptor _app_##appname __SECTION(<span class="meta-string">".apps"</span>) = &#123; .name = #appname,</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> APP_END &#125;;</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/LK/" rel="tag"># LK</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/25/Boot/Bootloader之二三事/" rel="next" title="Bootloader之二三事">
+                <i class="fa fa-chevron-left"></i> Bootloader之二三事
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/11/Boot/LK引导流程/" rel="prev" title="LK引导流程">
+                LK引导流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、CPU初始化"><span class="nav-text">一、CPU初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-链接文件"><span class="nav-text">1.1 链接文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-汇编文件"><span class="nav-text">1.2 汇编文件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、kmain初始化"><span class="nav-text">二、kmain初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-thread-init-early函数"><span class="nav-text">2.1 thread_init_early函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-arch-early-init函数"><span class="nav-text">2.2 arch_early_init函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-platform-early-init函数"><span class="nav-text">2.3 platform_early_init函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-1-Qualcomm平台"><span class="nav-text">2.3.1 Qualcomm平台</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-2-Mediatek平台"><span class="nav-text">2.3.2 Mediatek平台</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-heap-init函数"><span class="nav-text">2.4 heap_init函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-dpc-init函数"><span class="nav-text">2.5 dpc_init函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-bootstrap2函数"><span class="nav-text">2.6 bootstrap2函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、app初始化"><span class="nav-text">三、app初始化</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Android init语言支持这五类语句：Actions, Commands, Services, Options, and Imports。其中#是注释符号，init.rc是主rc文件。 一、ActionsActions种命令序列，它有一个trigger用于确定何时执行该操作。当一个事件同一个action的trigger匹配时，则将该action添加至待执行命令序列的队尾（除非已经存在于队列中">
+<meta name="keywords" content="Boot,Init">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Init-rc文件语法">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/01/31/Boot/Init-rc文件语法/index.html">
+<meta property="og:site_name" content="ZeyangXie&#39;s Blog">
+<meta property="og:description" content="Android init语言支持这五类语句：Actions, Commands, Services, Options, and Imports。其中#是注释符号，init.rc是主rc文件。 一、ActionsActions种命令序列，它有一个trigger用于确定何时执行该操作。当一个事件同一个action的trigger匹配时，则将该action添加至待执行命令序列的队尾（除非已经存在于队列中">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-26T12:52:48.884Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Init-rc文件语法">
+<meta name="twitter:description" content="Android init语言支持这五类语句：Actions, Commands, Services, Options, and Imports。其中#是注释符号，init.rc是主rc文件。 一、ActionsActions种命令序列，它有一个trigger用于确定何时执行该操作。当一个事件同一个action的trigger匹配时，则将该action添加至待执行命令序列的队尾（除非已经存在于队列中">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/01/31/Boot/Init-rc文件语法/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Init-rc文件语法 | ZeyangXie's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZeyangXie's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/31/Boot/Init-rc文件语法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ZeyangXie">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZeyangXie's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Init-rc文件语法
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-31T00:00:00+08:00">2019-01-31</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Android init语言支持这五类语句：Actions, Commands, Services, Options, and Imports。其中<code>#</code>是注释符号，init.rc是主rc文件。</p>
+<h3 id="一、Actions"><a href="#一、Actions" class="headerlink" title="一、Actions"></a>一、Actions</h3><p>Actions种命令序列，它有一个trigger用于确定何时执行该操作。当一个事件同一个action的trigger匹配时，则将该action添加至待执行命令序列的队尾（除非已经存在于队列中）。队列中每个action都是按顺序出列执行的，包括设备创建/销毁、属性设置、进程重启等行为。其格式如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">on &lt;trigger1&gt;</span><br><span class="line">    &lt;command1&gt;</span><br><span class="line">on &lt;trigger2&gt; [&amp;&amp; &lt;trigger2&gt;]*</span><br><span class="line">    &lt;command2&gt;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="二、Commands"><a href="#二、Commands" class="headerlink" title="二、Commands"></a>二、Commands</h3><p>(1)<code>bootchart [start|stop]</code><br>用于启动或停止bootcharting，默认被设置在init.rc文件中。<br>但若/data/bootchart/enabled文件存在bootcharing就会被激活，否则没有任何操作。</p>
+<p>(2)<code>chmod &lt;octal-mode&gt; &lt;path&gt;</code><br>用于改变文件权限。</p>
+<p>(3)<code>chown &lt;owner&gt; &lt;group&gt; &lt;path&gt;</code><br>用于改变所有者或群组。</p>
+<p>(4)<code>class_start &lt;serviceclass&gt;</code><br>用于启动指定类的所有服务，若它们尚未运行。</p>
+<p>(5)<code>class_stop &lt;serviceclass&gt;</code><br>用于停止指定类的所有服务，若它们正在运行。</p>
+<p>(6)<code>class_reset &lt;serviceclass&gt;</code><br>用于停止指定类的所有服务，若它们正在运行且未被禁用。<br>稍后会用class_start重启它们。</p>
+<p>(7)<code>class_restart &lt;serviceclass&gt;</code><br>用于重启指定类的所有服务。</p>
+<p>(9)<code>copy &lt;src&gt; &lt;dst&gt;</code><br>用于将文件从源目录拷贝至目标目录。类似写操作，但是主要针对二进制或大数据。<br>默认以0600权限创建目标文件，另外源文件不能是链接文件、world-writable文件、group-writable files文件。</p>
+<p>(10)<code>domainname &lt;name&gt;</code><br>用于设置域名。</p>
+<p>(11)<code>enable &lt;servicename&gt;</code><br>用于将禁用服务转为启用服务。若该服务正在运行则立即启动。</p>
+<p>(12)<code>exec [ &lt;seclabel&gt; [ &lt;user&gt; [ &lt;group&gt;\* ] ] ] -- &lt;command&gt; [ &lt;argument&gt;\* ]</code><br>用于根据给定参数fork并执行指令。该指令在–之后开始，以便于可以提供一个可选的安全上下文，用户或补充群组。除非它执行完成否则不会执行其它指令。_seclabel可以默认是-，属性在<em>argument</em>中展开。直到fork进程退出否则init不会终止执行命令。</p>
+<p>(13)<code>exec_background [ &lt;seclabel&gt; [ &lt;user&gt; [ &lt;group&gt;\* ] ] ] -- &lt;command&gt; [ &lt;argument&gt;\* ]</code><br>用于根据给定参数fork执行指令。类似<code>exec</code>指令，差异在于init不会停止执行它除非进程退出。</p>
+<p>(14)<code>exec_start &lt;service&gt;</code><br>用于启动一个给定的服务，并暂停其它init命令执行进程直至其返回为止。类似于<code>exec</code>指令，差异在于它使用已存在的服务定义取代exec参数向量。</p>
+<p>(15)<code>export &lt;name&gt; &lt;value&gt;</code><br>用于在全局环境中将环境变量<em>name</em>设置为_value。</p>
+<p>(16)<code>hostname &lt;name&gt;</code><br>用于设置主机名</p>
+<p>(17)<code>ifup &lt;interface&gt;</code><br>用于将网络接口_interface联机。</p>
+<p>(18)<code>insmod [-f] &lt;path&gt; [&lt;options&gt;]</code><br>用于在路径<em>path</em>上安装模块。’-f’表示即使运行内核版本同编译内核版本不匹配也强制安装。</p>
+<p>(19)<code>load_all_props</code><br>用于加载/system,/vendor中属性。</p>
+<p>(20)<code>load_persist_props</code><br>用于在/data解密后加载persist相关属性。</p>
+<p>(21)<code>loglevel &lt;level&gt;</code><br>用于设置kernel日志输出级别。</p>
+<p>(22)<code>mkdir &lt;path&gt; [mode] [owner] [group]</code><br>用于在指定路径<em>path</em>创建目录，包括可选模式，所有者，群组。<br>若未指定则目录默认权限为755，所有者和群组均为root。若指定则更新相关讯息。</p>
+<p>(23)<code>mount_all &lt;fstab&gt; [ &lt;path&gt; ]\* [--&lt;option&gt;]</code><br>用于在给定fs_mgr-format的fstab文件上调用fs_mgr_mount_all，在指定路径导入rc文件且选择‘early’/‘late’。<br>  Refer to the section of “Init .rc Files” for detail.</p>
+<p>(24)<code>mount &lt;type&gt; &lt;device&gt; &lt;dir&gt; [ &lt;flag&gt;\* ] [&lt;options&gt;]</code><br>用于挂载设备。<em>dir</em>对应目录，_flag_s包括”ro”, “rw”, “remount”, “noatime”等，<em>options</em>包括”barrier=1”, “noauto_da_alloc”, “discard”等。</p>
+<p>(25)<code>restart &lt;service&gt;</code><br>用于停止重启运行的服务。如果该服务正在重启则什么也不做，否则启动该服务。</p>
+<p>(26)<code>restorecon &lt;path&gt; [ &lt;path&gt;\* ]</code><br>用于将<em>path</em>命名的文件还原到file_contexts配置的指定安全上下文中。</p>
+<p>(27)<code>restorecon_recursive &lt;path&gt; [ &lt;path&gt;\* ]</code><br>用于递归将<em>path</em>命名的文件还原到file_contexts配置的指定安全上下文中。</p>
+<p>(28)<code>rm &lt;path&gt;</code><br>用于在给定路径调用unlink。</p>
+<p>(29)<code>rmdir &lt;path&gt;</code><br>用于在给定路径调用rmdir。</p>
+<p>(30)<code>readahead &lt;file|dir&gt; [--fully]</code><br>用于在给定文件或指定目录文件上调用readahead，–fully参数表示读取整个文件内容。</p>
+<p>(31)<code>setprop &lt;name&gt; &lt;value&gt;</code><br>用于按属性<em>name</em>设置属性<em>value</em>。</p>
+<p>(32)<code>setrlimit &lt;resource&gt; &lt;cur&gt; &lt;max&gt;</code><br>用于对资源设置限制。</p>
+<p>(33)<code>start &lt;service&gt;</code><br>用于启动该服务（该服务尚未运行），但它并非同步的。</p>
+<p>(34)<code>stop &lt;service&gt;</code><br>用于停止正在运行的服务。</p>
+<p>(35)<code>swapon_all &lt;fstab&gt;</code><br>用于在所给的fstab文件中调用fs_mgr_swapon_all。</p>
+<p>(36)<code>symlink &lt;target&gt; &lt;path&gt;</code><br>用于创建一个指定路径的链接。</p>
+<p>(37)<code>sysclktz &lt;mins_west_of_gmt&gt;</code><br>用于设置系统时钟基准</p>
+<p>(38)<code>trigger &lt;event&gt;</code><br>用于触发事件。action按顺序排列。</p>
+<p>(39)<code>umount &lt;path&gt;</code><br>用于卸载该路径上安装的文件系统。</p>
+<p>(40)<code>verity_load_state</code><br>用于加载dm-verity状态的内部实现细节。</p>
+<p>(41)<code>verity_update_state &lt;mount-point&gt;</code><br>用于加载dm-verity状态并设置分区的内部实现细节。</p>
+<p>(42)<code>wait &lt;path&gt; [ &lt;timeout&gt; ]</code><br>用于轮询指定路径文件，找到时返回，可设定超时时间，默认为5s。</p>
+<p>(43)<code>wait_for_prop &lt;name&gt; &lt;value&gt;</code><br>用于等待为指定系统属性<em>name</em>设置<em>value</em>。</p>
+<p>(44)<code>write &lt;path&gt; &lt;content&gt;</code><br>用于打开指定路径<em>path</em>的文件并写入内容。若文件不存在则直接创建，若已存在则被截取。</p>
+<h3 id="三、Services"><a href="#三、Services" class="headerlink" title="三、Services"></a>三、Services</h3><p>Services是init启动或重启退出时的程序，需要注意的是Services名称具有唯一性，若定义重名的Services会出错被忽略。其格式如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">service &lt;name&gt; &lt;pathname&gt; [ &lt;argument&gt; ]*</span><br><span class="line">    &lt;option1&gt;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<h3 id="四、Options"><a href="#四、Options" class="headerlink" title="四、Options"></a>四、Options</h3><p>Options是init处理Services的修饰符，包括如何、合适运行这些服务。</p>
+<p>(1)<code>console [&lt;console&gt;]</code><br>此服务需要一个控制台。可选的第二个参数选择特定的控制台而不是默认控制台。<br>可以通过设置“androidboot.console”内核参数来更改默认的“/dev/console”。<br>在所有情况下，应省略前导“/dev/”，因此“/dev/tty0”将被指定为“console tty0”。</p>
+<p>(2)<code>critical</code><br>这是一项设备关键型服务。 如果它在四分钟内退出四次以上，设备将重启进入恢复模式。</p>
+<p>(3)<code>disabled</code><br>此服务不会自动从其类开始。它必须由名称明确启动。</p>
+<p>(4)<code>setenv &lt;name&gt; &lt;value&gt;</code><br>在启动的进程中将环境变量<em>name</em>设置为<em>value</em>。</p>
+<p>(5)<code>socket &lt;name&gt; &lt;type&gt; &lt;perm&gt; [ &lt;user&gt; [ &lt;group&gt; [ &lt;seclabel&gt; ] ] ]</code><br>创建名为/dev/socket/<em>name</em>的unix域套接字，并将其fd传递给已启动的进程。<br><em>type</em>必须是“dgram”，“stream”或“seqpacket”。用户和组默认为0。<br>‘seclabel’是套接字的SELinux安全上下文。它默认为服务安全性上下文，由seclabel指定或基于服务可执行文件安全性上下文计算。</p>
+<p>(6)<code>enter_namespace &lt;type&gt; &lt;path&gt;</code><br>输入位于<em>path</em>的<em>type</em>类型的命名空间。<em>type</em>设置为“net”时仅支持网络命名空间。只能输入给定<em>type</em>的一个名称空间。</p>
+<p>(7)<code>file &lt;path&gt; &lt;type&gt;</code><br>打开文件路径并将其fd传递给已启动的进程。<em>type</em>必须是“r”，“w”或“rw”。</p>
+<p>(8)<code>user &lt;username&gt;</code><br>在执行此服务之前更改为“用户名”。当前默认为root。<br>从Android M开始，进程应该使用此选项，即使它们也是如此需要Linux功能。<br>以前，要获得Linux功能，进程需要以root身份运行，请求功能，然后转到所需的uid。<br>通过fs_config有一种新机制，允许设备制造商将Linux功能添加到应该使用的文件系统上的特定二进制文件中。<br>使用此新机制时，进程可以使用user选项选择所需的uid，而无需以root身份运行。<br>从Android O开始，进程也可以直接在.rc文件中请求功能。</p>
+<p>(9)<code>group &lt;groupname&gt; [ &lt;groupname&gt;\* ]</code><br>在执行此服务之前更改为“groupname”。除了（必需的）第一个之外的其他组名用于设置进程的补充组（通过setgroups（））。<br>当前默认为root。</p>
+<p>(10)<code>capabilities &lt;capability&gt; [ &lt;capability&gt;\* ]</code><br>执行此服务时设置功能。’capability’应该是没有“CAP_”前缀的Linux功能，如“NET_ADMIN”或“SETPCAP”。</p>
+<p>(11)<code>setrlimit &lt;resource&gt; &lt;cur&gt; &lt;max&gt;</code><br>这将给定的rlimit应用于服务。rlimits由子进程继承，因此这有效地将给定的rlimit应用于此服务启动的进程树。<br>它的解析类似于下面指定的setrlimit命令。</p>
+<p>(12)<code>seclabel &lt;seclabel&gt;</code><br>在执行此服务之前，请更改为“seclabel”。主要供从rootfs运行的服务使用，例如 ueventd，adbd。<br>系统分区上的服务可以基于其文件安全上下文使用策略定义的转换。如果未指定且策略中未定义转换，则默认为init上下文。</p>
+<p>(13)<code>oneshot</code><br>退出时不再重新启动的服务。</p>
+<p>(14)<code>class &lt;name&gt; [ &lt;name&gt;\* ]</code><br>指定服务的类名。命名类中的所有服务可以一起启动或停止。<br>如果未通过class选项指定服务，则服务在“默认”类中。除了（必需的）第一个之外的其他类名用于对服务进行分组。</p>
+<p>(15)<code>animation class</code><br>‘animation’类应该包括启动动画和关闭动画所需的所有服务。由于这些服务可以在启动期间很早启动，并且可以运行到关闭的最后阶段，因此无法保证对/data分区的访问。这些服务可以检查/data下的文件，但它不应该保持文件打开，并且在/data不可用时应该工作。</p>
+<p>(16)<code>onrestart</code><br>服务重新启动时执行命令（见下文）。</p>
+<p>(17)<code>writepid &lt;file&gt; [ &lt;file&gt;\* ]</code><br>在fork时将孩子的pid写入给定的文件。意味着cgroup/cpuset的使用。如果没有指定/dev/cpuset/下的文件，<br>但是系统属性’ro.cpuset.default’被设置为非空的cpuset名称（例如’/foreground’），<br>则pid被写入文件/dev/cpuset/_cpuset_name_/任务。</p>
+<p>(18)<code>priority &lt;priority&gt;</code><br>调度服务进程的优先级。 该值必须在-20到19的范围内。默认优先级为0.优先级通过setpriority（）设置。</p>
+<p>(19)<code>namespace &lt;pid|mnt&gt;</code><br>在fork服务时输入新的PID或mount命名空间。</p>
+<p>(20)<code>oom_score_adjust &lt;value&gt;</code><br>将子项的/proc/self/oom_score_adj设置为指定值，该值必须介于-1000到1000之间。</p>
+<p>(21)<code>memcg.swappiness &lt;value&gt;</code><br>将子目录的memory.swappiness设置为指定值（仅当安装了memcg时），该值必须等于或大于0。</p>
+<p>(22)<code>memcg.soft_limit_in_bytes &lt;value&gt;</code><br>将子目录的memory.soft_limit_in_bytes设置为指定值（仅当安装了memcg时），该值必须等于或大于0。</p>
+<p>(23)<code>memcg.limit_in_bytes &lt;value&gt;</code><br>将子目录的memory.limit_in_bytes设置为指定值（仅当安装了memcg时），该值必须等于或大于0。</p>
+<p>(24)<code>shutdown &lt;shutdown_behavior&gt;</code><br>设置服务进程的关闭行为。如果未指定，则在关闭过程中使用SIGTERM和SIGKILL终止服务。<br>shutdown_behavior为“critical”的服务在关闭期间不会被终止，直到关闭超时。<br>当关机超时时，即使标记为“关键关键”的服务也将被终止。当关闭开始时标记为“关键关键”的服务未运行时，将启动它。</p>
+<h3 id="五、Imports"><a href="#五、Imports" class="headerlink" title="五、Imports"></a>五、Imports</h3><p><code>import &lt;path&gt;</code><br>解析init配置文件，扩展当前配置。若path是目录则会将该目录文件都解析，但是不支持递归嵌套目录。<br>import关键字不是命令，既不会作为action被执行。</p>
+<p>导入rc文件有三个时机，分别是：<br>1.在初始引导期间导入/init.rc或属性<code>ro.boot.init_rc</code>指示的脚本时。<br>2.在导入/init.rc后立即为第一阶段安装设备导入/{system，vendor，odm}/etc/init/。<br>3.在mount_all期间在指定路径导入/{system，vendor，odm}/etc/init/或.rc文件时。</p>
+<p>保证在另一个命令之前运行命令的唯一正确方法是：<br>1）将其置于具有较早执行触发器的Action中，<br>2）将其置于具有相同触发器的Action中 早先的一行。</p>
+<h3 id="六、Triggers"><a href="#六、Triggers" class="headerlink" title="六、Triggers"></a>六、Triggers</h3><p>触发器是一些字符串，可用于匹配某些类型的事件并用于导致操作发生。触发器可分为事件触发器和属性触发器。Action可以有多个属性触发器，但可能只有一个事件触发器。<br>事件触发器是由“trigger”命令或init可执行文件中的QueueEventTrigger（）函数触发的字符串。它们采用简单字符串的形式，例如’boot’或’late-init’。<br>属性触发器是当命名属性将值更改为给定新值或命名属性将值更改为任何新值时触发的字符串。它们分别采用’property：<name> = <value>‘和’property：<name> = \ *’的形式。 在init的初始引导阶段，还会相应地评估和触发属性触发器。</name></value></name></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">`on boot &amp;&amp; property：a = b`</span><br><span class="line">#定义了一个只在&apos;boot&apos;事件触发发生且属性a等于b时执行的动作。</span><br><span class="line"></span><br><span class="line">`on property：a = b &amp;&amp; property：c = d`</span><br><span class="line">#定义了一次三次执行的动作：</span><br><span class="line">#1.在初始引导期间，如果属性a = b且属性c = d。</span><br><span class="line">#2.任何时候属性a转换为值b，而属性c已经等于d。</span><br><span class="line">#3.任何时候属性c转换为值d，而属性a已经等于b。</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Init/" rel="tag"># Init</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/25/Boot/Init的启动流程/" rel="next" title="Init的启动流程">
+                <i class="fa fa-chevron-left"></i> Init的启动流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/02/11/Boot/Init-rc文件解析/" rel="prev" title="Init-rc文件解析">
+                Init-rc文件解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="ZeyangXie">
+            
+              <p class="site-author-name" itemprop="name">ZeyangXie</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、Actions"><span class="nav-text">一、Actions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、Commands"><span class="nav-text">二、Commands</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、Services"><span class="nav-text">三、Services</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、Options"><span class="nav-text">四、Options</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、Imports"><span class="nav-text">五、Imports</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#六、Triggers"><span class="nav-text">六、Triggers</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZeyangXie</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
