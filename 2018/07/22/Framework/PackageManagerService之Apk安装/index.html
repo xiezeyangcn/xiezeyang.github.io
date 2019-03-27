@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、adb command1.1 cmmandline.cpp::adb_commandline()123456789101112131415161718192021222324252627282930313233343536373839int adb_commandline(int argc, const char **argv) &amp;#123;    …...    if (!strcmp(ar">
+<meta name="keywords" content="Framework">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PackageManagerService之Apk安装">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/07/22/Framework/PackageManagerService之Apk安装/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、adb command1.1 cmmandline.cpp::adb_commandline()123456789101112131415161718192021222324252627282930313233343536373839int adb_commandline(int argc, const char **argv) &amp;#123;    …...    if (!strcmp(ar">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-03-27T15:17:41.260Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PackageManagerService之Apk安装">
+<meta name="twitter:description" content="一、adb command1.1 cmmandline.cpp::adb_commandline()123456789101112131415161718192021222324252627282930313233343536373839int adb_commandline(int argc, const char **argv) &amp;#123;    …...    if (!strcmp(ar">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/07/22/Framework/PackageManagerService之Apk安装/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>PackageManagerService之Apk安装 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/22/Framework/PackageManagerService之Apk安装/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PackageManagerService之Apk安装
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-07-22 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-22T00:00:00+08:00">2018-07-22</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、adb-command"><a href="#一、adb-command" class="headerlink" title="一、adb command"></a>一、adb command</h3><h4 id="1-1-cmmandline-cpp-adb-commandline"><a href="#1-1-cmmandline-cpp-adb-commandline" class="headerlink" title="1.1 cmmandline.cpp::adb_commandline()"></a>1.1 cmmandline.cpp::adb_commandline()</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">adb_commandline</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"devices"</span>)) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span> *listopt;</span><br><span class="line">        <span class="keyword">if</span> (argc &lt; <span class="number">2</span>) &#123;</span><br><span class="line">            listopt = <span class="string">""</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; !<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"-l"</span>)) &#123;</span><br><span class="line">            listopt = argv[<span class="number">1</span>];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Usage: adb devices [-l]\n"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> query = android::base::StringPrintf(<span class="string">"host:%s%s"</span>, argv[<span class="number">0</span>], listopt);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"List of devices attached\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> adb_query_command(query);</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"install"</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (argc &lt; <span class="number">2</span>) <span class="keyword">return</span> usage();</span><br><span class="line">        <span class="keyword">if</span> (_use_legacy_install()) &#123;</span><br><span class="line">            <span class="comment">// 不支持CanUseFeature时调用 install_app_legacy</span></span><br><span class="line">            <span class="keyword">return</span> install_app_legacy(transport_type, serial, argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 否则调用install_app</span></span><br><span class="line">        <span class="keyword">return</span> install_app(transport_type, serial, argc, argv);</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"reconnect"</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (argc == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> adb_query_command(<span class="string">"host:reconnect"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; !<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"device"</span>)) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> err;</span><br><span class="line">            adb_connect(<span class="string">"reconnect"</span>, &amp;err);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    usage();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-2-commandline-cpp-install-app-legacy"><a href="#1-2-commandline-cpp-install-app-legacy" class="headerlink" title="1.2 commandline.cpp::install_app_legacy()"></a>1.2 commandline.cpp::install_app_legacy()</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">install_app_legacy</span><span class="params">(TransportType transport, <span class="keyword">const</span> <span class="keyword">char</span>* serial, <span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 如果安装在手机内部存储，则目的地址为DATA_DEST</span></span><br><span class="line">    <span class="comment">// 如果安装在T卡，则目的地址为SD_DEST</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> *<span class="keyword">const</span> DATA_DEST = <span class="string">"/data/local/tmp/%s"</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> *<span class="keyword">const</span> SD_DEST = <span class="string">"/sdcard/tmp/%s"</span>;</span><br><span class="line">    <span class="comment">// 默认安装在手机内部</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* where = DATA_DEST;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">sb</span>;</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; argc; i++) &#123;</span><br><span class="line">        <span class="comment">// 携带参数'-s'，才安装到T卡上</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[i], <span class="string">"-s"</span>)) &#123;</span><br><span class="line">            where = SD_DEST;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 判断adb命令是否携带了有效的apk文件名</span></span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 取出apk名</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">const</span> <span class="keyword">char</span>*&gt; apk_file = &#123;argv[last_apk]&#125;;</span><br><span class="line">    <span class="comment">// 构造apk目的地址</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> apk_dest = android::base::StringPrintf(</span><br><span class="line">        where, adb_basename(argv[last_apk]).c_str());</span><br><span class="line">    <span class="comment">// 将此apk文件传输至目的地址，若失败才跳转至cleanup_apk</span></span><br><span class="line">    <span class="keyword">if</span> (!do_sync_push(apk_file, apk_dest.c_str())) <span class="keyword">goto</span> cleanup_apk;</span><br><span class="line">    argv[last_apk] = apk_dest.c_str(); <span class="comment">/* destination name, not source location */</span></span><br><span class="line">    <span class="comment">// 执行pm_command</span></span><br><span class="line">    result = pm_command(transport, serial, argc, argv);</span><br><span class="line"></span><br><span class="line">cleanup_apk:</span><br><span class="line">    <span class="comment">// 删除传输失败的文件</span></span><br><span class="line">    <span class="comment">// 在PKMS安装过程会将此apk复制一份到/data/app目录，所有/data/local/temp目录下对应文件删除</span></span><br><span class="line">    delete_file(transport, serial, apk_dest);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-commandline-cpp-install-app"><a href="#1-3-commandline-cpp-install-app" class="headerlink" title="1.3 commandline.cpp::install_app()"></a>1.3 commandline.cpp::install_app()</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">install_app</span><span class="params">(TransportType transport, <span class="keyword">const</span> <span class="keyword">char</span>* serial, <span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 创建本地文件名称</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* file = argv[argc - <span class="number">1</span>];</span><br><span class="line">    <span class="comment">// 判断adb命令中是否携带有效的apk文件名</span></span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 创建出file对应的文件</span></span><br><span class="line">    <span class="keyword">int</span> localFd = adb_open(file, O_RDONLY);</span><br><span class="line">    …...</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> cmd = <span class="string">"exec:cmd package"</span>;</span><br><span class="line">    <span class="comment">// 添加cmd参数</span></span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 连接源端，获取apk文件描述符</span></span><br><span class="line">    <span class="keyword">int</span> remoteFd = adb_connect(cmd, &amp;error);</span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 将remoteFd中数据写入localFd</span></span><br><span class="line">    copy_to_file(localFd, remoteFd);</span><br><span class="line">    <span class="comment">// 得到结果</span></span><br><span class="line">    read_status_line(remoteFd, buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line">    adb_close(localFd);</span><br><span class="line">    adb_close(remoteFd);</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二、pm-command"><a href="#二、pm-command" class="headerlink" title="二、pm command"></a>二、pm command</h3><h4 id="2-1-commandline-cpp-pm-command"><a href="#2-1-commandline-cpp-pm-command" class="headerlink" title="2.1 commandline.cpp::pm_command()"></a>2.1 commandline.cpp::pm_command()</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">pm_command</span><span class="params">(TransportType transport, <span class="keyword">const</span> <span class="keyword">char</span>* serial, <span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> cmd = <span class="string">"pm"</span>;</span><br><span class="line">    <span class="comment">// 构造pm cmd</span></span><br><span class="line">    <span class="keyword">while</span> (argc-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        cmd += <span class="string">" "</span> + escape_arg(*argv++);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 发送shell命令给adbd</span></span><br><span class="line">    <span class="keyword">return</span> send_shell_command(transport, serial, cmd, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-commandline-cpp-send-shell-command"><a href="#2-2-commandline-cpp-send-shell-command" class="headerlink" title="2.2 commandline.cpp::send_shell_command()"></a>2.2 commandline.cpp::send_shell_command()</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">send_shell_command</span><span class="params">(TransportType transport_type, <span class="keyword">const</span> <span class="keyword">char</span>* serial, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; command,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">bool</span> disable_shell_protocol, StandardStreamsCallbackInterface* callback)</span> </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">bool</span> attempt_connection = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (!disable_shell_protocol) &#123;</span><br><span class="line">            FeatureSet features;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> error;</span><br><span class="line">            <span class="keyword">if</span> (adb_get_feature_set(&amp;features, &amp;error)) &#123;</span><br><span class="line">                <span class="comment">// 如果定义了feature，则替换shell protocol</span></span><br><span class="line">                use_shell_protocol = CanUseFeature(features, kFeatureShell2);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                attempt_connection = <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (attempt_connection) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> error;</span><br><span class="line">            <span class="comment">// 此时command携带的就是以pm开头的命令</span></span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> service_string = ShellServiceString(use_shell_protocol, <span class="string">""</span>, command);</span><br><span class="line">            <span class="comment">// 向shell服务发送命令</span></span><br><span class="line">            fd = adb_connect(service_string, &amp;error);</span><br><span class="line">            <span class="keyword">if</span> (fd &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"- waiting for device -\n"</span>);</span><br><span class="line">        <span class="keyword">if</span> (!wait_for_device(<span class="string">"wait-for-device"</span>, transport_type, serial)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 读取返回结果</span></span><br><span class="line">    <span class="keyword">int</span> exit_code = read_and_dump(fd, use_shell_protocol, callback);</span><br><span class="line">    <span class="keyword">return</span> exit_code;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、pm执行过程"><a href="#三、pm执行过程" class="headerlink" title="三、pm执行过程"></a>三、pm执行过程</h3><h4 id="3-1-Pm-java-main"><a href="#3-1-Pm-java-main" class="headerlink" title="3.1 Pm.java::main()"></a>3.1 Pm.java::main()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> exitCode = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        exitCode = <span class="keyword">new</span> Pm().run(args);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        System.err.println(<span class="string">"Error: "</span> + e);</span><br><span class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> RemoteException) &#123;</span><br><span class="line">            System.err.println(PM_NOT_RUNNING_ERR);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    System.exit(exitCode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-Pm-java-run"><a href="#3-2-Pm-java-run" class="headerlink" title="3.2 Pm.java::run()"></a>3.2 Pm.java::run()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">run</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 利用Binder通信，得到PKMS服务端代理</span></span><br><span class="line">    mPm = IPackageManager.Stub.asInterface(ServiceManager.getService(<span class="string">"package"</span>));</span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 返回PKMS中保存的PackageInstallerService</span></span><br><span class="line">    mInstaller = mPm.getPackageInstaller();</span><br><span class="line">    <span class="comment">// 保存参数</span></span><br><span class="line">    mArgs = args;</span><br><span class="line">    String op = args[<span class="number">0</span>];</span><br><span class="line">    mNextArg = <span class="number">1</span>;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">"install"</span>.equals(op)) &#123;</span><br><span class="line">        <span class="comment">// 安装APK调用runInstall</span></span><br><span class="line">        <span class="keyword">return</span> runInstall();</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-3-Pm-java-runInstall"><a href="#3-3-Pm-java-runInstall" class="headerlink" title="3.3 Pm.java::runInstall()"></a>3.3 Pm.java::runInstall()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">runInstall</span><span class="params">()</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">    <span class="comment">// 根据参数配置InstallParams，其中包括了SessionParams、标志为MODE_FULL_INSTALL</span></span><br><span class="line">    <span class="keyword">final</span> InstallParams params = makeInstallParams();</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> sessionId = doCreateSession(params.sessionParams,</span><br><span class="line">            params.installerPackageName, params.userId);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// inPath对应于安装的apk文件</span></span><br><span class="line">        <span class="keyword">if</span> (inPath == <span class="keyword">null</span> &amp;&amp; params.sessionParams.sizeBytes == <span class="number">0</span>) &#123;</span><br><span class="line">            System.err.println(<span class="string">"Error: must either specify a package size or an APK file"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (doWriteSession(sessionId, inPath, params.sessionParams.sizeBytes, <span class="string">"base.apk"</span>,</span><br><span class="line">                <span class="keyword">false</span> <span class="comment">/*logSuccess*/</span>) != PackageInstaller.STATUS_SUCCESS) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (doCommitSession(sessionId, <span class="keyword">false</span> <span class="comment">/*logSuccess*/</span>)</span><br><span class="line">                != PackageInstaller.STATUS_SUCCESS) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">"Success"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        …...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-4-Pm-java-doCreateSession"><a href="#3-4-Pm-java-doCreateSession" class="headerlink" title="3.4 Pm.java::doCreateSession()"></a>3.4 Pm.java::doCreateSession()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">doCreateSession</span><span class="params">(SessionParams params, String installerPackageName, <span class="keyword">int</span> userId)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">    <span class="comment">// 通过ActivityManagerService得到“runInstallCreate”的uid</span></span><br><span class="line">    userId = translateUserId(userId, <span class="string">"runInstallCreate"</span>);</span><br><span class="line">    <span class="keyword">if</span> (userId == UserHandle.USER_ALL) &#123;</span><br><span class="line">        userId = UserHandle.USER_SYSTEM;</span><br><span class="line">        params.installFlags |= PackageManager.INSTALL_ALL_USERS;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 通过PackageInstallerService创建session</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> sessionId = mInstaller.createSession(params, installerPackageName, userId);</span><br><span class="line">    <span class="keyword">return</span> sessionId;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-5-PackageInstallerService-java-createSession"><a href="#3-5-PackageInstallerService-java-createSession" class="headerlink" title="3.5 PackageInstallerService.java::createSession()"></a>3.5 PackageInstallerService.java::createSession()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">createSession</span><span class="params">(SessionParams params, String installerPackageName, <span class="keyword">int</span> userId)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> createSessionInternal(params, installerPackageName, userId);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> ExceptionUtils.wrap(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">createSessionInternal</span><span class="params">(SessionParams params, String installerPackageName, <span class="keyword">int</span> userId)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> callingUid = Binder.getCallingUid();</span><br><span class="line">    <span class="comment">// 安全权限检查</span></span><br><span class="line">    mPm.enforceCrossUserPermission(callingUid, userId, <span class="keyword">true</span>, <span class="keyword">true</span>, <span class="string">"createSession"</span>);</span><br><span class="line">    <span class="keyword">if</span> (mPm.isUserRestricted(userId, UserManager.DISALLOW_INSTALL_APPS)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">"User restriction prevents installing"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 修改SessionParams的installFlags</span></span><br><span class="line">    <span class="keyword">if</span> ((callingUid == Process.SHELL_UID) || (callingUid == Process.ROOT_UID)) &#123;</span><br><span class="line">        params.installFlags |= PackageManager.INSTALL_FROM_ADB;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        mAppOps.checkPackage(callingUid, installerPackageName);</span><br><span class="line">        params.installFlags &amp;= ~PackageManager.INSTALL_FROM_ADB;</span><br><span class="line">        params.installFlags &amp;= ~PackageManager.INSTALL_ALL_USERS;</span><br><span class="line">        params.installFlags |= PackageManager.INSTALL_REPLACE_EXISTING;</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 调整apk图标大小</span></span><br><span class="line">    <span class="keyword">if</span> (params.appIcon != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> ActivityManager am = (ActivityManager) mContext.getSystemService(</span><br><span class="line">                Context.ACTIVITY_SERVICE);</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> iconSize = am.getLauncherLargeIconSize();</span><br><span class="line">        <span class="keyword">if</span> ((params.appIcon.getWidth() &gt; iconSize * <span class="number">2</span>)</span><br><span class="line">                || (params.appIcon.getHeight() &gt; iconSize * <span class="number">2</span>)) &#123;</span><br><span class="line">            params.appIcon = Bitmap.createScaledBitmap(params.appIcon, iconSize, iconSize,</span><br><span class="line">                    <span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> sessionId;</span><br><span class="line">    <span class="keyword">final</span> PackageInstallerSession session;</span><br><span class="line">    <span class="keyword">synchronized</span> (mSessions) &#123;</span><br><span class="line">        <span class="comment">// 确保一个uid没有提供过多session</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> activeCount = getSessionCount(mSessions, callingUid);</span><br><span class="line">        <span class="keyword">if</span> (activeCount &gt;= MAX_ACTIVE_SESSIONS) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</span><br><span class="line">                    <span class="string">"Too many active sessions for UID "</span> + callingUid);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> historicalCount = getSessionCount(mHistoricalSessions, callingUid);</span><br><span class="line">        <span class="keyword">if</span> (historicalCount &gt;= MAX_HISTORICAL_SESSIONS) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</span><br><span class="line">                    <span class="string">"Too many historical sessions for UID "</span> + callingUid);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 随机值</span></span><br><span class="line">        sessionId = allocateSessionIdLocked();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">long</span> createdMillis = System.currentTimeMillis();</span><br><span class="line">    File stageDir = <span class="keyword">null</span>;</span><br><span class="line">    String stageCid = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 根据installFlags决定安装目录</span></span><br><span class="line">    <span class="keyword">if</span> ((params.installFlags &amp; PackageManager.INSTALL_INTERNAL) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> isEphemeral =</span><br><span class="line">                (params.installFlags &amp; PackageManager.INSTALL_EPHEMERAL) != <span class="number">0</span>;</span><br><span class="line">        stageDir = buildStageDir(params.volumeUuid, sessionId, isEphemeral);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        stageCid = buildExternalStageCid(sessionId);</span><br><span class="line">    &#125;</span><br><span class="line">    session = <span class="keyword">new</span> PackageInstallerSession(mInternalCallback, mContext, mPm,</span><br><span class="line">            mInstallThread.getLooper(), sessionId, userId, installerPackageName, callingUid,</span><br><span class="line">            params, createdMillis, stageDir, stageCid, <span class="keyword">false</span>, <span class="keyword">false</span>);</span><br><span class="line">    <span class="keyword">synchronized</span> (mSessions) &#123;</span><br><span class="line">        mSessions.put(sessionId, session);</span><br><span class="line">    &#125;</span><br><span class="line">    mCallbacks.notifySessionCreated(session.sessionId, session.userId);</span><br><span class="line">    <span class="comment">// mSessionsFile中记录</span></span><br><span class="line">    writeSessionsAsync();</span><br><span class="line">    <span class="keyword">return</span> sessionId;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-6-Pm-java-doWriteSession"><a href="#3-6-Pm-java-doWriteSession" class="headerlink" title="3.6 Pm.java::doWriteSession()"></a>3.6 Pm.java::doWriteSession()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">doWriteSession</span><span class="params">(<span class="keyword">int</span> sessionId, String inPath, <span class="keyword">long</span> sizeBytes, String splitName,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> logSuccess)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">"-"</span>.equals(inPath)) &#123;</span><br><span class="line">        inPath = <span class="keyword">null</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (inPath != <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="comment">// file指向待安装apk文件</span></span><br><span class="line">        <span class="keyword">final</span> File file = <span class="keyword">new</span> File(inPath);</span><br><span class="line">        <span class="keyword">if</span> (file.isFile()) &#123;</span><br><span class="line">            sizeBytes = file.length();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 取出PackageInstallerSession中SessionInfo</span></span><br><span class="line">    <span class="keyword">final</span> SessionInfo info = mInstaller.getSessionInfo(sessionId);</span><br><span class="line">    PackageInstaller.Session session = <span class="keyword">null</span>;</span><br><span class="line">    InputStream in = <span class="keyword">null</span>;</span><br><span class="line">    OutputStream out = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 获取PackageInstallerSession的调用接口</span></span><br><span class="line">        session = <span class="keyword">new</span> PackageInstaller.Session(</span><br><span class="line">               mInstaller.openSession(sessionId));</span><br><span class="line">        <span class="keyword">if</span> (inPath != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 定义输入端，待安装apk对应文件源地址</span></span><br><span class="line">            in = <span class="keyword">new</span> FileInputStream(inPath);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            in = <span class="keyword">new</span> SizedInputStream(System.in, sizeBytes);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 定义输出端，待安装apk对应拷贝后目的地址</span></span><br><span class="line">        out = session.openWrite(splitName, <span class="number">0</span>, sizeBytes);</span><br><span class="line">        <span class="keyword">int</span> total = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">65536</span>];</span><br><span class="line">        <span class="keyword">int</span> c;</span><br><span class="line">        <span class="comment">// 文件拷贝</span></span><br><span class="line">        <span class="keyword">while</span> ((c = in.read(buffer)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            total += c;</span><br><span class="line">            out.write(buffer, <span class="number">0</span>, c);</span><br><span class="line">            <span class="keyword">if</span> (info.sizeBytes &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">float</span> fraction = ((<span class="keyword">float</span>) c / (<span class="keyword">float</span>) info.sizeBytes);</span><br><span class="line">                <span class="comment">// 更新进度</span></span><br><span class="line">                session.addProgress(fraction);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        session.fsync(out);</span><br><span class="line">        …...</span><br><span class="line">        <span class="keyword">return</span> PackageInstaller.STATUS_SUCCESS;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        …...</span><br><span class="line">        <span class="keyword">return</span> PackageInstaller.STATUS_FAILURE;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        IoUtils.closeQuietly(out);</span><br><span class="line">        IoUtils.closeQuietly(in);</span><br><span class="line">        IoUtils.closeQuietly(session);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-7-PackageInstallerService-java-openSession"><a href="#3-7-PackageInstallerService-java-openSession" class="headerlink" title="3.7 PackageInstallerService.java::openSession()"></a>3.7 PackageInstallerService.java::openSession()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> IPackageInstallerSession <span class="title">openSession</span><span class="params">(<span class="keyword">int</span> sessionId)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> openSessionInternal(sessionId);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> ExceptionUtils.wrap(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> IPackageInstallerSession <span class="title">openSessionInternal</span><span class="params">(<span class="keyword">int</span> sessionId)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mSessions) &#123;</span><br><span class="line">        <span class="comment">// 根据sessionId得到之前创建的PackageInstallerSession</span></span><br><span class="line">        <span class="keyword">final</span> PackageInstallerSession session = mSessions.get(sessionId);</span><br><span class="line">        <span class="keyword">if</span> (session == <span class="keyword">null</span> || !isCallingUidOwner(session)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">"Caller has no access to session "</span> + sessionId);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 调用open函数</span></span><br><span class="line">        session.open();</span><br><span class="line">        <span class="keyword">return</span> session;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-8-PackageInstallerSession-java-open"><a href="#3-8-PackageInstallerSession-java-open" class="headerlink" title="3.8 PackageInstallerSession.java::open()"></a>3.8 PackageInstallerSession.java::open()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        <span class="comment">// mPrepared为false</span></span><br><span class="line">        <span class="keyword">if</span> (!mPrepared) &#123;</span><br><span class="line">            <span class="keyword">if</span> (stageDir != <span class="keyword">null</span>) &#123;</span><br><span class="line">                prepareStageDir(stageDir);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (stageCid != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">long</span> identity = Binder.clearCallingIdentity();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    prepareExternalStageCid(stageCid, params.sizeBytes);</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    Binder.restoreCallingIdentity(identity);</span><br><span class="line">                &#125;</span><br><span class="line">                mInternalProgress = <span class="number">0.25f</span>;</span><br><span class="line">                computeProgressLocked(<span class="keyword">true</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                        <span class="string">"Exactly one of stageDir or stageCid stage must be set"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            mPrepared = <span class="keyword">true</span>;</span><br><span class="line">            mCallback.onSessionPrepared(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-9-PackageInstaller-java-openWrite"><a href="#3-9-PackageInstaller-java-openWrite" class="headerlink" title="3.9 PackageInstaller.java::openWrite()"></a>3.9 PackageInstaller.java::openWrite()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="meta">@NonNull</span> <span class="function">OutputStream <span class="title">openWrite</span><span class="params">(@NonNull String name, <span class="keyword">long</span> offsetBytes,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">long</span> lengthBytes)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> ParcelFileDescriptor clientSocket = mSession.openWrite(name,</span><br><span class="line">                offsetBytes, lengthBytes);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> FileBridge.FileBridgeOutputStream(clientSocket);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RuntimeException e) &#123;</span><br><span class="line">        …...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-10-PackageInstallerSession-java-openWrite"><a href="#3-10-PackageInstallerSession-java-openWrite" class="headerlink" title="3.10 PackageInstallerSession.java::openWrite()"></a>3.10 PackageInstallerSession.java::openWrite()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> ParcelFileDescriptor <span class="title">openWrite</span><span class="params">(String name, <span class="keyword">long</span> offsetBytes, <span class="keyword">long</span> lengthBytes)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> openWriteInternal(name, offsetBytes, lengthBytes);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> ExceptionUtils.wrap(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> ParcelFileDescriptor <span class="title">openWriteInternal</span><span class="params">(String name, <span class="keyword">long</span> offsetBytes, <span class="keyword">long</span> lengthBytes)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> FileBridge bridge;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        assertPreparedAndNotSealed(<span class="string">"openWrite"</span>);</span><br><span class="line">        bridge = <span class="keyword">new</span> FileBridge();</span><br><span class="line">        mBridges.add(bridge);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!FileUtils.isValidExtFilename(name)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Invalid name: "</span> + name);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 打开文件，定义权限</span></span><br><span class="line">        <span class="keyword">final</span> File target;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> identity = Binder.clearCallingIdentity();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            target = <span class="keyword">new</span> File(resolveStageDir(), name);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            Binder.restoreCallingIdentity(identity);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> FileDescriptor targetFd = Libcore.os.open(target.getAbsolutePath(),</span><br><span class="line">                O_CREAT | O_WRONLY, <span class="number">0644</span>);</span><br><span class="line">        Os.chmod(target.getAbsolutePath(), <span class="number">0644</span>);</span><br><span class="line">        <span class="comment">// 定义文件内存格式，分配内存</span></span><br><span class="line">        <span class="keyword">if</span> (lengthBytes &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> StructStat stat = Libcore.os.fstat(targetFd);</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> deltaBytes = lengthBytes - stat.st_size;</span><br><span class="line">            <span class="keyword">if</span> (stageDir != <span class="keyword">null</span> &amp;&amp; deltaBytes &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                mPm.freeStorage(params.volumeUuid, deltaBytes);</span><br><span class="line">            &#125;</span><br><span class="line">            Libcore.os.posix_fallocate(targetFd, <span class="number">0</span>, lengthBytes);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 定义起始偏移量</span></span><br><span class="line">        <span class="keyword">if</span> (offsetBytes &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            Libcore.os.lseek(targetFd, offsetBytes, OsConstants.SEEK_SET);</span><br><span class="line">        &#125;</span><br><span class="line">        bridge.setTargetFile(targetFd);</span><br><span class="line">        bridge.start();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ParcelFileDescriptor(bridge.getClientSocket());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ErrnoException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> e.rethrowAsIOException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-11-FileBridge-java"><a href="#3-11-FileBridge-java" class="headerlink" title="3.11 FileBridge.java"></a>3.11 FileBridge.java</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">Public <span class="class"><span class="keyword">class</span> <span class="title">FileBridge</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FileBridge</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 构造函数建立mServer和mClient之间的管道</span></span><br><span class="line">            Os.socketpair(AF_UNIX, SOCK_STREAM, <span class="number">0</span>, mServer, mClient);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ErrnoException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Failed to create bridge"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isClosed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mClosed;</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setTargetFile</span><span class="params">(FileDescriptor target)</span> </span>&#123;</span><br><span class="line">        mTarget = target;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> FileDescriptor <span class="title">getClientSocket</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mClient;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">byte</span>[] temp = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">8192</span>];</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 取出mServer中数据进行处理</span></span><br><span class="line">            <span class="keyword">while</span> (IoBridge.read(mServer, temp, <span class="number">0</span>, MSG_LENGTH) == MSG_LENGTH) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> cmd = Memory.peekInt(temp, <span class="number">0</span>, ByteOrder.BIG_ENDIAN);</span><br><span class="line">                <span class="keyword">if</span> (cmd == CMD_WRITE) &#123;</span><br><span class="line">                    <span class="keyword">int</span> len = Memory.peekInt(temp, <span class="number">4</span>, ByteOrder.BIG_ENDIAN);</span><br><span class="line">                    <span class="keyword">while</span> (len &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="keyword">int</span> n = IoBridge.read(mServer, temp, <span class="number">0</span>, Math.min(temp.length, len));</span><br><span class="line">                        <span class="keyword">if</span> (n == -<span class="number">1</span>) &#123;</span><br><span class="line">                            <span class="keyword">throw</span> <span class="keyword">new</span> IOException(</span><br><span class="line">                                    <span class="string">"Unexpected EOF; still expected "</span> + len + <span class="string">" bytes"</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                        IoBridge.write(mTarget, temp, <span class="number">0</span>, n);</span><br><span class="line">                        len -= n;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cmd == CMD_FSYNC) &#123;</span><br><span class="line">                    Os.fsync(mTarget);</span><br><span class="line">                    IoBridge.write(mServer, temp, <span class="number">0</span>, MSG_LENGTH);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cmd == CMD_CLOSE) &#123;</span><br><span class="line">                    Os.fsync(mTarget);</span><br><span class="line">                    Os.close(mTarget);</span><br><span class="line">                    mClosed = <span class="keyword">true</span>;</span><br><span class="line">                    IoBridge.write(mServer, temp, <span class="number">0</span>, MSG_LENGTH);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ErrnoException | IOException e) &#123;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            forceClose();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-12-Pm-java-doCommitSession"><a href="#3-12-Pm-java-doCommitSession" class="headerlink" title="3.12 Pm.java::doCommitSession()"></a>3.12 Pm.java::doCommitSession()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">doCommitSession</span><span class="params">(<span class="keyword">int</span> sessionId, <span class="keyword">boolean</span> logSuccess)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">    PackageInstaller.Session session = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        session = <span class="keyword">new</span> PackageInstaller.Session(</span><br><span class="line">                mInstaller.openSession(sessionId));</span><br><span class="line">        <span class="comment">// receiver用于接收结果</span></span><br><span class="line">        <span class="keyword">final</span> LocalIntentReceiver receiver = <span class="keyword">new</span> LocalIntentReceiver();</span><br><span class="line">        <span class="comment">// 提交session</span></span><br><span class="line">        session.commit(receiver.getIntentSender());</span><br><span class="line">        …...</span><br><span class="line">        <span class="keyword">return</span> status;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        IoUtils.closeQuietly(session);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-13-PackageInstaller-java-commit"><a href="#3-13-PackageInstaller-java-commit" class="headerlink" title="3.13 PackageInstaller.java::commit()"></a>3.13 PackageInstaller.java::commit()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">commit</span><span class="params">(@NonNull IntentSender statusReceiver)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        mSession.commit(statusReceiver);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> e.rethrowFromSystemServer();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-14-PackageInstallerSession-java-commit"><a href="#3-14-PackageInstallerSession-java-commit" class="headerlink" title="3.14 PackageInstallerSession.java::commit()"></a>3.14 PackageInstallerSession.java::commit()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">commit</span><span class="params">(IntentSender statusReceiver)</span> </span>&#123;</span><br><span class="line">    Preconditions.checkNotNull(statusReceiver);</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> wasSealed;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        wasSealed = mSealed;</span><br><span class="line">        <span class="comment">// 初始化mSealed为false</span></span><br><span class="line">        <span class="keyword">if</span> (!mSealed) &#123;</span><br><span class="line">            <span class="comment">// 前面的doWriteSession传输数据的结尾，会关闭bridge</span></span><br><span class="line">            <span class="keyword">for</span> (FileBridge bridge : mBridges) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!bridge.isClosed()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">"Files still open"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            mSealed = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        mClientProgress = <span class="number">1f</span>;</span><br><span class="line">        computeProgressLocked(<span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!wasSealed) &#123;</span><br><span class="line">        mCallback.onSessionSealedBlocking(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    mActiveCount.incrementAndGet();</span><br><span class="line">    <span class="keyword">final</span> PackageInstallObserverAdapter adapter = <span class="keyword">new</span> PackageInstallObserverAdapter(mContext,</span><br><span class="line">            statusReceiver, sessionId, mIsInstallerDeviceOwner, userId);</span><br><span class="line">    mHandler.obtainMessage(MSG_COMMIT, adapter.getBinder()).sendToTarget();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Handler.Callback mHandlerCallback = <span class="keyword">new</span> Handler.Callback() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> PackageInfo pkgInfo = mPm.getPackageInfo(</span><br><span class="line">                params.appPackageName, PackageManager.GET_SIGNATURES <span class="comment">/*flags*/</span>, userId);</span><br><span class="line">        <span class="keyword">final</span> ApplicationInfo appInfo = mPm.getApplicationInfo(</span><br><span class="line">                params.appPackageName, <span class="number">0</span>, userId);</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            <span class="keyword">if</span> (msg.obj != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 存储Pm.java中的结果接收器</span></span><br><span class="line">                mRemoteObserver = (IPackageInstallObserver2) msg.obj;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// commit发送消息后，最终会触发commitLocked</span></span><br><span class="line">                commitLocked(pkgInfo, appInfo);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (PackageManagerException e) &#123;</span><br><span class="line">                <span class="keyword">final</span> String completeMsg = ExceptionUtils.getCompleteMessage(e);</span><br><span class="line">                destroyInternal();</span><br><span class="line">                dispatchSessionFinished(e.error, completeMsg, <span class="keyword">null</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">commitLocked</span><span class="params">(PackageInfo pkgInfo, ApplicationInfo appInfo)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> PackageManagerException </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 解析安装地址，即apk文件拷贝后目的地址</span></span><br><span class="line">        resolveStageDir();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> PackageManagerException(INSTALL_FAILED_CONTAINER_ERROR,</span><br><span class="line">                <span class="string">"Failed to resolve stage location"</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 利用PKMS检查apk文件是否满足要求，保证各个文件具有一致性</span></span><br><span class="line">    validateInstallLocked(pkgInfo, appInfo);</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">if</span> (stageCid != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> finalSize = calculateInstalledSize();</span><br><span class="line">        resizeContainer(stageCid, finalSize);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (params.mode == SessionParams.MODE_INHERIT_EXISTING) &#123;</span><br><span class="line">        <span class="comment">// 如果新的apk文件继承某些已经安装的Package，此处将copy需要native库文件等</span></span><br><span class="line">        …...</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 解压缩native库文件</span></span><br><span class="line">    extractNativeLibraries(mResolvedStageDir, params.abiOverride);</span><br><span class="line">    <span class="keyword">if</span> (stageCid != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 针对安装在T卡的操作，根据uid、gid调用fixSdPermissions</span></span><br><span class="line">        finalizeAndFixContainer(stageCid);</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    mRelinquished = <span class="keyword">true</span>;</span><br><span class="line">    <span class="comment">// 调用PKMS的installState</span></span><br><span class="line">    mPm.installStage(mPackageName, stageDir, stageCid, localObserver, params,</span><br><span class="line">            installerPackageName, installerUid, user, mCertificates);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/17/Framework/PackageManagerService之Intent匹配Activity/" rel="next" title="PackageManagerService之Intent匹配Activity">
+                <i class="fa fa-chevron-left"></i> PackageManagerService之Intent匹配Activity
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/28/Framework/PackageManagerService之installed/" rel="prev" title="PackageManagerService之installed">
+                PackageManagerService之installed <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">60</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、adb-command"><span class="nav-text">一、adb command</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-cmmandline-cpp-adb-commandline"><span class="nav-text">1.1 cmmandline.cpp::adb_commandline()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-commandline-cpp-install-app-legacy"><span class="nav-text">1.2 commandline.cpp::install_app_legacy()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-commandline-cpp-install-app"><span class="nav-text">1.3 commandline.cpp::install_app()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、pm-command"><span class="nav-text">二、pm command</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-commandline-cpp-pm-command"><span class="nav-text">2.1 commandline.cpp::pm_command()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-commandline-cpp-send-shell-command"><span class="nav-text">2.2 commandline.cpp::send_shell_command()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、pm执行过程"><span class="nav-text">三、pm执行过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Pm-java-main"><span class="nav-text">3.1 Pm.java::main()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Pm-java-run"><span class="nav-text">3.2 Pm.java::run()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Pm-java-runInstall"><span class="nav-text">3.3 Pm.java::runInstall()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-Pm-java-doCreateSession"><span class="nav-text">3.4 Pm.java::doCreateSession()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-PackageInstallerService-java-createSession"><span class="nav-text">3.5 PackageInstallerService.java::createSession()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-6-Pm-java-doWriteSession"><span class="nav-text">3.6 Pm.java::doWriteSession()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-7-PackageInstallerService-java-openSession"><span class="nav-text">3.7 PackageInstallerService.java::openSession()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-8-PackageInstallerSession-java-open"><span class="nav-text">3.8 PackageInstallerSession.java::open()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-9-PackageInstaller-java-openWrite"><span class="nav-text">3.9 PackageInstaller.java::openWrite()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-10-PackageInstallerSession-java-openWrite"><span class="nav-text">3.10 PackageInstallerSession.java::openWrite()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-11-FileBridge-java"><span class="nav-text">3.11 FileBridge.java</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-12-Pm-java-doCommitSession"><span class="nav-text">3.12 Pm.java::doCommitSession()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-13-PackageInstaller-java-commit"><span class="nav-text">3.13 PackageInstaller.java::commit()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-14-PackageInstallerSession-java-commit"><span class="nav-text">3.14 PackageInstallerSession.java::commit()</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
