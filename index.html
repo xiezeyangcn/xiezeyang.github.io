@@ -329,6 +329,341 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/29/Filesystem/OTG的挂载流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/29/Filesystem/OTG的挂载流程/" class="post-title-link" itemprop="url">OTG的挂载流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-29 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-29T00:00:00+08:00">2019-03-29</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>USB既是一种数据通信方式，也是一种数据总线，硬件上它由插头连接，一边是公头(plug)，一边是母头(receptacle)。</p>
+<p>Android可通过USB host和USB accessory两种模式来实现对多种USB外设的支持。在USB accessory模式下，外部USB硬件即USB主机；而USB host模式下，Android设备即USB主机。两种模式的区别可参见下图<img src="/images/usb-host-accessory.png" alt></p>
+<p>下面将以最近处理的一个‘OTG无法访问U盘数据’问题为契机，来简单梳理一下U盘挂载流程。</p>
+<h3 id="1-调用NetlinkManager的onEvent函数处理uevent"><a href="#1-调用NetlinkManager的onEvent函数处理uevent" class="headerlink" title="1. 调用NetlinkManager的onEvent函数处理uevent"></a>1. 调用NetlinkManager的onEvent函数处理uevent</h3><p>在之前分析vold的启动流程那篇文章中，我们有提到过NetlinkManager主要负责同kernel层的uevent通信，下面来看看其onEvent函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/NetlinkHandler.cpp</span></span><br><span class="line"><span class="keyword">void</span> NetlinkHandler::onEvent(NetlinkEvent *evt) &#123;</span><br><span class="line">    VolumeManager *vm = VolumeManager::Instance();</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *subsys = evt-&gt;getSubsystem();</span><br><span class="line">    <span class="keyword">if</span> (!subsys) &#123;</span><br><span class="line">        LOG(WARNING) &lt;&lt; <span class="string">"No subsystem found in netlink event"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">std</span>::<span class="built_in">string</span>(subsys) == <span class="string">"block"</span>) &#123;</span><br><span class="line">        <span class="comment">// 处理block事件</span></span><br><span class="line">        vm-&gt;handleBlockEvent(evt);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-调用VolumeManager的handleBlockEvent函数处理block"><a href="#2-调用VolumeManager的handleBlockEvent函数处理block" class="headerlink" title="2. 调用VolumeManager的handleBlockEvent函数处理block"></a>2. 调用VolumeManager的handleBlockEvent函数处理block</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/VolumeManager.cpp</span></span><br><span class="line"><span class="keyword">void</span> VolumeManager::handleBlockEvent(NetlinkEvent *evt) &#123;</span><br><span class="line">    <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(mLock);</span><br><span class="line">    <span class="keyword">if</span> (mDebug) &#123;</span><br><span class="line">        LOG(VERBOSE) &lt;&lt; <span class="string">"----------------"</span>;</span><br><span class="line">        LOG(VERBOSE) &lt;&lt; <span class="string">"handleBlockEvent with action "</span> &lt;&lt; (<span class="keyword">int</span>) evt-&gt;getAction();</span><br><span class="line">        evt-&gt;dump();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">eventPath</span><span class="params">(evt-&gt;findParam(<span class="string">"DEVPATH"</span>)?evt-&gt;findParam(<span class="string">"DEVPATH"</span>):<span class="string">""</span>)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">devType</span><span class="params">(evt-&gt;findParam(<span class="string">"DEVTYPE"</span>)?evt-&gt;findParam(<span class="string">"DEVTYPE"</span>):<span class="string">""</span>)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (devType != <span class="string">"disk"</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="comment">// 获取主次设备号</span></span><br><span class="line">    <span class="keyword">int</span> major = <span class="built_in">std</span>::stoi(evt-&gt;findParam(<span class="string">"MAJOR"</span>));</span><br><span class="line">    <span class="keyword">int</span> minor = <span class="built_in">std</span>::stoi(evt-&gt;findParam(<span class="string">"MINOR"</span>));</span><br><span class="line">    <span class="keyword">dev_t</span> device = makedev(major, minor);</span><br><span class="line">    <span class="keyword">switch</span> (evt-&gt;getAction()) &#123;</span><br><span class="line">    <span class="keyword">case</span> NetlinkEvent::Action::kAdd: &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; source : mDiskSources) &#123;</span><br><span class="line">            <span class="keyword">if</span> (source-&gt;matches(eventPath)) &#123;</span><br><span class="line">                <span class="comment">// 现在假设MMC和virtio-blk设备是SD卡（后者是模拟器特定的），其他一切都是USB</span></span><br><span class="line">                <span class="keyword">int</span> flags = source-&gt;getFlags();</span><br><span class="line">                <span class="keyword">if</span> (major == kMajorBlockMmc</span><br><span class="line">                    || (android::vold::IsRunningInEmulator()</span><br><span class="line">                    &amp;&amp; major &gt;= (<span class="keyword">int</span>) kMajorBlockExperimentalMin</span><br><span class="line">                    &amp;&amp; major &lt;= (<span class="keyword">int</span>) kMajorBlockExperimentalMax)) &#123;</span><br><span class="line">                    flags |= android::vold::Disk::Flags::kSd;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    flags |= android::vold::Disk::Flags::kUsb;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">auto</span> disk = <span class="keyword">new</span> android::vold::Disk(eventPath, device,</span><br><span class="line">                        source-&gt;getNickname(), flags);</span><br><span class="line">                handleDiskAdded(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;android::vold::Disk&gt;(disk));</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> NetlinkEvent::Action::kChange: &#123;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Disk at "</span> &lt;&lt; major &lt;&lt; <span class="string">":"</span> &lt;&lt; minor &lt;&lt; <span class="string">" changed"</span>;</span><br><span class="line">        handleDiskChanged(device);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> NetlinkEvent::Action::kRemove: &#123;</span><br><span class="line">        handleDiskRemoved(device);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">default</span>: &#123;</span><br><span class="line">        LOG(WARNING) &lt;&lt; <span class="string">"Unexpected block event action "</span> &lt;&lt; (<span class="keyword">int</span>) evt-&gt;getAction();</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-调用VolumeManager的handleDisk-函数处理disk"><a href="#3-调用VolumeManager的handleDisk-函数处理disk" class="headerlink" title="3. 调用VolumeManager的handleDisk***函数处理disk"></a>3. 调用VolumeManager的handleDisk***函数处理disk</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/VolumeManager.cpp</span></span><br><span class="line"><span class="comment">// 插入disk</span></span><br><span class="line"><span class="keyword">void</span> VolumeManager::handleDiskAdded(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;android::vold::Disk&gt;&amp; disk) &#123;</span><br><span class="line">    <span class="comment">// 出于安全原因，如果显示安全键盘锁，请等到用户解锁设备以处理它</span></span><br><span class="line">    <span class="keyword">if</span> (mSecureKeyguardShowing) &#123;</span><br><span class="line">        LOG(INFO) &lt;&lt; <span class="string">"Found disk at "</span> &lt;&lt; disk-&gt;getEventPath()</span><br><span class="line">                &lt;&lt; <span class="string">" but delaying scan due to secure keyguard"</span>;</span><br><span class="line">        mPendingDisks.push_back(disk);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        disk-&gt;create();</span><br><span class="line">        mDisks.push_back(disk);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// disk变化</span></span><br><span class="line"><span class="keyword">void</span> VolumeManager::handleDiskChanged(<span class="keyword">dev_t</span> device) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; disk : mDisks) &#123;</span><br><span class="line">        <span class="keyword">if</span> (disk-&gt;getDevice() == device) &#123;</span><br><span class="line">            disk-&gt;readMetadata();</span><br><span class="line">            disk-&gt;readPartitions();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 出于安全原因，忽略所有pending状态的disk，因为一旦设备解锁即能扫描到它们</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 移除disk</span></span><br><span class="line"><span class="keyword">void</span> VolumeManager::handleDiskRemoved(<span class="keyword">dev_t</span> device) &#123;</span><br><span class="line">    <span class="keyword">auto</span> i = mDisks.begin();</span><br><span class="line">    <span class="keyword">while</span> (i != mDisks.end()) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((*i)-&gt;getDevice() == device) &#123;</span><br><span class="line">            (*i)-&gt;destroy();</span><br><span class="line">            i = mDisks.erase(i);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            ++i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> j = mPendingDisks.begin();</span><br><span class="line">    <span class="keyword">while</span> (j != mPendingDisks.end()) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((*j)-&gt;getDevice() == device) &#123;</span><br><span class="line">            j = mPendingDisks.erase(j);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            ++j;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="4-调用Disk的create函数处理disk"><a href="#4-调用Disk的create函数处理disk" class="headerlink" title="4. 调用Disk的create函数处理disk"></a>4. 调用Disk的create函数处理disk</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/model/Disk.cpp</span></span><br><span class="line"><span class="keyword">status_t</span> Disk::create() &#123;</span><br><span class="line">    CHECK(!mCreated);</span><br><span class="line">    mCreated = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">auto</span> listener = VolumeManager::Instance()-&gt;getListener();</span><br><span class="line">    <span class="keyword">if</span> (listener) listener-&gt;onDiskCreated(getId(), mFlags);</span><br><span class="line">    readMetadata();</span><br><span class="line">    readPartitions();</span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="5-调用StorageManagerService的IVoldListener方法监听disk"><a href="#5-调用StorageManagerService的IVoldListener方法监听disk" class="headerlink" title="5. 调用StorageManagerService的IVoldListener方法监听disk"></a>5. 调用StorageManagerService的IVoldListener方法监听disk</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> IVoldListener mListener = <span class="keyword">new</span> IVoldListener.Stub() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDiskCreated</span><span class="params">(String diskId, <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">                <span class="comment">// persist.sys.adoptable</span></span><br><span class="line">                <span class="keyword">final</span> String value = SystemProperties.get(StorageManager.PROP_ADOPTABLE);</span><br><span class="line">                <span class="keyword">switch</span> (value) &#123;</span><br><span class="line">                    <span class="keyword">case</span> <span class="string">"force_on"</span>:</span><br><span class="line">                        flags |= DiskInfo.FLAG_ADOPTABLE;</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    <span class="keyword">case</span> <span class="string">"force_off"</span>:</span><br><span class="line">                        flags &amp;= ~DiskInfo.FLAG_ADOPTABLE;</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                mDisks.put(diskId, <span class="keyword">new</span> DiskInfo(diskId, flags));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDiskScanned</span><span class="params">(String diskId)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">                <span class="keyword">final</span> DiskInfo disk = mDisks.get(diskId);</span><br><span class="line">                <span class="keyword">if</span> (disk != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    onDiskScannedLocked(disk);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDiskMetadataChanged</span><span class="params">(String diskId, <span class="keyword">long</span> sizeBytes, String label,</span></span></span><br><span class="line"><span class="function"><span class="params">                String sysPath)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">                <span class="keyword">final</span> DiskInfo disk = mDisks.get(diskId);</span><br><span class="line">                <span class="keyword">if</span> (disk != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    disk.size = sizeBytes;</span><br><span class="line">                    disk.label = label;</span><br><span class="line">                    disk.sysPath = sysPath;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onVolumeCreated</span><span class="params">(String volId, <span class="keyword">int</span> type, String diskId, String partGuid)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">                <span class="keyword">final</span> DiskInfo disk = mDisks.get(diskId);</span><br><span class="line">                <span class="keyword">final</span> VolumeInfo vol = <span class="keyword">new</span> VolumeInfo(volId, type, disk, partGuid);</span><br><span class="line">                mVolumes.put(volId, vol);</span><br><span class="line">                onVolumeCreatedLocked(vol);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="6-调用StorageManagerService的onDisk-Locked方法disk上层挂载消息"><a href="#6-调用StorageManagerService的onDisk-Locked方法disk上层挂载消息" class="headerlink" title="6. 调用StorageManagerService的onDisk***Locked方法disk上层挂载消息"></a>6. 调用StorageManagerService的onDisk***Locked方法disk上层挂载消息</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line">    <span class="meta">@GuardedBy</span>(<span class="string">"mLock"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onDiskScannedLocked</span><span class="params">(DiskInfo disk)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> volumeCount = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mVolumes.size(); i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> VolumeInfo vol = mVolumes.valueAt(i);</span><br><span class="line">            <span class="keyword">if</span> (Objects.equals(disk.id, vol.getDiskId())) &#123;</span><br><span class="line">                volumeCount++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> Intent intent = <span class="keyword">new</span> Intent(DiskInfo.ACTION_DISK_SCANNED);</span><br><span class="line">        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT</span><br><span class="line">                | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);</span><br><span class="line">        intent.putExtra(DiskInfo.EXTRA_DISK_ID, disk.id);</span><br><span class="line">        intent.putExtra(DiskInfo.EXTRA_VOLUME_COUNT, volumeCount);</span><br><span class="line">        mHandler.obtainMessage(H_INTERNAL_BROADCAST, intent).sendToTarget();</span><br><span class="line">        <span class="keyword">final</span> CountDownLatch latch = mDiskScanLatches.remove(disk.id);</span><br><span class="line">        <span class="keyword">if</span> (latch != <span class="keyword">null</span>) &#123;</span><br><span class="line">            latch.countDown();</span><br><span class="line">        &#125;</span><br><span class="line">        disk.volumeCount = volumeCount;</span><br><span class="line">        mCallbacks.notifyDiskScanned(disk, volumeCount);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GuardedBy</span>(<span class="string">"mLock"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onVolumeCreatedLocked</span><span class="params">(VolumeInfo vol)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mPms.isOnlyCoreApps()) &#123;</span><br><span class="line">            Slog.d(TAG, <span class="string">"System booted in core-only mode; ignoring volume "</span> + vol.getId());</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (vol.type == VolumeInfo.TYPE_EMULATED) &#123;</span><br><span class="line">            <span class="keyword">final</span> StorageManager storage = mContext.getSystemService(StorageManager.class);</span><br><span class="line">            <span class="keyword">final</span> VolumeInfo privateVol = storage.findPrivateForEmulated(vol);</span><br><span class="line">            <span class="keyword">if</span> (Objects.equals(StorageManager.UUID_PRIVATE_INTERNAL, mPrimaryStorageUuid)</span><br><span class="line">                    &amp;&amp; VolumeInfo.ID_PRIVATE_INTERNAL.equals(privateVol.id)) &#123;</span><br><span class="line">                Slog.v(TAG, <span class="string">"Found primary storage at "</span> + vol);</span><br><span class="line">                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_PRIMARY;</span><br><span class="line">                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE;</span><br><span class="line">                mHandler.obtainMessage(H_VOLUME_MOUNT, vol).sendToTarget();</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (Objects.equals(privateVol.fsUuid, mPrimaryStorageUuid)) &#123;</span><br><span class="line">                Slog.v(TAG, <span class="string">"Found primary storage at "</span> + vol);</span><br><span class="line">                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_PRIMARY;</span><br><span class="line">                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE;</span><br><span class="line">                mHandler.obtainMessage(H_VOLUME_MOUNT, vol).sendToTarget();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (vol.type == VolumeInfo.TYPE_PUBLIC) &#123;</span><br><span class="line">            <span class="keyword">if</span> (Objects.equals(StorageManager.UUID_PRIMARY_PHYSICAL, mPrimaryStorageUuid)</span><br><span class="line">                    &amp;&amp; vol.disk.isDefaultPrimary()) &#123;</span><br><span class="line">                Slog.v(TAG, <span class="string">"Found primary storage at "</span> + vol);</span><br><span class="line">                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_PRIMARY;</span><br><span class="line">                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 应用程序可以看到可使用的公共磁盘，因为它们满足位于稳定位置的公共API要求。</span></span><br><span class="line">            <span class="keyword">if</span> (vol.disk.isAdoptable() || vol.disk.isUsb()) &#123;</span><br><span class="line">                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE;</span><br><span class="line">            &#125;</span><br><span class="line">            vol.mountUserId = mCurrentUserId;</span><br><span class="line">            mHandler.obtainMessage(H_VOLUME_MOUNT, vol).sendToTarget();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (vol.type == VolumeInfo.TYPE_PRIVATE) &#123;</span><br><span class="line">            mHandler.obtainMessage(H_VOLUME_MOUNT, vol).sendToTarget();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Slog.d(TAG, <span class="string">"Skipping automatic mounting of "</span> + vol);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="7-StorageManagerService的回调"><a href="#7-StorageManagerService的回调" class="headerlink" title="7. StorageManagerService的回调"></a>7. StorageManagerService的回调</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Callbacks</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">final</span> SomeArgs args = (SomeArgs) msg.obj;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> n = mCallbacks.beginBroadcast();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">                <span class="keyword">final</span> IStorageEventListener callback = mCallbacks.getBroadcastItem(i);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    invokeCallback(callback, msg.what, args);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (RemoteException ignored) &#123;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            mCallbacks.finishBroadcast();</span><br><span class="line">            args.recycle();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">invokeCallback</span><span class="params">(IStorageEventListener callback, <span class="keyword">int</span> what, SomeArgs args)</span></span></span><br><span class="line"><span class="function">                <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">            <span class="keyword">switch</span> (what) &#123;</span><br><span class="line">                ...</span><br><span class="line">                <span class="keyword">case</span> MSG_DISK_SCANNED: &#123;</span><br><span class="line">                    callback.onDiskScanned((DiskInfo) args.arg1, args.argi2);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">case</span> H_VOLUME_MOUNT: &#123;</span><br><span class="line">                    <span class="keyword">final</span> VolumeInfo vol = (VolumeInfo) msg.obj;</span><br><span class="line">                    <span class="keyword">if</span> (isMountDisallowed(vol)) &#123;</span><br><span class="line">                        Slog.i(TAG, <span class="string">"Ignoring mount "</span> + vol.getId() + <span class="string">" due to policy"</span>);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        mVold.mount(vol.id, vol.mountFlags, vol.mountUserId);</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                        Slog.wtf(TAG, e);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">notifyDiskScanned</span><span class="params">(DiskInfo disk, <span class="keyword">int</span> volumeCount)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">final</span> SomeArgs args = SomeArgs.obtain();</span><br><span class="line">            args.arg1 = disk.clone();</span><br><span class="line">            args.argi2 = volumeCount;</span><br><span class="line">            obtainMessage(MSG_DISK_SCANNED, args).sendToTarget();</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="8-StorageNotification处理disk通知"><a href="#8-StorageNotification处理disk通知" class="headerlink" title="8. StorageNotification处理disk通知"></a>8. StorageNotification处理disk通知</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/packages/SystemUI/src/com/android/systemui/usb/StorageNotification.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StorageEventListener mListener = <span class="keyword">new</span> StorageEventListener() &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDiskScanned</span><span class="params">(DiskInfo disk, <span class="keyword">int</span> volumeCount)</span> </span>&#123;</span><br><span class="line">            onDiskScannedInternal(disk, volumeCount);</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;;</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onDiskScannedInternal</span><span class="params">(DiskInfo disk, <span class="keyword">int</span> volumeCount)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (volumeCount == <span class="number">0</span> &amp;&amp; disk.size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 针对不支持的磁盘，提供格式化选项</span></span><br><span class="line">            <span class="keyword">final</span> CharSequence title = mContext.getString(</span><br><span class="line">                    R.string.ext_media_unsupported_notification_title, disk.getDescription());</span><br><span class="line">            <span class="keyword">final</span> CharSequence text = mContext.getString(</span><br><span class="line">                    R.string.ext_media_unsupported_notification_message, disk.getDescription());</span><br><span class="line">            Notification.Builder builder =</span><br><span class="line">                    <span class="keyword">new</span> Notification.Builder(mContext, NotificationChannels.STORAGE)</span><br><span class="line">                            .setSmallIcon(getSmallIcon(disk, VolumeInfo.STATE_UNMOUNTABLE))</span><br><span class="line">                            .setColor(mContext.getColor(R.color.system_notification_accent_color))</span><br><span class="line">                            .setContentTitle(title)</span><br><span class="line">                            .setContentText(text)</span><br><span class="line">                            .setContentIntent(buildInitPendingIntent(disk))</span><br><span class="line">                            .setStyle(<span class="keyword">new</span> Notification.BigTextStyle().bigText(text))</span><br><span class="line">                            .setVisibility(Notification.VISIBILITY_PUBLIC)</span><br><span class="line">                            .setLocalOnly(<span class="keyword">true</span>)</span><br><span class="line">                            .setCategory(Notification.CATEGORY_ERROR)</span><br><span class="line">                            .extend(<span class="keyword">new</span> Notification.TvExtender());</span><br><span class="line">            SystemUI.overrideNotificationAppName(mContext, builder, <span class="keyword">false</span>);</span><br><span class="line">            mNotificationManager.notifyAsUser(disk.getId(), SystemMessage.NOTE_STORAGE_DISK,</span><br><span class="line">                    builder.build(), UserHandle.ALL);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mNotificationManager.cancelAsUser(disk.getId(), SystemMessage.NOTE_STORAGE_DISK,</span><br><span class="line">                    UserHandle.ALL);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="9-调用Disk的readMetadata函数监听metadata的变化"><a href="#9-调用Disk的readMetadata函数监听metadata的变化" class="headerlink" title="9. 调用Disk的readMetadata函数监听metadata的变化"></a>9. 调用Disk的readMetadata函数监听metadata的变化</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/model/Disk.cpp</span></span><br><span class="line"><span class="keyword">status_t</span> Disk::readMetadata() &#123;</span><br><span class="line">    mSize = <span class="number">-1</span>;</span><br><span class="line">    mLabel.clear();</span><br><span class="line">    <span class="keyword">int</span> fd = open(mDevPath.c_str(), O_RDONLY | O_CLOEXEC);</span><br><span class="line">    <span class="keyword">if</span> (fd != <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (ioctl(fd, BLKGETSIZE64, &amp;mSize)) &#123;</span><br><span class="line">            mSize = <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        close(fd);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> majorId = major(mDevice);</span><br><span class="line">    <span class="keyword">switch</span> (majorId) &#123;</span><br><span class="line">    <span class="keyword">case</span> kMajorBlockLoop: &#123;</span><br><span class="line">        mLabel = <span class="string">"Virtual"</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> kMajorBlockScsiA: <span class="keyword">case</span> kMajorBlockScsiB: <span class="keyword">case</span> kMajorBlockScsiC: <span class="keyword">case</span> kMajorBlockScsiD:</span><br><span class="line">    <span class="keyword">case</span> kMajorBlockScsiE: <span class="keyword">case</span> kMajorBlockScsiF: <span class="keyword">case</span> kMajorBlockScsiG: <span class="keyword">case</span> kMajorBlockScsiH:</span><br><span class="line">    <span class="keyword">case</span> kMajorBlockScsiI: <span class="keyword">case</span> kMajorBlockScsiJ: <span class="keyword">case</span> kMajorBlockScsiK: <span class="keyword">case</span> kMajorBlockScsiL:</span><br><span class="line">    <span class="keyword">case</span> kMajorBlockScsiM: <span class="keyword">case</span> kMajorBlockScsiN: <span class="keyword">case</span> kMajorBlockScsiO: <span class="keyword">case</span> kMajorBlockScsiP: &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">path</span><span class="params">(mSysPath + <span class="string">"/device/vendor"</span>)</span></span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> tmp;</span><br><span class="line">        <span class="keyword">if</span> (!ReadFileToString(path, &amp;tmp)) &#123;</span><br><span class="line">            PLOG(WARNING) &lt;&lt; <span class="string">"Failed to read vendor from "</span> &lt;&lt; path;</span><br><span class="line">            <span class="keyword">return</span> -errno;</span><br><span class="line">        &#125;</span><br><span class="line">        tmp = android::base::Trim(tmp);</span><br><span class="line">        mLabel = tmp;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> kMajorBlockMmc: &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">path</span><span class="params">(mSysPath + <span class="string">"/device/manfid"</span>)</span></span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> tmp;</span><br><span class="line">        <span class="keyword">if</span> (!ReadFileToString(path, &amp;tmp)) &#123;</span><br><span class="line">            PLOG(WARNING) &lt;&lt; <span class="string">"Failed to read manufacturer from "</span> &lt;&lt; path;</span><br><span class="line">            <span class="keyword">return</span> -errno;</span><br><span class="line">        &#125;</span><br><span class="line">        tmp = android::base::Trim(tmp);</span><br><span class="line">        <span class="keyword">int64_t</span> manfid;</span><br><span class="line">        <span class="keyword">if</span> (!android::base::ParseInt(tmp, &amp;manfid)) &#123;</span><br><span class="line">            PLOG(WARNING) &lt;&lt; <span class="string">"Failed to parse manufacturer "</span> &lt;&lt; tmp;</span><br><span class="line">            <span class="keyword">return</span> -EINVAL;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 根据id匹配对应厂家的存储设备</span></span><br><span class="line">        <span class="keyword">switch</span> (manfid) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0x000003</span>: mLabel = <span class="string">"SanDisk"</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0x00001b</span>: mLabel = <span class="string">"Samsung"</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0x000028</span>: mLabel = <span class="string">"Lexar"</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0x000074</span>: mLabel = <span class="string">"Transcend"</span>; <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">default</span>: &#123;</span><br><span class="line">        <span class="keyword">if</span> (isVirtioBlkDevice(majorId)) &#123;</span><br><span class="line">            LOG(DEBUG) &lt;&lt; <span class="string">"Recognized experimental block major ID "</span> &lt;&lt; majorId</span><br><span class="line">                    &lt;&lt; <span class="string">" as virtio-blk (emulator's virtual SD card device)"</span>;</span><br><span class="line">            mLabel = <span class="string">"Virtual"</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        LOG(WARNING) &lt;&lt; <span class="string">"Unsupported block major type "</span> &lt;&lt; majorId;</span><br><span class="line">        <span class="keyword">return</span> -ENOTSUP;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> listener = VolumeManager::Instance()-&gt;getListener();</span><br><span class="line">    <span class="keyword">if</span> (listener) listener-&gt;onDiskMetadataChanged(getId(),</span><br><span class="line">            mSize, mLabel, mSysPath);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="10-调用Disk的readPartition函数监听分区-磁盘的状态变化"><a href="#10-调用Disk的readPartition函数监听分区-磁盘的状态变化" class="headerlink" title="10. 调用Disk的readPartition函数监听分区/磁盘的状态变化"></a>10. 调用Disk的readPartition函数监听分区/磁盘的状态变化</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/model/Disk.cpp</span></span><br><span class="line"><span class="keyword">status_t</span> Disk::readPartitions() &#123;</span><br><span class="line">    <span class="keyword">int</span> maxMinors = getMaxMinors();</span><br><span class="line">    <span class="keyword">if</span> (maxMinors &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> -ENOTSUP;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 解析分区表</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; cmd;</span><br><span class="line">    cmd.push_back(kSgdiskPath);</span><br><span class="line">    cmd.push_back(<span class="string">"--android-dump"</span>);</span><br><span class="line">    cmd.push_back(mDevPath);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; output;</span><br><span class="line">    <span class="keyword">status_t</span> res = ForkExecvp(cmd, output);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        LOG(WARNING) &lt;&lt; <span class="string">"sgdisk failed to scan "</span> &lt;&lt; mDevPath;</span><br><span class="line">        <span class="keyword">auto</span> listener = VolumeManager::Instance()-&gt;getListener();</span><br><span class="line">        <span class="keyword">if</span> (listener) listener-&gt;onDiskScanned(getId());</span><br><span class="line">        mJustPartitioned = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">    Table table = Table::kUnknown;</span><br><span class="line">    <span class="keyword">bool</span> foundParts = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; line : output) &#123;</span><br><span class="line">        <span class="keyword">auto</span> split = android::base::Split(line, kSgdiskToken);</span><br><span class="line">        <span class="keyword">auto</span> it = split.begin();</span><br><span class="line">        <span class="keyword">if</span> (it == split.end()) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">if</span> (*it == <span class="string">"DISK"</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (++it == split.end()) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (*it == <span class="string">"mbr"</span>) &#123;</span><br><span class="line">                table = Table::kMbr;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (*it == <span class="string">"gpt"</span>) &#123;</span><br><span class="line">                table = Table::kGpt;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                LOG(WARNING) &lt;&lt; <span class="string">"Invalid partition table "</span> &lt;&lt; *it;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (*it == <span class="string">"PART"</span>) &#123;</span><br><span class="line">            foundParts = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">if</span> (++it == split.end()) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span> (!android::base::ParseInt(*it, &amp;i, <span class="number">1</span>, maxMinors)) &#123;</span><br><span class="line">                LOG(WARNING) &lt;&lt; <span class="string">"Invalid partition number "</span> &lt;&lt; *it;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">dev_t</span> partDevice = makedev(major(mDevice), minor(mDevice) + i);</span><br><span class="line">            <span class="keyword">if</span> (table == Table::kMbr) &#123;</span><br><span class="line">                <span class="keyword">if</span> (++it == split.end()) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">int</span> type = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span> (!android::base::ParseInt(<span class="string">"0x"</span> + *it, &amp;type)) &#123;</span><br><span class="line">                    LOG(WARNING) &lt;&lt; <span class="string">"Invalid partition type "</span> &lt;&lt; *it;</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">switch</span> (type) &#123;</span><br><span class="line">                    <span class="keyword">case</span> <span class="number">0x06</span>:  <span class="comment">// FAT16</span></span><br><span class="line">                    <span class="keyword">case</span> <span class="number">0x07</span>:  <span class="comment">// HPFS/NTFS/exFAT</span></span><br><span class="line">                    <span class="keyword">case</span> <span class="number">0x0b</span>:  <span class="comment">// W95 FAT32 (LBA)</span></span><br><span class="line">                    <span class="keyword">case</span> <span class="number">0x0c</span>:  <span class="comment">// W95 FAT32 (LBA)</span></span><br><span class="line">                    <span class="keyword">case</span> <span class="number">0x0e</span>:  <span class="comment">// W95 FAT16 (LBA)</span></span><br><span class="line">                        createPublicVolume(partDevice);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (table == Table::kGpt) &#123;</span><br><span class="line">                <span class="keyword">if</span> (++it == split.end()) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">auto</span> typeGuid = *it;</span><br><span class="line">                <span class="keyword">if</span> (++it == split.end()) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">auto</span> partGuid = *it;</span><br><span class="line">                <span class="keyword">if</span> (android::base::EqualsIgnoreCase(typeGuid, kGptBasicData)) &#123;</span><br><span class="line">                    createPublicVolume(partDevice);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (android::base::EqualsIgnoreCase(typeGuid, kGptAndroidExpand)) &#123;</span><br><span class="line">                    createPrivateVolume(partDevice, partGuid);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将整个磁盘视为分区</span></span><br><span class="line">    <span class="keyword">if</span> (table == Table::kUnknown || !foundParts) &#123;</span><br><span class="line">        LOG(WARNING) &lt;&lt; mId &lt;&lt; <span class="string">" has unknown partition table; trying entire device"</span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> fsType;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> unused;</span><br><span class="line">        <span class="keyword">if</span> (ReadMetadataUntrusted(mDevPath, &amp;fsType, &amp;unused, &amp;unused) == OK) &#123;</span><br><span class="line">            createPublicVolume(mDevice);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            LOG(WARNING) &lt;&lt; mId &lt;&lt; <span class="string">" failed to identify, giving up"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> listener = VolumeManager::Instance()-&gt;getListener();</span><br><span class="line">    <span class="keyword">if</span> (listener) listener-&gt;onDiskScanned(getId());</span><br><span class="line">    mJustPartitioned = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="11-调用Disk的create-Volume处理磁盘挂载"><a href="#11-调用Disk的create-Volume处理磁盘挂载" class="headerlink" title="11. 调用Disk的create***Volume处理磁盘挂载"></a>11. 调用Disk的create***Volume处理磁盘挂载</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/model/Disk.cpp</span></span><br><span class="line"><span class="keyword">void</span> Disk::createPublicVolume(<span class="keyword">dev_t</span> device) &#123;</span><br><span class="line">    <span class="keyword">auto</span> vol = <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;VolumeBase&gt;(<span class="keyword">new</span> PublicVolume(device));</span><br><span class="line">    <span class="keyword">if</span> (mJustPartitioned) &#123;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Device just partitioned; silently formatting"</span>;</span><br><span class="line">        vol-&gt;setSilent(<span class="literal">true</span>);</span><br><span class="line">        vol-&gt;create();</span><br><span class="line">        vol-&gt;format(<span class="string">"auto"</span>);</span><br><span class="line">        vol-&gt;destroy();</span><br><span class="line">        vol-&gt;setSilent(<span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    mVolumes.push_back(vol);</span><br><span class="line">    vol-&gt;setDiskId(getId());</span><br><span class="line">    vol-&gt;create();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> Disk::createPrivateVolume(<span class="keyword">dev_t</span> device, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; partGuid) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> normalizedGuid;</span><br><span class="line">    <span class="keyword">if</span> (NormalizeHex(partGuid, normalizedGuid)) &#123;</span><br><span class="line">        LOG(WARNING) &lt;&lt; <span class="string">"Invalid GUID "</span> &lt;&lt; partGuid;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> keyRaw;</span><br><span class="line">    <span class="keyword">if</span> (!ReadFileToString(BuildKeyPath(normalizedGuid), &amp;keyRaw)) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Failed to load key for GUID "</span> &lt;&lt; normalizedGuid;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"Found key for GUID "</span> &lt;&lt; normalizedGuid;</span><br><span class="line">    <span class="keyword">auto</span> vol = <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;VolumeBase&gt;(<span class="keyword">new</span> PrivateVolume(device, keyRaw));</span><br><span class="line">    <span class="keyword">if</span> (mJustPartitioned) &#123;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Device just partitioned; silently formatting"</span>;</span><br><span class="line">        vol-&gt;setSilent(<span class="literal">true</span>);</span><br><span class="line">        vol-&gt;create();</span><br><span class="line">        vol-&gt;format(<span class="string">"auto"</span>);</span><br><span class="line">        vol-&gt;destroy();</span><br><span class="line">        vol-&gt;setSilent(<span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    mVolumes.push_back(vol);</span><br><span class="line">    vol-&gt;setDiskId(getId());</span><br><span class="line">    vol-&gt;setPartGuid(partGuid);</span><br><span class="line">    vol-&gt;create();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/18/Security/Keymaster与SPL的关联/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/18/Security/Keymaster与SPL的关联/" class="post-title-link" itemprop="url">Keymaster与SPL的关联</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-18T00:00:00+08:00">2019-03-18</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>下面以SPL降级导致密码不匹配解密失败的问题，来梳理一下Keymaster中Security Patch Level版本那点事儿。</p>
+<h3 id="1-cryptfs-check-passwd"><a href="#1-cryptfs-check-passwd" class="headerlink" title="1. cryptfs_check_passwd"></a>1. cryptfs_check_passwd</h3><p>cryptfs.cpp::cryptfs_check_passwd<br>03-28 06:53:37.549   386   396 E Cryptfs : Password did not match</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">cryptfs_check_passwd</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *passwd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    SLOGI(<span class="string">"cryptfs_check_passwd"</span>);</span><br><span class="line">    ...</span><br><span class="line">    rc = test_mount_encrypted_fs(&amp;crypt_ftr, passwd,</span><br><span class="line">                                 DATA_MNT_POINT, CRYPTO_BLOCK_DEVICE);</span><br><span class="line">    <span class="keyword">if</span> (rc) &#123;</span><br><span class="line">        SLOGE(<span class="string">"Password did not match"</span>);</span><br><span class="line">        <span class="keyword">return</span> rc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/03/18/Security/Keymaster与SPL的关联/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/10/Boot/SystemServer启动流程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1625,340 +1960,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/03/Boot/LK初始化流程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/03/Boot/LK初始化流程/" class="post-title-link" itemprop="url">LK初始化流程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-03 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-03T00:00:00+08:00">2019-01-03</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>LK的全称是litter kernel，同u-boot类似，它也是一种bootloader程序。</p>
-<p>lk代码通常位于bootable/bootloader/lk目录，其树结构如下：<br>├── AndroidBoot.mk<br>├── app                   :lk中应用，如fastboot，shell等<br>├── arch                  :架构相关，如arm，x86等<br>├── dev                   :通用设备接口，如usb，lcm等<br>├── include               :头文件<br>├── kernel                :lk核心模块，包括thread，timer等<br>├── lib                   :–&gt;一些c库<br>├── LICENSE<br>├── make                  :lk编译脚本<br>├── makefile<br>├── platform              :不同平台/芯片对应的mtk驱动<br>├── project               :不同项目的makefile文件<br>├── scripts               :JTAG脚本<br>├── target                :具体目标设备的定义及初始化</p>
-<p>lk主要完成以下工作：<br>1.初始化硬件，设置中断向量表，初始化MMU，Cache，USB等。<br>2.加载boot.img，引导系统启动。<br>3.对不同boot模式的支持，如fastboot，recovery，download mode等。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/01/03/Boot/LK初始化流程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/25/Boot/Bootloader之二三事/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/25/Boot/Bootloader之二三事/" class="post-title-link" itemprop="url">Bootloader之二三事</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-25 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-25T00:00:00+08:00">2018-12-25</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、bootloader概述"><a href="#一、bootloader概述" class="headerlink" title="一、bootloader概述"></a>一、bootloader概述</h3><p>bootloader是用来启动kernel的供应商专用映像。它会监听设备状态，并负责初始化<code>TEE</code>、绑定它的信任根。<br>bootloader可能会直接将一个新的映像烧入相应的分区中，也可能会使用<code>recovery</code>开始重新烧录过程（类似OTA操作过程）。<br>另外，bootloader会在启动kernel之前先验证<code>boot</code>、<code>recovery</code>分区的完整性，并显示相应的警告。</p>
-<p>bootloader启动流程如下：<br>(1)首先加载bootloader。<br>(2)bootloader初始化内存。<br>(3)如果是A/B分区，则确定要启动的当前槽位。<br>(4)确定是否应改为启动recovery模式。<br>(5)bootloader加载映像，其中包含内核和ramdisk。<br>(6)bootloader开始将内核作为可自行执行的压缩二进制文件加载到内存中。<br>(7)内核将自身解压缩并开始执行到内存中。<br>(8)旧设备从ramdisk加载init，而新设备从system分区加载它。<br>(9)init从system分区中启动并开始装载其他所有分区，如/vendor，然后开始执行代码以启动设备。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/12/25/Boot/Bootloader之二三事/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2002,7 +2008,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">60</span>
+                    <span class="site-state-item-count">62</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2088,7 +2094,13 @@
                     
                       
                     
-                    <span class="site-state-item-count">15</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>

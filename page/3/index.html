@@ -329,6 +329,358 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/21/Build/Update差分包编译脚本解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/09/21/Build/Update差分包编译脚本解析/" class="post-title-link" itemprop="url">Update差分包编译脚本解析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-21 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-21T00:00:00+08:00">2018-09-21</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、编译指令"><a href="#一、编译指令" class="headerlink" title="一、编译指令"></a>一、编译指令</h3><h4 id="1-1-差分包制作指令"><a href="#1-1-差分包制作指令" class="headerlink" title="1.1 差分包制作指令"></a>1.1 差分包制作指令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ota_from_target_files --block -k release -i source_target_files.zip target_target_file.zip ota_package.zip</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-整包制作指令"><a href="#1-2-整包制作指令" class="headerlink" title="1.2 整包制作指令"></a>1.2 整包制作指令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ota_from_target_files --block -k release input_target_files.zip full_ota_package.zip</span><br></pre></td></tr></table></figure>
+<h3 id="二、指令详解"><a href="#二、指令详解" class="headerlink" title="二、指令详解"></a>二、指令详解</h3><h4 id="2-1-参数解释："><a href="#2-1-参数解释：" class="headerlink" title="2.1 参数解释："></a>2.1 参数解释：</h4><p>&emsp;-k (–package_key) <key></key></p>
+<p>指定OTA包签名文件。Android默认为build/target/product/security/testkey。实际操作中不同项目会使用不同的releasekey。</p>
+<p>&emsp;-i (–incremental_from) <file></file></p>
+<p>指定源版本target_file文件。有该参数则是编译差分包，同理无此参数即编译整包。</p>
+<p>&emsp;–full_radio</p>
+<p>编译差分包时用于限定完全升级radio。</p>
+<p>&emsp;–full_bootloader</p>
+<p>编译差分包时用于限定完全升级booloader。</p>
+<p>&emsp;–verify</p>
+<p>编译Non-A/B差分包时用于限定是否对system/vender分区verify。</p>
+<p>&emsp;–wipe_user_data</p>
+<p>用于指定升级时指定恢复出厂操作。</p>
+<p>&emsp;–downgrade</p>
+<p>允许版本向旧版本“升级”（降级），会执行恢复出厂操作。</p>
+<p>&emsp;-2 (–two_step)</p>
+<p>用于指定制作两步式升级的OTA包。先更新recovery分区再重启通过新recovery分区升级system分区。</p>
+<p>&emsp;–block</p>
+<p>用于指定non-A/B版本基于块方式编译OTA包，相比较文件方式更有优势。</p>
+<p>&emsp;-t (–worker_threads) <int></int></p>
+<p>用于指定patch方式增量升级的工作线程数，默认为3。</p>
+<p>&emsp;–stash_threshold <float></float></p>
+<p>用于指定缓存区最大阀值，默认为0.8。</p>
+<p>&emsp;–log_diff <file></file></p>
+<p>用于指定以log文件形式保存制作差分包的diff信息。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/09/21/Build/Update差分包编译脚本解析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/16/Build/Target-files包编译脚本解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/09/16/Build/Target-files包编译脚本解析/" class="post-title-link" itemprop="url">Target-files包编译脚本解析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-16 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-16T00:00:00+08:00">2018-09-16</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h4 id="1-1-编译target-files依赖的目标"><a href="#1-1-编译target-files依赖的目标" class="headerlink" title="1.1 编译target files依赖的目标"></a>1.1 编译target files依赖的目标</h4><p>首先列出编译target-files依赖的目标。如boot/system/vendor等image，imgdifff/bsdiff/releasetool等编译OTA包的工具。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(BUILT_TARGET_FILES_PACKAGE)</span>: \</span><br><span class="line">        <span class="comment"># boot image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_BOOTIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># radio image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_RADIOIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># recovery image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_RECOVERYIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># system/user image依赖的文件</span></span><br><span class="line">        <span class="variable">$(FULL_SYSTEMIMAGE_DEPS)</span> \</span><br><span class="line">        <span class="comment"># userdata image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_USERDATAIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># cache image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_CACHEIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># vendor image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_VENDORIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># product image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_PRODUCTIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># vbmeta image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_VBMETAIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># dtbo image相关目标</span></span><br><span class="line">        <span class="variable">$(INSTALLED_DTBOIMAGE_TARGET)</span> \</span><br><span class="line">        <span class="comment"># system image相关目标</span></span><br><span class="line">        <span class="variable">$(INTERNAL_SYSTEMOTHERIMAGE_FILES)</span> \</span><br><span class="line">        <span class="comment"># android-info.txt</span></span><br><span class="line">        <span class="variable">$(INSTALLED_ANDROID_INFO_TXT_TARGET)</span> \</span><br><span class="line">        <span class="comment"># kernel文件</span></span><br><span class="line">        <span class="variable">$(INSTALLED_KERNEL_TARGET)</span> \</span><br><span class="line">        <span class="comment"># 2ndbootloader文件</span></span><br><span class="line">        <span class="variable">$(INSTALLED_2NDBOOTLOADER_TARGET)</span> \</span><br><span class="line">        <span class="comment"># system base fs</span></span><br><span class="line">        $(PRODUCTS.<span class="variable">$(INTERNAL_PRODUCT)</span>.PRODUCT_SYSTEM_BASE_FS_PATH) \</span><br><span class="line">        <span class="comment"># vendor base fs</span></span><br><span class="line">        $(PRODUCTS.<span class="variable">$(INTERNAL_PRODUCT)</span>.PRODUCT_VENDOR_BASE_FS_PATH) \</span><br><span class="line">        <span class="comment"># product base fs</span></span><br><span class="line">        $(PRODUCTS.<span class="variable">$(INTERNAL_PRODUCT)</span>.PRODUCT_PRODUCT_BASE_FS_PATH) \</span><br><span class="line">        <span class="comment"># selinux目录file_contexts.bin</span></span><br><span class="line">        <span class="variable">$(SELINUX_FC)</span> \</span><br><span class="line">        <span class="comment"># apkcerts.txt</span></span><br><span class="line">        <span class="variable">$(APKCERTS_FILE)</span> \</span><br><span class="line">        <span class="comment"># soong_zip文件</span></span><br><span class="line">        <span class="variable">$(SOONG_ZIP)</span> \</span><br><span class="line">        <span class="comment"># fs_config工具</span></span><br><span class="line">        <span class="variable">$(HOST_OUT_EXECUTABLES)</span>/fs_config \</span><br><span class="line">        <span class="comment"># imgdiff工具</span></span><br><span class="line">        <span class="variable">$(HOST_OUT_EXECUTABLES)</span>/imgdiff \</span><br><span class="line">        <span class="comment"># bsdiff工具</span></span><br><span class="line">        <span class="variable">$(HOST_OUT_EXECUTABLES)</span>/bsdiff \</span><br><span class="line">        <span class="comment"># build/make/tools/releasetools目录*.py脚本</span></span><br><span class="line">        <span class="variable">$(BUILD_IMAGE_SRCS)</span> \</span><br><span class="line">        <span class="comment"># vendor_manifest.xml</span></span><br><span class="line">        <span class="variable">$(BUILT_VENDOR_MANIFEST)</span> \</span><br><span class="line">        <span class="comment"># vendor_matrix.xml</span></span><br><span class="line">        <span class="variable">$(BUILT_VENDOR_MATRIX)</span> \</span><br><span class="line">        | <span class="variable">$(ACP)</span></span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/09/16/Build/Target-files包编译脚本解析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/12/OTA/AB升级之bootctrl流程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1626,344 +1978,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/05/Framework/PackageManagerService的启动过程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/07/05/Framework/PackageManagerService的启动过程/" class="post-title-link" itemprop="url">PackageManagerService的启动过程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-07-05 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-05T00:00:00+08:00">2018-07-05</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h3><pre><code>PackageManagerService是Android系统中最常用的服务之一，它负责系统中Package的管理，应用程序的安装、卸载、信息查询等，为简化描述，将其成为PKMS。
-IPackageManager接口类中定义了服务端和客户端通信的业务函数，还定义了内部类Stub，该类从Binder派生并实现了IPackageManager接口。
-PackageManagerService继承自IPackageManager.Stub类，由于Stub类从Binder派生，因此PackageManagerService将作为服务端参与Binder通信。
-Stub类中定义了一个内部类Proxy，该类有一个IBinder类型的成员变量mRemote，用于和服务端PackageManagerService通信。
-IPackageManager接口类中定义的业务函数作为一个子集，被封装在抽象类PackageManager中。客户端一般通过Context的getPackageManager函数返回一个类型为PackageManager的对象，该对象的实际类型时PackageManager的子类ApplicationPackageManager。
-ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变量指向一个IPackageManager.Stub.Proxy类型的对象。
-</code></pre><h4 id="1-1-ApplicationPackageManager构造函数"><a href="#1-1-ApplicationPackageManager构造函数" class="headerlink" title="1.1 ApplicationPackageManager构造函数"></a>1.1 ApplicationPackageManager构造函数</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ApplicationPackageManager(ContextImpl context,</span><br><span class="line">        IPackageManager pm) &#123;</span><br><span class="line">    mContext = context;</span><br><span class="line">    mPM = pm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/07/05/Framework/PackageManagerService的启动过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/02/Framework/ActivityManagerService的启动过程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/06/02/Framework/ActivityManagerService的启动过程/" class="post-title-link" itemprop="url">ActivityManagerService的启动过程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-06-02 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-02T00:00:00+08:00">2018-06-02</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、startBootstrapServices启动AMS"><a href="#一、startBootstrapServices启动AMS" class="headerlink" title="一、startBootstrapServices启动AMS"></a>一、startBootstrapServices启动AMS</h3><p>frameworks/base/services/java/com/android/server/SystemServer.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startBootstrapServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 启动AMS</span></span><br><span class="line">    mActivityManagerService = mSystemServiceManager.startService(</span><br><span class="line">            ActivityManagerService.Lifecycle.class).getService();</span><br><span class="line">    <span class="comment">// 设置AMS的servicemanager</span></span><br><span class="line">    mActivityManagerService.setSystemServiceManager(mSystemServiceManager);</span><br><span class="line">    <span class="comment">// 设置的AMS的installer</span></span><br><span class="line">    mActivityManagerService.setInstaller(installer);</span><br><span class="line">    <span class="comment">// 初始化AMS相关的Powermanagement</span></span><br><span class="line">　　　　　mPowerManagerService = mSystemServiceManager.startService(PowerManagerService.class);</span><br><span class="line">    mActivityManagerService.initPowerManagement();</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 为系统进程设置Application实例并开始使用。</span></span><br><span class="line">    mActivityManagerService.setSystemProcess();</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startCoreServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    mSystemServiceManager.startService(UsageStatsService.class);</span><br><span class="line">    mActivityManagerService.setUsageStatsManager(</span><br><span class="line">            LocalServices.getService(UsageStatsManagerInternal.class));</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/06/02/Framework/ActivityManagerService的启动过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2007,7 +2026,7 @@ ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变�
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">60</span>
+                    <span class="site-state-item-count">62</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2093,7 +2112,13 @@ ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变�
                     
                       
                     
-                    <span class="site-state-item-count">15</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>

@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="下面以SPL降级导致密码不匹配解密失败的问题，来梳理一下Keymaster中Security Patch Level版本那点事儿。 1. cryptfs_check_passwdcryptfs.cpp::cryptfs_check_passwd03-28 06:53:37.549   386   396 E Cryptfs : Password did not match 123456789101">
+<meta name="keywords" content="Security,Keymaster,Encryption">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Keymaster与SPL的关联">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/03/18/Security/Keymaster与SPL的关联/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="下面以SPL降级导致密码不匹配解密失败的问题，来梳理一下Keymaster中Security Patch Level版本那点事儿。 1. cryptfs_check_passwdcryptfs.cpp::cryptfs_check_passwd03-28 06:53:37.549   386   396 E Cryptfs : Password did not match 123456789101">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T13:58:46.498Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Keymaster与SPL的关联">
+<meta name="twitter:description" content="下面以SPL降级导致密码不匹配解密失败的问题，来梳理一下Keymaster中Security Patch Level版本那点事儿。 1. cryptfs_check_passwdcryptfs.cpp::cryptfs_check_passwd03-28 06:53:37.549   386   396 E Cryptfs : Password did not match 123456789101">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/03/18/Security/Keymaster与SPL的关联/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Keymaster与SPL的关联 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/18/Security/Keymaster与SPL的关联/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Keymaster与SPL的关联
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-18T00:00:00+08:00">2019-03-18</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>下面以SPL降级导致密码不匹配解密失败的问题，来梳理一下Keymaster中Security Patch Level版本那点事儿。</p>
+<h3 id="1-cryptfs-check-passwd"><a href="#1-cryptfs-check-passwd" class="headerlink" title="1. cryptfs_check_passwd"></a>1. cryptfs_check_passwd</h3><p>cryptfs.cpp::cryptfs_check_passwd<br>03-28 06:53:37.549   386   396 E Cryptfs : Password did not match</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">cryptfs_check_passwd</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *passwd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    SLOGI(<span class="string">"cryptfs_check_passwd"</span>);</span><br><span class="line">    ...</span><br><span class="line">    rc = test_mount_encrypted_fs(&amp;crypt_ftr, passwd,</span><br><span class="line">                                 DATA_MNT_POINT, CRYPTO_BLOCK_DEVICE);</span><br><span class="line">    <span class="keyword">if</span> (rc) &#123;</span><br><span class="line">        SLOGE(<span class="string">"Password did not match"</span>);</span><br><span class="line">        <span class="keyword">return</span> rc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="2-test-mount-encrypted-fs"><a href="#2-test-mount-encrypted-fs" class="headerlink" title="2. test_mount_encrypted_fs"></a>2. test_mount_encrypted_fs</h3><p>03-28 06:53:37.549   386   396 E Cryptfs : Failed to decrypt master key</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">test_mount_encrypted_fs</span><span class="params">(struct crypt_mnt_ftr* crypt_ftr,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">const</span> <span class="keyword">char</span> *passwd, <span class="keyword">const</span> <span class="keyword">char</span> *mount_point, <span class="keyword">const</span> <span class="keyword">char</span> *label)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (! (crypt_ftr-&gt;flags &amp; CRYPT_MNT_KEY_UNENCRYPTED) ) &#123;</span><br><span class="line">        <span class="keyword">if</span> (decrypt_master_key(passwd, decrypted_master_key, crypt_ftr,</span><br><span class="line">                            &amp;intermediate_key, &amp;intermediate_key_size)) &#123;</span><br><span class="line">        SLOGE(<span class="string">"Failed to decrypt master key\n"</span>);</span><br><span class="line">        rc = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">goto</span> errout;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (rc == <span class="number">0</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> (upgrade) &#123;</span><br><span class="line">            rc = encrypt_master_key(passwd, crypt_ftr-&gt;salt, saved_master_key,</span><br><span class="line">                            crypt_ftr-&gt;master_key, crypt_ftr);</span><br><span class="line">            ....</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-decrypt-master-key"><a href="#3-decrypt-master-key" class="headerlink" title="3. decrypt_master_key"></a>3. decrypt_master_key</h3><p>03-28 06:53:37.549   386   396 W Cryptfs : failure decrypting master key</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">decrypt_master_key</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *passwd, <span class="keyword">unsigned</span> <span class="keyword">char</span> *decrypted_master_key,</span></span></span><br><span class="line"><span class="function"><span class="params">                              struct crypt_mnt_ftr *crypt_ftr,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">unsigned</span> <span class="keyword">char</span>** intermediate_key,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">size_t</span>* intermediate_key_size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    ret = decrypt_master_key_aux(passwd, crypt_ftr-&gt;salt, crypt_ftr-&gt;master_key,</span><br><span class="line">                                 decrypted_master_key, kdf, kdf_params,</span><br><span class="line">                                 intermediate_key, intermediate_key_size);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        SLOGW(<span class="string">"failure decrypting master key"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="4-decrypt-master-key-aux"><a href="#4-decrypt-master-key-aux" class="headerlink" title="4. decrypt_master_key_aux"></a>4. decrypt_master_key_aux</h3><p>03-28 06:53:37.549   386   396 E Cryptfs : kdf failed</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">decrypt_master_key_aux</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *passwd, <span class="keyword">unsigned</span> <span class="keyword">char</span> *salt,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">unsigned</span> <span class="keyword">char</span> *encrypted_master_key,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">unsigned</span> <span class="keyword">char</span> *decrypted_master_key,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  kdf_func kdf, <span class="keyword">void</span> *kdf_params,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">unsigned</span> <span class="keyword">char</span>** intermediate_key,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">size_t</span>* intermediate_key_size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (kdf(passwd, salt, ikey, kdf_params)) &#123;</span><br><span class="line">        SLOGE(<span class="string">"kdf failed"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="5-encrypt-master-key"><a href="#5-encrypt-master-key" class="headerlink" title="5. encrypt_master_key"></a>5. encrypt_master_key</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">encrypt_master_key</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *passwd, <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *salt,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *decrypted_master_key,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">unsigned</span> <span class="keyword">char</span> *encrypted_master_key,</span></span></span><br><span class="line"><span class="function"><span class="params">                              struct crypt_mnt_ftr *crypt_ftr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> (crypt_ftr-&gt;kdf_type) &#123;</span><br><span class="line">    <span class="keyword">case</span> KDF_SCRYPT_KEYMASTER:</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> (scrypt_keymaster(passwd, salt, ikey, crypt_ftr)) &#123;</span><br><span class="line">            SLOGE(<span class="string">"scrypt failed"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="6-scrypt-keymaster"><a href="#6-scrypt-keymaster" class="headerlink" title="6. scrypt_keymaster"></a>6. scrypt_keymaster</h3><p>03-28 06:53:36.986   386   396 I Cryptfs : Using scrypt with keymaster for cryptfs KDF<br>03-28 06:53:37.549   386   396 E Cryptfs : Signing failed</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">scrypt_keymaster</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *passwd, <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *salt,</span></span></span><br><span class="line"><span class="function"><span class="params">                            <span class="keyword">unsigned</span> <span class="keyword">char</span> *ikey, <span class="keyword">void</span> *params)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    SLOGI(<span class="string">"Using scrypt with keymaster for cryptfs KDF"</span>);</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (keymaster_sign_object(ftr, ikey, KEY_LEN_BYTES + IV_LEN_BYTES,</span><br><span class="line">                              &amp;signature, &amp;signature_size)) &#123;</span><br><span class="line">        SLOGE(<span class="string">"Signing failed"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="7-keymaster-sign-object"><a href="#7-keymaster-sign-object" class="headerlink" title="7. keymaster_sign_object"></a>7. keymaster_sign_object</h3><p>03-28 06:53:37.531   386   396 I Cryptfs : Signing safely-padded object<br>03-28 06:53:37.549   386   396 E Cryptfs : Failed to upgrade key</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">keymaster_sign_object</span><span class="params">(struct crypt_mnt_ftr *ftr,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *object,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="keyword">const</span> <span class="keyword">size_t</span> object_size,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="keyword">unsigned</span> <span class="keyword">char</span> **signature,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="keyword">size_t</span> *signature_size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> (ftr-&gt;kdf_type) &#123;</span><br><span class="line">        <span class="keyword">case</span> KDF_SCRYPT_KEYMASTER:</span><br><span class="line">            <span class="built_in">memcpy</span>(to_sign + <span class="number">1</span>, object, <span class="built_in">std</span>::min((<span class="keyword">size_t</span>)RSA_KEY_SIZE_BYTES - <span class="number">1</span>, object_size));</span><br><span class="line">            SLOGI(<span class="string">"Signing safely-padded object"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="keyword">auto</span> result = keymaster_sign_object_for_cryptfs_scrypt(</span><br><span class="line">            ftr-&gt;keymaster_blob, ftr-&gt;keymaster_blob_size, KEYMASTER_CRYPTFS_RATE_LIMIT, to_sign,</span><br><span class="line">            to_sign_size, signature, signature_size);</span><br><span class="line">        ...</span><br><span class="line">        SLOGD(<span class="string">"Upgrading key"</span>);</span><br><span class="line">        <span class="keyword">if</span> (keymaster_upgrade_key_for_cryptfs_scrypt(</span><br><span class="line">                RSA_KEY_SIZE, RSA_EXPONENT, KEYMASTER_CRYPTFS_RATE_LIMIT, ftr-&gt;keymaster_blob,</span><br><span class="line">                ftr-&gt;keymaster_blob_size, ftr-&gt;keymaster_blob, KEYMASTER_BLOB_SIZE,</span><br><span class="line">                &amp;ftr-&gt;keymaster_blob_size) != <span class="number">0</span>) &#123;</span><br><span class="line">            SLOGE(<span class="string">"Failed to upgrade key"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="8-keymaster-sign-object-for-cryptfs-scrypt"><a href="#8-keymaster-sign-object-for-cryptfs-scrypt" class="headerlink" title="8. keymaster_sign_object_for_cryptfs_scrypt"></a>8. keymaster_sign_object_for_cryptfs_scrypt</h3><p>03-28 06:53:37.544   386   396 E vold    : Keymaster key requires upgrade</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/Keymaster.cpp</span></span><br><span class="line"><span class="function">KeymasterSignResult <span class="title">keymaster_sign_object_for_cryptfs_scrypt</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint8_t</span>* key_blob, <span class="keyword">size_t</span> key_blob_size, <span class="keyword">uint32_t</span> ratelimit, <span class="keyword">const</span> <span class="keyword">uint8_t</span>* object,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">size_t</span> object_size, <span class="keyword">uint8_t</span>** signature_buffer, <span class="keyword">size_t</span>* signature_buffer_size)</span> </span>&#123;</span><br><span class="line">    Keymaster dev;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        op = dev.begin(KeyPurpose::SIGN, key, paramBuilder, &amp;outParams);</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (op.errorCode() == ErrorCode::KEY_REQUIRES_UPGRADE) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Keymaster key requires upgrade"</span>;</span><br><span class="line">        <span class="keyword">return</span> KeymasterSignResult::upgrade;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="9-Keymaster-begin"><a href="#9-Keymaster-begin" class="headerlink" title="9. Keymaster::begin"></a>9. Keymaster::begin</h3><p>03-28 06:53:37.544   386   396 E vold    : begin failed, code -62</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/Keymaster.cpp</span></span><br><span class="line">KeymasterOperation Keymaster::begin(KeyPurpose purpose, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; key,</span><br><span class="line">                                    <span class="keyword">const</span> AuthorizationSet&amp; inParams,</span><br><span class="line">                                    AuthorizationSet* outParams) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//sp&lt;IKeymasterDevice&gt; mDevice;</span></span><br><span class="line">    <span class="keyword">auto</span> error = mDevice-&gt;begin(purpose, keyBlob, inParams.hidl_data(), hidlCb);</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (km_error != ErrorCode::OK) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"begin failed, code "</span> &lt;&lt; <span class="keyword">int32_t</span>(km_error);</span><br><span class="line">        <span class="keyword">return</span> KeymasterOperation(km_error);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//hardware/keymaster/3.0/IKeymasterDevice.hal</span><br><span class="line">begin(KeyPurpose purpose, vec&lt;uint8_t&gt; key, vec&lt;KeyParameter&gt; inParams)</span><br><span class="line">        generates(ErrorCode error, vec&lt;KeyParameter&gt; outParams, OperationHandle operationHandle);</span><br></pre></td></tr></table></figure>
+<h3 id="10-TeeKeymasterDevice-begin"><a href="#10-TeeKeymasterDevice-begin" class="headerlink" title="10. TeeKeymasterDevice::begin"></a>10. TeeKeymasterDevice::begin</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/tee_keymaster_device.cpp</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> TeeKeymasterDevice::begin(</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster2_device_t</span>* dev,</span><br><span class="line">    <span class="keyword">keymaster_purpose_t</span> purpose,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_blob_t</span>* key,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_param_set_t</span>* params,</span><br><span class="line">    <span class="keyword">keymaster_key_param_set_t</span>* out_params,</span><br><span class="line">    <span class="keyword">keymaster_operation_handle_t</span>* operation_handle)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> convert_device(dev)-&gt;impl_-&gt;begin(</span><br><span class="line">        purpose, key, params, out_params, operation_handle);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="11-TrustonicTeeKeymasterImpl-begin"><a href="#11-TrustonicTeeKeymasterImpl-begin" class="headerlink" title="11. TrustonicTeeKeymasterImpl::begin"></a>11. TrustonicTeeKeymasterImpl::begin</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/trustonic_tee_keymaster_impl.cpp</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> TrustonicTeeKeymasterImpl::begin(</span><br><span class="line">    <span class="keyword">keymaster_purpose_t</span> purpose,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_blob_t</span>* key,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_param_set_t</span>* params,</span><br><span class="line">    <span class="keyword">keymaster_key_param_set_t</span>* out_params,</span><br><span class="line">    <span class="keyword">keymaster_operation_handle_t</span>* operation_handle)</span><br><span class="line">&#123;</span><br><span class="line">    CHECK_SESSION(session_handle_);</span><br><span class="line">    <span class="keyword">return</span> TEE_Begin(session_handle_,</span><br><span class="line">        purpose, key, params, out_params, operation_handle);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="12-TEE-Begin"><a href="#12-TEE-Begin" class="headerlink" title="12. TEE_Begin"></a>12. TEE_Begin</h3><p>03-28 06:53:37.542   385   385 E TlcTeeKeyMaster:   <strong><em> ERROR: TEE_Begin:1933: transact(session_handle, tci) == -62<br>03-28 06:53:37.542   385   385 E TlcTeeKeyMaster:   </em></strong> Detected in vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/tlcTeeKeymaster_if.cpp:1933()</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/tlcTeeKeymaster_if.cpp</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> TEE_Begin(</span><br><span class="line">    TEE_SessionHandle               sessionHandle,</span><br><span class="line">    <span class="keyword">keymaster_purpose_t</span>             purpose,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_blob_t</span>*     key,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_param_set_t</span>* params,</span><br><span class="line">    <span class="keyword">keymaster_key_param_set_t</span>*      out_params,</span><br><span class="line">    <span class="keyword">keymaster_operation_handle_t</span>*   operation_handle)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    tci-&gt;command.header.commandId = CMD_ID_TEE_BEGIN;</span><br><span class="line">    ...</span><br><span class="line">    CHECK_RESULT_OK( transact(session_handle, tci) ); <span class="comment">// line 1933</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="13-tlTciHandler-Loop"><a href="#13-tlTciHandler-Loop" class="headerlink" title="13. tlTciHandler_Loop"></a>13. tlTciHandler_Loop</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/trustlets/keymaster/common/400b/TlTeeKeymaster/Locals/Code/3.0/src/tlTciHandler.c</span></span><br><span class="line">_<span class="function">NORETURN <span class="keyword">void</span> <span class="title">tlTciHandler_Loop</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">addr_t</span> tciBuffer,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint32_t</span> maxver)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> (commandId &amp; CMD_MASK_ID) &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">case</span> CMD_ID_TEE_UPDATE:</span><br><span class="line">                ret = handle_Begin(commandId, pTci);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="14-handle-Begin"><a href="#14-handle-Begin" class="headerlink" title="14. handle_Begin"></a>14. handle_Begin</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/trustlets/keymaster/common/400b/TlTeeKeymaster/Locals/Code/3.0/src/tlCryptoHandler.c</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> handle_Begin( <span class="keyword">uint32_t</span> cmdid, <span class="keyword">tci_t</span>* pTci )</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    CHECK_RESULT_OK(decrypt_blob_check(cmdid,</span><br><span class="line">        local_key_blob, key_blob_length, <span class="number">0</span>,</span><br><span class="line">        client_id.data, client_id.data_length, app_data.data, app_data.data_length,</span><br><span class="line">        key_material, &amp;key_material_len));</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">### <span class="number">15.</span> decrypt_blob_check</span><br><span class="line"></span><br><span class="line">```c++</span><br><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/trustlets/keymaster/common/400b/TlTeeKeymaster/Locals/Code/3.0/src/tlCryptoHandler.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> keymaster_error_t <span class="title">decrypt_blob_check</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint32_t</span> cmdid, <span class="keyword">const</span> <span class="keyword">uint8_t</span> *blob, <span class="keyword">uint32_t</span> blob_len, <span class="keyword">unsigned</span> flags,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint8_t</span> *client_id, <span class="keyword">uint32_t</span> client_id_len,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint8_t</span> *app_data, <span class="keyword">uint32_t</span> app_data_len,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint8_t</span> *key_material, <span class="keyword">uint32_t</span> *key_material_len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">keymaster_error_t</span> ret = KM_ERROR_OK;</span><br><span class="line"></span><br><span class="line">    CHECK_RESULT_OK(decrypt_blob(policy_version(cmdid),</span><br><span class="line">        blob, blob_len,</span><br><span class="line">        client_id, client_id_len,</span><br><span class="line">        app_data, app_data_len,</span><br><span class="line">        key_material, key_material_len));</span><br><span class="line">    CHECK_RESULT_OK(validate_bindings(cmdid,</span><br><span class="line">        key_material, *key_material_len, flags,</span><br><span class="line">        client_id, client_id_len,</span><br><span class="line">        app_data, app_data_len));</span><br><span class="line">end:</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="16-validate-bindings"><a href="#16-validate-bindings" class="headerlink" title="16. validate_bindings"></a>16. validate_bindings</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/trustlets/keymaster/common/400b/TlTeeKeymaster/Locals/Code/3.0/src/tlCryptoHandler.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> keymaster_error_t <span class="title">validate_bindings</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint32_t</span> cmdid,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint8_t</span> *key_material,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint32_t</span> key_material_len,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">unsigned</span> flags,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint8_t</span> *client_id,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint32_t</span> client_id_len,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint8_t</span> *app_data,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint32_t</span> app_data_len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> ((cmdid &amp; CMD_MASK_VERSION) &gt;&gt; CMD_SHIFT_VERSION) &#123;</span><br><span class="line">        <span class="comment">/* We should do all the checking appropriate to the command version.</span></span><br><span class="line"><span class="comment">         * Therefore, the cases are ordered with descending version numbers, and</span></span><br><span class="line"><span class="comment">         * usually fall through to do all of the checking required by earlier</span></span><br><span class="line"><span class="comment">         * versions.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            <span class="keyword">if</span> (!(flags &amp; VALF_SKIP_VERSIONCHECK)) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GET_VERSION_TAG</span></span><br><span class="line">                ret = get_integer_tag_data(key_material + <span class="number">4</span>, params_len, what, where);</span><br><span class="line">                CHECK_RESULT_OK(ret == KM_ERROR_INVALID_TAG ? KM_ERROR_KEY_REQUIRES_UPGRADE : ret);</span><br><span class="line">            &#125; <span class="keyword">while</span> (<span class="number">0</span>)</span><br><span class="line">                GET_VERSION_TAG(KM_TAG_OS_VERSION, &amp;os_version);</span><br><span class="line">                GET_VERSION_TAG(KM_TAG_OS_PATCHLEVEL, &amp;os_patchlevel);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> GET_VERSION_TAG</span></span><br><span class="line">                CHECK_TRUE(KM_ERROR_KEY_REQUIRES_UPGRADE, os_patchlevel == bootinfo.os_patchlevel);</span><br><span class="line">            &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/include/api_keymaster_defs.h</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    KM_ERROR_KEY_REQUIRES_UPGRADE = <span class="number">-62</span>,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="17-keymaster-upgrade-key-for-cryptfs-scrypt"><a href="#17-keymaster-upgrade-key-for-cryptfs-scrypt" class="headerlink" title="17. keymaster_upgrade_key_for_cryptfs_scrypt"></a>17. keymaster_upgrade_key_for_cryptfs_scrypt</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/Keymaster.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">keymaster_upgrade_key_for_cryptfs_scrypt</span><span class="params">(<span class="keyword">uint32_t</span> rsa_key_size, <span class="keyword">uint64_t</span> rsa_exponent,</span></span></span><br><span class="line"><span class="function"><span class="params">                                             <span class="keyword">uint32_t</span> ratelimit, <span class="keyword">const</span> <span class="keyword">uint8_t</span>* key_blob,</span></span></span><br><span class="line"><span class="function"><span class="params">                                             <span class="keyword">size_t</span> key_blob_size, <span class="keyword">uint8_t</span>* key_buffer,</span></span></span><br><span class="line"><span class="function"><span class="params">                                             <span class="keyword">uint32_t</span> key_buffer_size, <span class="keyword">uint32_t</span>* key_out_size)</span> </span>&#123;</span><br><span class="line">    Keymaster dev;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (!dev.upgradeKey(old_key, keyParams(rsa_key_size, rsa_exponent, ratelimit), &amp;new_key))</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="18-Keymaster-upgradeKey"><a href="#18-Keymaster-upgradeKey" class="headerlink" title="18. Keymaster::upgradeKey"></a>18. Keymaster::upgradeKey</h3><p>03-28 06:53:37.549   386   396 E vold    : upgrade_key failed, code -38</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/Keymaster.cpp</span></span><br><span class="line"><span class="keyword">bool</span> Keymaster::upgradeKey(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; oldKey, <span class="keyword">const</span> km::AuthorizationSet&amp; inParams,</span><br><span class="line">                           <span class="built_in">std</span>::<span class="built_in">string</span>* newKey) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">auto</span> error = mDevice-&gt;upgradeKey(oldKeyBlob, inParams.hidl_data(), hidlCb);</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (km_error != km::ErrorCode::OK) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"upgrade_key failed, code "</span> &lt;&lt; <span class="keyword">int32_t</span>(km_error);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="19-TeeKeymasterDevice-upgrade-key"><a href="#19-TeeKeymasterDevice-upgrade-key" class="headerlink" title="19. TeeKeymasterDevice::upgrade_key"></a>19. TeeKeymasterDevice::upgrade_key</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/tee_keymaster_device.cpp</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> TeeKeymasterDevice::upgrade_key(</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster2_device_t</span>* dev,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_blob_t</span>* key_to_upgrade,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_param_set_t</span>* upgrade_params,</span><br><span class="line">    <span class="keyword">keymaster_key_blob_t</span>* upgraded_key)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> convert_device(dev)-&gt;impl_-&gt;upgrade_key(</span><br><span class="line">        key_to_upgrade, upgrade_params, upgraded_key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="20-TrustonicTeeKeymasterImpl-upgrade-key"><a href="#20-TrustonicTeeKeymasterImpl-upgrade-key" class="headerlink" title="20. TrustonicTeeKeymasterImpl::upgrade_key"></a>20. TrustonicTeeKeymasterImpl::upgrade_key</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/trustonic_tee_keymaster_impl.cpp</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> TrustonicTeeKeymasterImpl::upgrade_key(</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_blob_t</span>* key_to_upgrade,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_param_set_t</span>* upgrade_params,</span><br><span class="line">    <span class="keyword">keymaster_key_blob_t</span>* upgraded_key)</span><br><span class="line">&#123;</span><br><span class="line">    CHECK_SESSION(session_handle_);</span><br><span class="line">    <span class="keyword">return</span> TEE_UpgradeKey(session_handle_, key_to_upgrade, upgrade_params, upgraded_key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="21-TEE-UpgradeKey"><a href="#21-TEE-UpgradeKey" class="headerlink" title="21. TEE_UpgradeKey"></a>21. TEE_UpgradeKey</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/tlcTeeKeymaster_if.cpp</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> TEE_UpgradeKey(</span><br><span class="line">    TEE_SessionHandle sessionHandle,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_blob_t</span>* key_to_upgrade,</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">keymaster_key_param_set_t</span>* upgrade_params,</span><br><span class="line">    <span class="keyword">keymaster_key_blob_t</span>* upgraded_key)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    tci-&gt;command.header.commandId = CMD_ID_TEE_UPGRADE_KEY;</span><br><span class="line">    ...</span><br><span class="line">    CHECK_RESULT_OK(transact(session_handle, tci)); <span class="comment">// line 1841</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="22-tlTciHandler-Loop"><a href="#22-tlTciHandler-Loop" class="headerlink" title="22. tlTciHandler_Loop"></a>22. tlTciHandler_Loop</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/trustlets/keymaster/common/400b/TlTeeKeymaster/Locals/Code/3.0/src/tlTciHandler.c</span></span><br><span class="line">_<span class="function">NORETURN <span class="keyword">void</span> <span class="title">tlTciHandler_Loop</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">addr_t</span> tciBuffer,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">uint32_t</span> maxver)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> (commandId &amp; CMD_MASK_ID) &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">case</span> CMD_ID_TEE_UPGRADE_KEY:</span><br><span class="line">                ret = handle_UpgradeKey(commandId, pTci);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="23-handle-UpgradeKey"><a href="#23-handle-UpgradeKey" class="headerlink" title="23. handle_UpgradeKey"></a>23. handle_UpgradeKey</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/trustlets/keymaster/common/400b/TlTeeKeymaster/Locals/Code/3.0/src/tlCryptoHandler.c</span></span><br><span class="line"><span class="keyword">keymaster_error_t</span> handle_UpgradeKey(<span class="keyword">uint32_t</span> cmdid, <span class="keyword">tci_t</span> *pTci)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* If there's a patchlevel in there, it mustn't be later than us. */</span></span><br><span class="line">    CHECK_TRUE(KM_ERROR_INVALID_ARGUMENT,</span><br><span class="line">        !p_tag[I_OS_PATCHLEVEL] ||</span><br><span class="line">        get_u32(p_tag[I_OS_PATCHLEVEL] + <span class="number">4</span>) &lt;= bootinfo.os_patchlevel);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/include/api_keymaster_defs.h</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    KM_ERROR_INVALID_ARGUMENT = <span class="number">-38</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//hardware/interfaces/keymaster/3.0/types.hal</span></span><br><span class="line"><span class="keyword">enum</span> ErrorCode : <span class="keyword">uint32_t</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    INVALID_ARGUMENT = <span class="number">-38</span>,</span><br><span class="line">    KEY_REQUIRES_UPGRADE = <span class="number">-62</span>,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="24-upgradeKey"><a href="#24-upgradeKey" class="headerlink" title="24. upgradeKey"></a>24. upgradeKey</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//hardware/interfaces/keymaster/3.0/IKeymasterDevice.hal</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Upgrades an old key. Keys can become "old" in two ways: Keymaster can be upgraded to a new</span></span><br><span class="line"><span class="comment">     * version, or the system can be updated to invalidate the OS version and/or patch level. In</span></span><br><span class="line"><span class="comment">     * either case, attempts to use an old key with getKeyCharacteristics(), exportKey(),</span></span><br><span class="line"><span class="comment">     * attestKey() or begin() will result in keymaster returning</span></span><br><span class="line"><span class="comment">     * ErrorCode::KEY_REQUIRES_UPGRADE. This method must then be called to upgrade the key.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    upgradeKey(vec&lt;<span class="keyword">uint8_t</span>&gt; keyBlobToUpgrade, vec&lt;KeyParameter&gt; upgradeParams)</span><br><span class="line">        generates(ErrorCode error, vec&lt;<span class="keyword">uint8_t</span>&gt; upgradedKeyBlob);</span><br></pre></td></tr></table></figure>
+<p>附上日志打印流程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">cryptfs.cpp::cryptfs_check_passwd --&gt; cryptfs.cpp::test_mount_encrypted_fs</span><br><span class="line">03-28 06:53:36.984   386   396 I Cryptfs : cryptfs_check_passwd</span><br><span class="line"></span><br><span class="line">cryptfs.cpp::test_mount_encrypted_fs --&gt; cryptfs.cpp::encrypt_master_key --&gt; cryptfs.cpp::scrypt_keymaster</span><br><span class="line">03-28 06:53:36.986   386   396 I Cryptfs : Using scrypt with keymaster for cryptfs KDF</span><br><span class="line"></span><br><span class="line">cryptfs.cpp::scrypt_keymaster --&gt; cryptfs.cpp::keymaster_sign_object</span><br><span class="line">03-28 06:53:37.531   386   396 I Cryptfs : Signing safely-padded object</span><br><span class="line"></span><br><span class="line">cryptfs.cpp::keymaster_sign_object --&gt; Keymaster.cpp::keymaster_sign_object_for_cryptfs_scrypt</span><br><span class="line">03-28 06:53:37.544   386   396 E vold    : Keymaster key requires upgrade</span><br><span class="line"></span><br><span class="line">Keymaster.cpp::keymaster_sign_object_for_cryptfs_scrypt --&gt; Keymaster.cpp::Keymaster::begin</span><br><span class="line">03-28 06:53:37.544   386   396 E vold    : begin failed, code -62</span><br><span class="line"></span><br><span class="line">Keymaster.cpp::Keymaster::begin --&gt; tee_keymaster_device.cpp::TeeKeymasterDevice::begin --&gt; trustonic_tee_keymaster_impl.cpp::TrustonicTeeKeymasterImpl::begin --&gt; tlcTeeKeymaster_if.cpp::TEE_Begin --&gt; tlTciHandler.c::tlTciHandler_Loop --&gt; tlCryptoHandler.c::handle_Begin --&gt; tlCryptoHandler.c::decrypt_blob_check --&gt; tlCryptoHandler.c::validate_bindings --&gt; api_keymaster_defs.h::KM_ERROR_KEY_REQUIRES_UPGRADE</span><br><span class="line">03-28 06:53:37.542   385   385 E TlcTeeKeyMaster:   *** ERROR: TEE_Begin:1933: transact(session_handle, tci) == -62</span><br><span class="line">03-28 06:53:37.542   385   385 E TlcTeeKeyMaster:   *** Detected in vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/tlcTeeKeymaster_if.cpp:1933()</span><br><span class="line"></span><br><span class="line">cryptfs.cpp::keymaster_sign_object --&gt; Keymaster.cpp::keymaster_upgrade_key_for_cryptfs_scrypt</span><br><span class="line">03-28 06:53:37.549   386   396 E Cryptfs : Failed to upgrade key</span><br><span class="line"></span><br><span class="line">Keymaster.cpp::keymaster_upgrade_key_for_cryptfs_scrypt --&gt; Keymaster.cpp::Keymaster::upgradeKey</span><br><span class="line">03-28 06:53:37.549   386   396 E vold    : upgrade_key failed, code -38</span><br><span class="line"></span><br><span class="line">Keymaster.cpp::Keymaster::upgradeKey --&gt; tee_keymaster_device.cpp::TeeKeymasterDevice::upgrade_key --&gt; trustonic_tee_keymaster_impl.cpp::TrustonicTeeKeymasterImpl::upgrade_key --&gt; tlcTeeKeymaster_if.cpp::TEE_UpgradeKey --&gt; tlTciHandler.c::tlTciHandler_Loop --&gt; tlCryptoHandler.c::handle_UpgradeKey --&gt; api_keymaster_defs.h::KM_ERROR_INVALID_ARGUMENT</span><br><span class="line">03-28 06:53:37.548   385   385 E TlcTeeKeyMaster:   *** ERROR: TEE_UpgradeKey:1841: transact(session_handle, tci) == -38</span><br><span class="line">03-28 06:53:37.548   385   385 E TlcTeeKeyMaster:   *** Detected in vendor/mediatek/proprietary/trustzone/trustonic/source/external/keymaster/common/400b/3.0/src/tlcTeeKeymaster_if.cpp:1841()</span><br><span class="line"></span><br><span class="line">--&gt; cryptfs.cpp::scrypt_keymaster</span><br><span class="line">03-28 06:53:37.549   386   396 E Cryptfs : Signing failed</span><br><span class="line"></span><br><span class="line">--&gt; cryptfs.cpp::decrypt_master_key_aux</span><br><span class="line">03-28 06:53:37.549   386   396 E Cryptfs : kdf failed</span><br><span class="line"></span><br><span class="line">--&gt; cryptfs.cpp::decrypt_master_key</span><br><span class="line">03-28 06:53:37.549   386   396 W Cryptfs : failure decrypting master key</span><br><span class="line"></span><br><span class="line">--&gt; test_mount_encrypted_fs</span><br><span class="line">03-28 06:53:37.549   386   396 E Cryptfs : Failed to decrypt master key</span><br><span class="line"></span><br><span class="line">--&gt; cryptfs_check_passwd</span><br><span class="line">03-28 06:53:37.549   386   396 E Cryptfs : Password did not match</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+            <a href="/tags/Keymaster/" rel="tag"># Keymaster</a>
+          
+            <a href="/tags/Encryption/" rel="tag"># Encryption</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/10/Boot/SystemServer启动流程/" rel="next" title="SystemServer的启动流程">
+                <i class="fa fa-chevron-left"></i> SystemServer的启动流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/29/Filesystem/OTG的挂载流程/" rel="prev" title="OTG的挂载流程">
+                OTG的挂载流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">62</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">18</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-cryptfs-check-passwd"><span class="nav-text">1. cryptfs_check_passwd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-test-mount-encrypted-fs"><span class="nav-text">2. test_mount_encrypted_fs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-decrypt-master-key"><span class="nav-text">3. decrypt_master_key</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-decrypt-master-key-aux"><span class="nav-text">4. decrypt_master_key_aux</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-encrypt-master-key"><span class="nav-text">5. encrypt_master_key</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-scrypt-keymaster"><span class="nav-text">6. scrypt_keymaster</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-keymaster-sign-object"><span class="nav-text">7. keymaster_sign_object</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-keymaster-sign-object-for-cryptfs-scrypt"><span class="nav-text">8. keymaster_sign_object_for_cryptfs_scrypt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-Keymaster-begin"><span class="nav-text">9. Keymaster::begin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-TeeKeymasterDevice-begin"><span class="nav-text">10. TeeKeymasterDevice::begin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-TrustonicTeeKeymasterImpl-begin"><span class="nav-text">11. TrustonicTeeKeymasterImpl::begin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-TEE-Begin"><span class="nav-text">12. TEE_Begin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-tlTciHandler-Loop"><span class="nav-text">13. tlTciHandler_Loop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-handle-Begin"><span class="nav-text">14. handle_Begin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-validate-bindings"><span class="nav-text">16. validate_bindings</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-keymaster-upgrade-key-for-cryptfs-scrypt"><span class="nav-text">17. keymaster_upgrade_key_for_cryptfs_scrypt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-Keymaster-upgradeKey"><span class="nav-text">18. Keymaster::upgradeKey</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-TeeKeymasterDevice-upgrade-key"><span class="nav-text">19. TeeKeymasterDevice::upgrade_key</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-TrustonicTeeKeymasterImpl-upgrade-key"><span class="nav-text">20. TrustonicTeeKeymasterImpl::upgrade_key</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#21-TEE-UpgradeKey"><span class="nav-text">21. TEE_UpgradeKey</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-tlTciHandler-Loop"><span class="nav-text">22. tlTciHandler_Loop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-handle-UpgradeKey"><span class="nav-text">23. handle_UpgradeKey</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-upgradeKey"><span class="nav-text">24. upgradeKey</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
