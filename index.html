@@ -494,7 +494,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/18/Security/Keymaster与SPL的关联/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/18/Security/Keymaster的SPL版本绑定/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -514,7 +514,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/03/18/Security/Keymaster与SPL的关联/" class="post-title-link" itemprop="url">Keymaster与SPL的关联</a>
+                <a href="/2019/03/18/Security/Keymaster的SPL版本绑定/" class="post-title-link" itemprop="url">Keymaster的SPL版本绑定</a>
               
             
           </h1>
@@ -593,13 +593,12 @@
 
       
         
-          <p>下面以SPL降级导致密码不匹配解密失败的问题，来梳理一下Keymaster中Security Patch Level版本那点事儿。</p>
-<h3 id="1-cryptfs-check-passwd"><a href="#1-cryptfs-check-passwd" class="headerlink" title="1. cryptfs_check_passwd"></a>1. cryptfs_check_passwd</h3><p>cryptfs.cpp::cryptfs_check_passwd<br>03-28 06:53:37.549   386   396 E Cryptfs : Password did not match</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/vold/cryptfs.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">cryptfs_check_passwd</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *passwd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    SLOGI(<span class="string">"cryptfs_check_passwd"</span>);</span><br><span class="line">    ...</span><br><span class="line">    rc = test_mount_encrypted_fs(&amp;crypt_ftr, passwd,</span><br><span class="line">                                 DATA_MNT_POINT, CRYPTO_BLOCK_DEVICE);</span><br><span class="line">    <span class="keyword">if</span> (rc) &#123;</span><br><span class="line">        SLOGE(<span class="string">"Password did not match"</span>);</span><br><span class="line">        <span class="keyword">return</span> rc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>在Keymaster 1.0中，所有Keymaster密钥都会绑定至信任根或Verified Boot密钥。在Keymaster 2.0和3.0中，所有Keymaster密钥也绑定至OS及系统image的Security Patch Level(SPL)；可确保发现旧软件漏洞的人无法将手机系统还原至包含漏洞的软件版本，也无法使用在新软件中所创建的密钥；当系统升级时，密钥会随着系统一起“升级”。在Keymaster 4.0中，为适配Treble模块化结构，boot,system,vendor等多个系统分区均包含SPL信息，另外支持AVB的系统还会将这些SPL及OS版本信息存入vbmeta中，以便bootloader可以将这些内容传给Keymaster。</p>
+<p>在实际系统开发中，经常会遇到合入新的Google Security Patch造成CTS/VTS等认证测试失败，而版本发布计划又不能推迟，最后不得不采用临时回退安全补丁方式的事情发生。这样就很容易收到测试人员反馈：半擦升级/OTA升级进入输入密码界面，分析日志不难发现，都是上述提到的SPL绑定Keymaster惹的祸。下面就来跟一下Log打印流程：</p>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2019/03/18/Security/Keymaster与SPL的关联/#more" rel="contents">
+              <a class="btn" href="/2019/03/18/Security/Keymaster的SPL版本绑定/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
