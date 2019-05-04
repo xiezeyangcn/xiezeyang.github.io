@@ -921,8 +921,8 @@
 
       
         
-          <h3 id="一、init解析rc时启动zygote"><a href="#一、init解析rc时启动zygote" class="headerlink" title="一、init解析rc时启动zygote"></a>一、init解析rc时启动zygote</h3><p>system/core/rootdir/init.rc</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># ro.zygote表示支持32/64位</span><br><span class="line">import /init.$&#123;ro.zygote&#125;.rc</span><br><span class="line">on late-init</span><br><span class="line">    #若有打开FBE功能，则在此处启动zygote</span><br><span class="line">    trigger zygote-start</span><br><span class="line">...</span><br><span class="line"># 建议将不必要的/data初始化从post-fs-data挪到start-zygote，以避免阻塞zygote进程</span><br><span class="line"># 处于未加密状态</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=unencrypted</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line"># 不支持加密</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=unsupported</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line"># 文件级加密且处于加密状态</span><br><span class="line">on zygote-start &amp;&amp; property:ro.crypto.state=encrypted &amp;&amp; property:ro.crypto.type=file</span><br><span class="line">    start zygote</span><br><span class="line">    start zygote_secondary</span><br><span class="line">...</span><br><span class="line">on property:vold.decrypt=trigger_post_fs_data</span><br><span class="line">    # 解密状态下在此处启动zygote</span><br><span class="line">    trigger zygote-start</span><br></pre></td></tr></table></figure>
+          <p>在Android中，Java虚拟机、应用程序进程、系统服务进程都是由Zygote进程fork出来的，下面我们就来分析下Zygote的启动过程。</p>
+<p><img src="/images/boot_zygote.png" alt></p>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -2057,8 +2057,6 @@
                     
                   
                     
-                    
-                      
                     
                       
                     
