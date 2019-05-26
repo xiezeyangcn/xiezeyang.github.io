@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="ServiceManager作为Binder机制的守护进程，主要用于管理各种系统service，并向client提供获取service代理对象的服务。">
+<meta name="keywords" content="Boot,IPC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ServiceManager的启动过程">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/03/01/Framework/ServiceManager/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="ServiceManager作为Binder机制的守护进程，主要用于管理各种系统service，并向client提供获取service代理对象的服务。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/boot_servicemanager.png">
+<meta property="og:updated_time" content="2019-05-26T01:39:03.137Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ServiceManager的启动过程">
+<meta name="twitter:description" content="ServiceManager作为Binder机制的守护进程，主要用于管理各种系统service，并向client提供获取service代理对象的服务。">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/boot_servicemanager.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/03/01/Framework/ServiceManager/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>ServiceManager的启动过程 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/01/Framework/ServiceManager/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ServiceManager的启动过程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-01 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-01T00:00:00+08:00">2019-03-01</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>ServiceManager作为Binder机制的守护进程，主要用于管理各种系统service，并向client提供获取service代理对象的服务。</p>
+<p><img src="/images/boot_servicemanager.png" alt></p>
+<a id="more"></a>
+<h3 id="一、init启动servicemanager"><a href="#一、init启动servicemanager" class="headerlink" title="一、init启动servicemanager"></a>一、init启动servicemanager</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#frameworks/native/cmds/servicemanager/servicemanager.rc</span><br><span class="line">service servicemanager /system/bin/servicemanager</span><br><span class="line">    class core animation</span><br><span class="line">    user system</span><br><span class="line">    group system readproc</span><br><span class="line">    critical</span><br><span class="line">    onrestart restart healthd</span><br><span class="line">    onrestart restart zygote</span><br><span class="line">    onrestart restart audioserver</span><br><span class="line">    onrestart restart media</span><br><span class="line">    onrestart restart surfaceflinger</span><br><span class="line">    onrestart restart inputflinger</span><br><span class="line">    onrestart restart drm</span><br><span class="line">    onrestart restart cameraserver</span><br><span class="line">    onrestart restart keystore</span><br><span class="line">    onrestart restart gatekeeperd</span><br><span class="line">    writepid /dev/cpuset/system-background/tasks</span><br><span class="line">    shutdown critical</span><br></pre></td></tr></table></figure>
+<h3 id="二、service-manager的main函数"><a href="#二、service-manager的main函数" class="headerlink" title="二、service_manager的main函数"></a>二、service_manager的main函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/native/cmds/servicemanager/service_manager.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_state</span> *<span class="title">bs</span>;</span></span><br><span class="line">    <span class="keyword">union</span> selinux_callback cb;</span><br><span class="line">    <span class="keyword">char</span> *driver;</span><br><span class="line">    <span class="keyword">if</span> (argc &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        driver = argv[<span class="number">1</span>];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// binder节点</span></span><br><span class="line">        driver = <span class="string">"/dev/binder"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 打开binder驱动，128kb内存</span></span><br><span class="line">    bs = binder_open(driver, <span class="number">128</span>*<span class="number">1024</span>);</span><br><span class="line">    <span class="keyword">if</span> (!bs) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> VENDORSERVICEMANAGER</span></span><br><span class="line">        ALOGW(<span class="string">"failed to open binder driver %s\n"</span>, driver);</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            sleep(UINT_MAX);</span><br><span class="line">        &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        ALOGE(<span class="string">"failed to open binder driver %s\n"</span>, driver);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// binder上下文管理</span></span><br><span class="line">    <span class="keyword">if</span> (binder_become_context_manager(bs)) &#123;</span><br><span class="line">        ALOGE(<span class="string">"cannot become context manager (%s)\n"</span>, strerror(errno));</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    cb.func_audit = audit_callback;</span><br><span class="line">    selinux_set_callback(SELINUX_CB_AUDIT, cb);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> VENDORSERVICEMANAGER</span></span><br><span class="line">    cb.func_log = selinux_vendor_log_callback;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    cb.func_log = selinux_log_callback;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    selinux_set_callback(SELINUX_CB_LOG, cb);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> VENDORSERVICEMANAGER</span></span><br><span class="line">    sehandle = selinux_android_vendor_service_context_handle();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    sehandle = selinux_android_service_context_handle();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    selinux_status_open(<span class="literal">true</span>);</span><br><span class="line">    <span class="keyword">if</span> (sehandle == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"SELinux: Failed to acquire sehandle. Aborting.\n"</span>);</span><br><span class="line">        <span class="built_in">abort</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (getcon(&amp;service_manager_context) != <span class="number">0</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"SELinux: Failed to acquire service_manager context. Aborting.\n"</span>);</span><br><span class="line">        <span class="built_in">abort</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 无限循环，处理client端请求</span></span><br><span class="line">    binder_loop(bs, svcmgr_handler);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-1-binder-open函数"><a href="#2-1-binder-open函数" class="headerlink" title="2.1 binder_open函数"></a>2.1 binder_open函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/native/cmds/servicemanager/binder.c</span></span><br><span class="line"><span class="function">struct binder_state *<span class="title">binder_open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* driver, <span class="keyword">size_t</span> mapsize)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_state</span> *<span class="title">bs</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_version</span> <span class="title">vers</span>;</span></span><br><span class="line">    bs = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(*bs));</span><br><span class="line">    <span class="keyword">if</span> (!bs) &#123;</span><br><span class="line">        errno = ENOMEM;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 打开binder驱动</span></span><br><span class="line">    bs-&gt;fd = open(driver, O_RDWR | O_CLOEXEC);</span><br><span class="line">    <span class="keyword">if</span> (bs-&gt;fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"binder: cannot open %s (%s)\n"</span>,</span><br><span class="line">                driver, strerror(errno));</span><br><span class="line">        <span class="keyword">goto</span> fail_open;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 检查kernel和用户空间binder版本是否一致</span></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(bs-&gt;fd, BINDER_VERSION, &amp;vers) == <span class="number">-1</span>) ||</span><br><span class="line">        (vers.protocol_version != BINDER_CURRENT_PROTOCOL_VERSION)) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,</span><br><span class="line">                <span class="string">"binder: kernel driver version (%d) differs from user space version (%d)\n"</span>,</span><br><span class="line">                vers.protocol_version, BINDER_CURRENT_PROTOCOL_VERSION);</span><br><span class="line">        <span class="keyword">goto</span> fail_open;</span><br><span class="line">    &#125;</span><br><span class="line">    bs-&gt;mapsize = mapsize;</span><br><span class="line">    <span class="comment">// mmap内存映射，必须为页大小的整数倍</span></span><br><span class="line">    bs-&gt;mapped = mmap(<span class="literal">NULL</span>, mapsize, PROT_READ, MAP_PRIVATE, bs-&gt;fd, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (bs-&gt;mapped == MAP_FAILED) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"binder: cannot map device (%s)\n"</span>,</span><br><span class="line">                strerror(errno));</span><br><span class="line">        <span class="keyword">goto</span> fail_map;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> bs;</span><br><span class="line">fail_map:</span><br><span class="line">    close(bs-&gt;fd);</span><br><span class="line">fail_open:</span><br><span class="line">    <span class="built_in">free</span>(bs);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-binder-become-context-manager函数"><a href="#2-2-binder-become-context-manager函数" class="headerlink" title="2.2 binder_become_context_manager函数"></a>2.2 binder_become_context_manager函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/native/cmds/servicemanager/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_become_context_manager</span><span class="params">(struct binder_state *bs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ioctl(bs-&gt;fd, BINDER_SET_CONTEXT_MGR, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-2-1-binder-ioctl函数"><a href="#2-2-1-binder-ioctl函数" class="headerlink" title="2.2.1 binder_ioctl函数"></a>2.2.1 binder_ioctl函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">binder_ioctl</span><span class="params">(struct file *filp, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> = <span class="title">filp</span>-&gt;<span class="title">private_data</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_thread</span> *<span class="title">thread</span>;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> size = _IOC_SIZE(cmd);</span><br><span class="line">    <span class="keyword">void</span> __user *ubuf = (<span class="keyword">void</span> __user *)arg;</span><br><span class="line">    binder_selftest_alloc(&amp;proc-&gt;alloc);</span><br><span class="line">    trace_binder_ioctl(cmd, arg);</span><br><span class="line">    ret = wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error &lt; <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret)</span><br><span class="line">        <span class="keyword">goto</span> err_unlocked;</span><br><span class="line">    thread = binder_get_thread(proc);</span><br><span class="line">    <span class="keyword">if</span> (thread == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ret = -ENOMEM;</span><br><span class="line">        <span class="keyword">goto</span> err;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">    <span class="keyword">case</span> BINDER_WRITE_READ:</span><br><span class="line">        ret = binder_ioctl_write_read(filp, cmd, arg, thread);</span><br><span class="line">        <span class="keyword">if</span> (ret)</span><br><span class="line">            <span class="keyword">goto</span> err;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> BINDER_SET_CONTEXT_MGR:</span><br><span class="line">        ret = binder_ioctl_set_ctx_mgr(filp);</span><br><span class="line">        <span class="keyword">if</span> (ret)</span><br><span class="line">            <span class="keyword">goto</span> err;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    ...</span><br><span class="line">err:</span><br><span class="line">    <span class="keyword">if</span> (thread)</span><br><span class="line">        thread-&gt;looper_need_return = <span class="literal">false</span>;</span><br><span class="line">    wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error &lt; <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret &amp;&amp; ret != -ERESTARTSYS)</span><br><span class="line">        pr_info(<span class="string">"%d:%d ioctl %x %lx returned %d\n"</span>, proc-&gt;pid, current-&gt;pid, cmd, arg, ret);</span><br><span class="line">err_unlocked:</span><br><span class="line">    trace_binder_ioctl_done(ret);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-2-binder-ioctl-set-ctx-mgr函数"><a href="#2-2-2-binder-ioctl-set-ctx-mgr函数" class="headerlink" title="2.2.2 binder_ioctl_set_ctx_mgr函数"></a>2.2.2 binder_ioctl_set_ctx_mgr函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">binder_ioctl_set_ctx_mgr</span><span class="params">(struct file *filp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> = <span class="title">filp</span>-&gt;<span class="title">private_data</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_context</span> *<span class="title">context</span> = <span class="title">proc</span>-&gt;<span class="title">context</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_node</span> *<span class="title">new_node</span>;</span></span><br><span class="line">    <span class="keyword">kuid_t</span> curr_euid = current_euid();</span><br><span class="line">    mutex_lock(&amp;context-&gt;context_mgr_node_lock);</span><br><span class="line">    <span class="comment">// binder_context_mgr_node，创建mgr_node对象</span></span><br><span class="line">    <span class="keyword">if</span> (context-&gt;binder_context_mgr_node) &#123;</span><br><span class="line">        pr_err(<span class="string">"BINDER_SET_CONTEXT_MGR already set\n"</span>);</span><br><span class="line">        ret = -EBUSY;</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line">    &#125;</span><br><span class="line">    ret = security_binder_set_context_mgr(proc-&gt;tsk);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line">    <span class="comment">// binder_context_mgr_uid，设置servicemanager的uid</span></span><br><span class="line">    <span class="keyword">if</span> (uid_valid(context-&gt;binder_context_mgr_uid)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!uid_eq(context-&gt;binder_context_mgr_uid, curr_euid)) &#123;</span><br><span class="line">            pr_err(<span class="string">"BINDER_SET_CONTEXT_MGR bad uid %d != %d\n"</span>,</span><br><span class="line">                   from_kuid(&amp;init_user_ns, curr_euid),</span><br><span class="line">                   from_kuid(&amp;init_user_ns,</span><br><span class="line">                     context-&gt;binder_context_mgr_uid));</span><br><span class="line">            ret = -EPERM;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        context-&gt;binder_context_mgr_uid = curr_euid;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// binder_new_node，创建servicemanager实体</span></span><br><span class="line">    new_node = binder_new_node(proc, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (!new_node) &#123;</span><br><span class="line">        ret = -ENOMEM;</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line">    &#125;</span><br><span class="line">    binder_node_lock(new_node);</span><br><span class="line">    new_node-&gt;local_weak_refs++;</span><br><span class="line">    new_node-&gt;local_strong_refs++;</span><br><span class="line">    new_node-&gt;has_strong_ref = <span class="number">1</span>;</span><br><span class="line">    new_node-&gt;has_weak_ref = <span class="number">1</span>;</span><br><span class="line">    context-&gt;binder_context_mgr_node = new_node;</span><br><span class="line">    binder_node_unlock(new_node);</span><br><span class="line">    binder_put_node(new_node);</span><br><span class="line">out:</span><br><span class="line">    mutex_unlock(&amp;context-&gt;context_mgr_node_lock);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-binder-loop函数"><a href="#2-3-binder-loop函数" class="headerlink" title="2.3 binder_loop函数"></a>2.3 binder_loop函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/native/cmds/servicemanager/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">binder_loop</span><span class="params">(struct binder_state *bs, binder_handler func)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> res;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_write_read</span> <span class="title">bwr</span>;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> readbuf[<span class="number">32</span>];</span><br><span class="line">    bwr.write_size = <span class="number">0</span>;</span><br><span class="line">    bwr.write_consumed = <span class="number">0</span>;</span><br><span class="line">    bwr.write_buffer = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 将BC_ENTER_LOOPER发给binder，让servicemanager进入循环</span></span><br><span class="line">    readbuf[<span class="number">0</span>] = BC_ENTER_LOOPER;</span><br><span class="line">    binder_write(bs, readbuf, <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>));</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        bwr.read_size = <span class="keyword">sizeof</span>(readbuf);</span><br><span class="line">        bwr.read_consumed = <span class="number">0</span>;</span><br><span class="line">        bwr.read_buffer = (<span class="keyword">uintptr_t</span>) readbuf;</span><br><span class="line">        res = ioctl(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr);</span><br><span class="line">        <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"binder_loop: ioctl failed (%s)\n"</span>, strerror(errno));</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 解析binder</span></span><br><span class="line">        res = binder_parse(bs, <span class="number">0</span>, (<span class="keyword">uintptr_t</span>) readbuf, bwr.read_consumed, func);</span><br><span class="line">        <span class="keyword">if</span> (res == <span class="number">0</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"binder_loop: unexpected reply?!\n"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"binder_loop: io error %d %s\n"</span>, res, strerror(errno));</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-3-1-binder-write函数"><a href="#2-3-1-binder-write函数" class="headerlink" title="2.3.1 binder_write函数"></a>2.3.1 binder_write函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/native/cmds/servicemanager/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_write</span><span class="params">(struct binder_state *bs, <span class="keyword">void</span> *data, <span class="keyword">size_t</span> len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_write_read</span> <span class="title">bwr</span>;</span></span><br><span class="line">    <span class="keyword">int</span> res;</span><br><span class="line">    bwr.write_size = len;</span><br><span class="line">    bwr.write_consumed = <span class="number">0</span>;</span><br><span class="line">    bwr.write_buffer = (<span class="keyword">uintptr_t</span>) data;</span><br><span class="line">    bwr.read_size = <span class="number">0</span>;</span><br><span class="line">    bwr.read_consumed = <span class="number">0</span>;</span><br><span class="line">    bwr.read_buffer = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 通过ioctl将bwr数据发给binder</span></span><br><span class="line">    res = ioctl(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr);</span><br><span class="line">    <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"binder_write: ioctl failed (%s)\n"</span>,</span><br><span class="line">                strerror(errno));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-3-2-binder-ioctl-write-read"><a href="#2-3-2-binder-ioctl-write-read" class="headerlink" title="2.3.2 binder_ioctl_write_read"></a>2.3.2 binder_ioctl_write_read</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">binder_ioctl_write_read</span><span class="params">(struct file *filp,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg,</span></span></span><br><span class="line"><span class="function"><span class="params">                struct binder_thread *thread)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> = <span class="title">filp</span>-&gt;<span class="title">private_data</span>;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> size = _IOC_SIZE(cmd);</span><br><span class="line">    <span class="keyword">void</span> __user *ubuf = (<span class="keyword">void</span> __user *)arg;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_write_read</span> <span class="title">bwr</span>;</span></span><br><span class="line">    <span class="keyword">if</span> (size != <span class="keyword">sizeof</span>(struct binder_write_read)) &#123;</span><br><span class="line">        ret = -EINVAL;</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (copy_from_user(&amp;bwr, ubuf, <span class="keyword">sizeof</span>(bwr))) &#123;</span><br><span class="line">        ret = -EFAULT;</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line">    &#125;</span><br><span class="line">    binder_debug(BINDER_DEBUG_READ_WRITE,</span><br><span class="line">             <span class="string">"%d:%d write %lld at %016llx, read %lld at %016llx\n"</span>,</span><br><span class="line">             proc-&gt;pid, thread-&gt;pid,</span><br><span class="line">             (u64)bwr.write_size, (u64)bwr.write_buffer,</span><br><span class="line">             (u64)bwr.read_size, (u64)bwr.read_buffer);</span><br><span class="line">    <span class="keyword">if</span> (bwr.write_size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        ret = binder_thread_write(proc, thread,</span><br><span class="line">                      bwr.write_buffer,</span><br><span class="line">                      bwr.write_size,</span><br><span class="line">                      &amp;bwr.write_consumed);</span><br><span class="line">        trace_binder_write_done(ret);</span><br><span class="line">        <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            bwr.read_consumed = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span> (copy_to_user(ubuf, &amp;bwr, <span class="keyword">sizeof</span>(bwr)))</span><br><span class="line">                ret = -EFAULT;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (bwr.read_size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        ret = binder_thread_read(proc, thread, bwr.read_buffer,</span><br><span class="line">                     bwr.read_size,</span><br><span class="line">                     &amp;bwr.read_consumed,</span><br><span class="line">                     filp-&gt;f_flags &amp; O_NONBLOCK);</span><br><span class="line">        trace_binder_read_done(ret);</span><br><span class="line">        binder_inner_proc_lock(proc);</span><br><span class="line">        <span class="keyword">if</span> (!binder_worklist_empty_ilocked(&amp;proc-&gt;todo))</span><br><span class="line">            binder_wakeup_proc_ilocked(proc);</span><br><span class="line">        binder_inner_proc_unlock(proc);</span><br><span class="line">        <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (copy_to_user(ubuf, &amp;bwr, <span class="keyword">sizeof</span>(bwr)))</span><br><span class="line">                ret = -EFAULT;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    binder_debug(BINDER_DEBUG_READ_WRITE,</span><br><span class="line">             <span class="string">"%d:%d wrote %lld of %lld, read return %lld of %lld\n"</span>,</span><br><span class="line">             proc-&gt;pid, thread-&gt;pid,</span><br><span class="line">             (u64)bwr.write_consumed, (u64)bwr.write_size,</span><br><span class="line">             (u64)bwr.read_consumed, (u64)bwr.read_size);</span><br><span class="line">    <span class="keyword">if</span> (copy_to_user(ubuf, &amp;bwr, <span class="keyword">sizeof</span>(bwr))) &#123;</span><br><span class="line">        ret = -EFAULT;</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line">    &#125;</span><br><span class="line">out:</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-3-3-binder-parse函数"><a href="#2-3-3-binder-parse函数" class="headerlink" title="2.3.3 binder_parse函数"></a>2.3.3 binder_parse函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/native/cmds/servicemanager/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_parse</span><span class="params">(struct binder_state *bs, struct binder_io *bio,</span></span></span><br><span class="line"><span class="function"><span class="params">                 <span class="keyword">uintptr_t</span> ptr, <span class="keyword">size_t</span> size, binder_handler func)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> r = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">uintptr_t</span> end = ptr + (<span class="keyword">uintptr_t</span>) size;</span><br><span class="line">    <span class="keyword">while</span> (ptr &lt; end) &#123;</span><br><span class="line">        <span class="keyword">uint32_t</span> cmd = *(<span class="keyword">uint32_t</span> *) ptr;</span><br><span class="line">        ptr += <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> TRACE</span></span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"%s:\n"</span>, cmd_name(cmd));</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        <span class="keyword">switch</span>(cmd) &#123;</span><br><span class="line">        <span class="keyword">case</span> BR_NOOP:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> BR_TRANSACTION_COMPLETE:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> BR_INCREFS:</span><br><span class="line">        <span class="keyword">case</span> BR_ACQUIRE:</span><br><span class="line">        <span class="keyword">case</span> BR_RELEASE:</span><br><span class="line">        <span class="keyword">case</span> BR_DECREFS:</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> TRACE</span></span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"  %p, %p\n"</span>, (<span class="keyword">void</span> *)ptr, (<span class="keyword">void</span> *)(ptr + <span class="keyword">sizeof</span>(<span class="keyword">void</span> *)));</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">            ptr += <span class="keyword">sizeof</span>(struct binder_ptr_cookie);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> BR_TRANSACTION: &#123;</span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">binder_transaction_data</span> *<span class="title">txn</span> = (<span class="title">struct</span> <span class="title">binder_transaction_data</span> *) <span class="title">ptr</span>;</span></span><br><span class="line">            <span class="keyword">if</span> ((end - ptr) &lt; <span class="keyword">sizeof</span>(*txn)) &#123;</span><br><span class="line">                ALOGE(<span class="string">"parse: txn too small!\n"</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            binder_dump_txn(txn);</span><br><span class="line">            <span class="keyword">if</span> (func) &#123;</span><br><span class="line">                <span class="keyword">unsigned</span> rdata[<span class="number">256</span>/<span class="number">4</span>];</span><br><span class="line">                <span class="class"><span class="keyword">struct</span> <span class="title">binder_io</span> <span class="title">msg</span>;</span></span><br><span class="line">                <span class="class"><span class="keyword">struct</span> <span class="title">binder_io</span> <span class="title">reply</span>;</span></span><br><span class="line">                <span class="keyword">int</span> res;</span><br><span class="line">                bio_init(&amp;reply, rdata, <span class="keyword">sizeof</span>(rdata), <span class="number">4</span>);</span><br><span class="line">                bio_init_from_txn(&amp;msg, txn);</span><br><span class="line">                res = func(bs, txn, &amp;msg, &amp;reply);</span><br><span class="line">                <span class="keyword">if</span> (txn-&gt;flags &amp; TF_ONE_WAY) &#123;</span><br><span class="line">                    binder_free_buffer(bs, txn-&gt;data.ptr.buffer);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    binder_send_reply(bs, &amp;reply, txn-&gt;data.ptr.buffer, res);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            ptr += <span class="keyword">sizeof</span>(*txn);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> BR_REPLY: &#123;</span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">binder_transaction_data</span> *<span class="title">txn</span> = (<span class="title">struct</span> <span class="title">binder_transaction_data</span> *) <span class="title">ptr</span>;</span></span><br><span class="line">            <span class="keyword">if</span> ((end - ptr) &lt; <span class="keyword">sizeof</span>(*txn)) &#123;</span><br><span class="line">                ALOGE(<span class="string">"parse: reply too small!\n"</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            binder_dump_txn(txn);</span><br><span class="line">            <span class="keyword">if</span> (bio) &#123;</span><br><span class="line">                bio_init_from_txn(bio, txn);</span><br><span class="line">                bio = <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">/* todo FREE BUFFER */</span></span><br><span class="line">            &#125;</span><br><span class="line">            ptr += <span class="keyword">sizeof</span>(*txn);</span><br><span class="line">            r = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> BR_DEAD_BINDER: &#123;</span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">binder_death</span> *<span class="title">death</span> = (<span class="title">struct</span> <span class="title">binder_death</span> *)(<span class="title">uintptr_t</span>) *(<span class="title">binder_uintptr_t</span> *)<span class="title">ptr</span>;</span></span><br><span class="line">            ptr += <span class="keyword">sizeof</span>(<span class="keyword">binder_uintptr_t</span>);</span><br><span class="line">            death-&gt;func(bs, death-&gt;ptr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> BR_FAILED_REPLY:</span><br><span class="line">            r = <span class="number">-1</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> BR_DEAD_REPLY:</span><br><span class="line">            r = <span class="number">-1</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            ALOGE(<span class="string">"parse: OOPS %d\n"</span>, cmd);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> r;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-3-4-svcmgr-handler函数"><a href="#2-3-4-svcmgr-handler函数" class="headerlink" title="2.3.4 svcmgr_handler函数"></a>2.3.4 svcmgr_handler函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/native/cmds/servicemanager/service_manager.c</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">svcinfo</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">svcinfo</span> *<span class="title">next</span>;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> handle;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_death</span> <span class="title">death</span>;</span></span><br><span class="line">    <span class="keyword">int</span> allow_isolated;</span><br><span class="line">    <span class="keyword">uint32_t</span> dumpsys_priority;</span><br><span class="line">    <span class="keyword">size_t</span> len;</span><br><span class="line">    <span class="keyword">uint16_t</span> name[<span class="number">0</span>];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">svcmgr_handler</span><span class="params">(struct binder_state *bs,</span></span></span><br><span class="line"><span class="function"><span class="params">                   struct binder_transaction_data *txn,</span></span></span><br><span class="line"><span class="function"><span class="params">                   struct binder_io *msg,</span></span></span><br><span class="line"><span class="function"><span class="params">                   struct binder_io *reply)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">svcinfo</span> *<span class="title">si</span>;</span></span><br><span class="line">    <span class="keyword">uint16_t</span> *s;</span><br><span class="line">    <span class="keyword">size_t</span> len;</span><br><span class="line">    <span class="keyword">uint32_t</span> handle;</span><br><span class="line">    <span class="keyword">uint32_t</span> strict_policy;</span><br><span class="line">    <span class="keyword">int</span> allow_isolated;</span><br><span class="line">    <span class="keyword">uint32_t</span> dumpsys_priority;</span><br><span class="line">    <span class="keyword">if</span> (txn-&gt;target.ptr != BINDER_SERVICE_MANAGER)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">if</span> (txn-&gt;code == PING_TRANSACTION)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    strict_policy = bio_get_uint32(msg);</span><br><span class="line">    s = bio_get_string16(msg, &amp;len);</span><br><span class="line">    <span class="keyword">if</span> (s == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ((len != (<span class="keyword">sizeof</span>(svcmgr_id) / <span class="number">2</span>)) ||</span><br><span class="line">        <span class="built_in">memcmp</span>(svcmgr_id, s, <span class="keyword">sizeof</span>(svcmgr_id))) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"invalid id %s\n"</span>, str8(s, len));</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (sehandle &amp;&amp; selinux_status_updated() &gt; <span class="number">0</span>) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> VENDORSERVICEMANAGER</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">selabel_handle</span> *<span class="title">tmp_sehandle</span> = <span class="title">selinux_android_vendor_service_context_handle</span>();</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">selabel_handle</span> *<span class="title">tmp_sehandle</span> = <span class="title">selinux_android_service_context_handle</span>();</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        <span class="keyword">if</span> (tmp_sehandle) &#123;</span><br><span class="line">            selabel_close(sehandle);</span><br><span class="line">            sehandle = tmp_sehandle;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">switch</span>(txn-&gt;code) &#123;</span><br><span class="line">    <span class="keyword">case</span> SVC_MGR_GET_SERVICE:</span><br><span class="line">    <span class="keyword">case</span> SVC_MGR_CHECK_SERVICE:</span><br><span class="line">        <span class="comment">// 服务名</span></span><br><span class="line">        s = bio_get_string16(msg, &amp;len);</span><br><span class="line">        <span class="keyword">if</span> (s == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 根据名称查询服务</span></span><br><span class="line">        handle = do_find_service(s, len, txn-&gt;sender_euid, txn-&gt;sender_pid);</span><br><span class="line">        <span class="keyword">if</span> (!handle)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        bio_put_ref(reply, handle);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">case</span> SVC_MGR_ADD_SERVICE:</span><br><span class="line">        s = bio_get_string16(msg, &amp;len);</span><br><span class="line">        <span class="keyword">if</span> (s == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        handle = bio_get_ref(msg);</span><br><span class="line">        allow_isolated = bio_get_uint32(msg) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">        dumpsys_priority = bio_get_uint32(msg);</span><br><span class="line">        <span class="comment">// 注册服务</span></span><br><span class="line">        <span class="keyword">if</span> (do_add_service(bs, s, len, handle, txn-&gt;sender_euid, allow_isolated, dumpsys_priority,</span><br><span class="line">                           txn-&gt;sender_pid))</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> SVC_MGR_LIST_SERVICES: &#123;</span><br><span class="line">        <span class="keyword">uint32_t</span> n = bio_get_uint32(msg);</span><br><span class="line">        <span class="keyword">uint32_t</span> req_dumpsys_priority = bio_get_uint32(msg);</span><br><span class="line">        <span class="comment">// 列举服务</span></span><br><span class="line">        <span class="keyword">if</span> (!svc_can_list(txn-&gt;sender_pid, txn-&gt;sender_euid)) &#123;</span><br><span class="line">            ALOGE(<span class="string">"list_service() uid=%d - PERMISSION DENIED\n"</span>,</span><br><span class="line">                    txn-&gt;sender_euid);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        si = svclist;</span><br><span class="line">        <span class="keyword">while</span> (si) &#123;</span><br><span class="line">            <span class="keyword">if</span> (si-&gt;dumpsys_priority &amp; req_dumpsys_priority) &#123;</span><br><span class="line">                <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">                n--;</span><br><span class="line">            &#125;</span><br><span class="line">            si = si-&gt;next;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (si) &#123;</span><br><span class="line">            bio_put_string16(reply, si-&gt;name);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        ALOGE(<span class="string">"unknown code %d\n"</span>, txn-&gt;code);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    bio_put_uint32(reply, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/IPC/" rel="tag"># IPC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/22/Boot/Zygote的启动流程/" rel="next" title="Zygote的启动流程">
+                <i class="fa fa-chevron-left"></i> Zygote的启动流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/10/Boot/SystemServer启动流程/" rel="prev" title="SystemServer的启动流程">
+                SystemServer的启动流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">64</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、init启动servicemanager"><span class="nav-text">一、init启动servicemanager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、service-manager的main函数"><span class="nav-text">二、service_manager的main函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-binder-open函数"><span class="nav-text">2.1 binder_open函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-binder-become-context-manager函数"><span class="nav-text">2.2 binder_become_context_manager函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-binder-ioctl函数"><span class="nav-text">2.2.1 binder_ioctl函数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-binder-ioctl-set-ctx-mgr函数"><span class="nav-text">2.2.2 binder_ioctl_set_ctx_mgr函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-binder-loop函数"><span class="nav-text">2.3 binder_loop函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-1-binder-write函数"><span class="nav-text">2.3.1 binder_write函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-2-binder-ioctl-write-read"><span class="nav-text">2.3.2 binder_ioctl_write_read</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-3-binder-parse函数"><span class="nav-text">2.3.3 binder_parse函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-4-svcmgr-handler函数"><span class="nav-text">2.3.4 svcmgr_handler函数</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
