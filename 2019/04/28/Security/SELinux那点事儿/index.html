@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. SELinux的概述Android安全模型是基于应用沙盒的，即每个应用都在自己的沙盒中运行，拥有独一无二的UID。为了更好保护、限制系统服务，控制对应用数据及系统日志的访问，降低恶意软件的影响，以进一步提升系统安全性，Google将Linux系统的强制访问机制(MAC) - SELinux(Security Enhanced Linux)引入到了Android系统中。 一旦启用SELinux">
+<meta name="keywords" content="Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SELinux那点事儿">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/04/28/Security/SELinux那点事儿/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1. SELinux的概述Android安全模型是基于应用沙盒的，即每个应用都在自己的沙盒中运行，拥有独一无二的UID。为了更好保护、限制系统服务，控制对应用数据及系统日志的访问，降低恶意软件的影响，以进一步提升系统安全性，Google将Linux系统的强制访问机制(MAC) - SELinux(Security Enhanced Linux)引入到了Android系统中。 一旦启用SELinux">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-26T02:54:03.110Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SELinux那点事儿">
+<meta name="twitter:description" content="1. SELinux的概述Android安全模型是基于应用沙盒的，即每个应用都在自己的沙盒中运行，拥有独一无二的UID。为了更好保护、限制系统服务，控制对应用数据及系统日志的访问，降低恶意软件的影响，以进一步提升系统安全性，Google将Linux系统的强制访问机制(MAC) - SELinux(Security Enhanced Linux)引入到了Android系统中。 一旦启用SELinux">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/04/28/Security/SELinux那点事儿/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>SELinux那点事儿 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/04/28/Security/SELinux那点事儿/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SELinux那点事儿
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-28T00:00:00+08:00">2019-04-28</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-SELinux的概述"><a href="#1-SELinux的概述" class="headerlink" title="1. SELinux的概述"></a>1. SELinux的概述</h3><p>Android安全模型是基于应用沙盒的，即每个应用都在自己的沙盒中运行，拥有独一无二的UID。为了更好保护、限制系统服务，控制对应用数据及系统日志的访问，降低恶意软件的影响，以进一步提升系统安全性，Google将Linux系统的强制访问机制(MAC) - SELinux(Security Enhanced Linux)引入到了Android系统中。</p>
+<p>一旦启用SELinux，任何未经允许的行为都会被拒绝，且dmeg和logcat中会打印出这些行为信息。SELinux主要包含2种模式(1)Permissive mode，在该模式下权限拒绝行为会被记录下来，但不会被强制执行；(2)Enforceing mode，在该模式权限拒绝行为会被记录下来并被强制执行。</p>
+<p>SELinux主要依靠label来匹配action和policy，label用于决定允许的事项，socket、file以及process都有label。其中policy的形式是<code>allow domains types:classes permissions</code>，domain是一个或一组process的label(域类型)，type是一个或一组对象的label，class是要访问的对象的类型，permission是要执行的操作。</p>
+<p>除了在rule中逐个列出domain或type外，还可以通过attribute引用一组domain或type。attribute是一组domain或type的名称，每个domain或type都可以与任意数量的attribute关联。当编写的rule指定了某个attribute名称时，该名称会自动扩展为与该attribute关联的所有domain或type。</p>
+<p>SELinux政策的avc规则形式：<br>RULE_VARIANT SOURCE_TYPES TARGET_TYPES : CLASSES PERMISSIONS<br>表示当任何source_types标签的主体尝试对包含任何classes类且带有target_types标签的对象执行与任何permissions对应的操作时，应该发生什么情况。</p>
+<a id="more"></a>
+<h3 id="2-SELinux的实现"><a href="#2-SELinux的实现" class="headerlink" title="2. SELinux的实现"></a>2. SELinux的实现</h3><p>policy文件用于定义domain及type，是以*.te结尾SELinux文件。</p>
+<p>上下文的描述文件主要有file_contexts、genfs_context、property_contexts、service_contexts、seapp_contexts、mac_permissions.xml六种，其中：<br>(1)file_contexts用于为文件分配label，多种用户空间组件均可使用。在创建新policy时，需要创建或更新该文件为文件分配新label。在读写的方式加载分区后，将restorecon/restorecon_recursive调用添加到init.board.rc文件中，可以应用新的file_contexts。<br>(2)genfs_contexts用于为不支持扩展属性的文件系统分配label。它会作为kernel policy来加载，但其修改可能对kernel节点无效，需要重启或重新加载文件系统方能生效。使用context=mount选项，可以为装载的特定系统文件分配特定label。<br>(3)property_contexts用于为系统属性分配label，来控制哪些进程可以设置这些属性，在启动期间init进程会读取这些配置。<br>(4)service_contexts用于为Binder服务分配label，来控制哪些进程可以为相应服务注册和查询Binder引用，在启动期间servicemanager进程会读取这些配置。<br>(5)seapp_contexts用于为应用进程和/data/data目录分配label。每次应用启动时zygote进程都会读取这些配置，在启动期间installd也会读取这些配置。<br>(6)mac_permissions.xml用于根据应用签名和软件包名称为应用分配seinfo标记。分配的seinfo标记可在seapp_contexts文件中用作密钥，以便为带有该seinfo标记的所有应用分配特定label，在启动期间system_server会读取这些配置。</p>
+<p>实现操作步骤：<br>(1)在kernel中启用SELinux：<code>CONFIG_SECURITY_SELINUX=y</code>。<br>(2)修改kernel_cmdline参数：<code>BOARD_KERNEL_CMDLINE := androidboot.selinux=permissive</code>，仅适用于研发初期，最终需要移除它，否则无法通过CTS验证。<br>(3)以permissive模式启动系统，检查启动时会遇到哪些拒绝行为：<code>adb shell su -c dmesg | grep denied | audit2allow -p</code>。<br>(4)评估类似的警告内容：<code>init: Warning! Service name needs a SELinux domain defined; please fix!</code><br>(5)标识设备以及需要添加label的其他新文件。<br>(6)为对象使用现有label或新label：查看<em>_contexts文件，了解之前是如何为内容添加label的，然后根据对label含义的了解分配一个新label。该label最好是能融入到现有label中，但有时也需使用新label，还需提供关于访问该label的rule，将label添加到相应的上下文的描述文件中。<br>(7)标识自己的安全域的域/进程：需要为每一项分别编写一个全新的policy。如从init衍生的所有服务都应该有自己的安全域。下面命令可查看保持运行的服务：<code>adb shell su -c ps -Z | grep init</code>、<code>adb shell su -c dmesg | grep &#39;avc: &#39;</code><br>(8)查看init.device.rc找出任何没有domain类型的domain。在开发过程早期为其提供相应的domain，避免向init添加规则或将init访问权限与其自身policy中的访问权限混淆。<br>(9)将BOARD_CONFIG.mk设为使用BOARD_SEPOLICY_</em>变量。<br>(10)检查init.device.rc和fstab.device文件，确保每一次使用”mount”都对应一个添加了适当label的文件系统，或指定了context=mount选项。<br>(11)查看每个拒绝行为，并创建SELinux policy来处理每个拒绝行为。</p>
+<h3 id="3-SELinux的自定义"><a href="#3-SELinux的自定义" class="headerlink" title="3. SELinux的自定义"></a>3. SELinux的自定义</h3><p>自定义SELinux操作步骤：<br>(1)使用最新的Android kernel。<br>(2)采用最小权限原则。<br>(3)仅向Android添加的内容调整SELinux政策。<br>(4)将各个软件组件拆分成多个负责执行单项任务的模块。<br>(5)创建将这些任务与无关功能隔离开来的SELinux policy。<br>(6)将这些policy放在device目录中的*.te文件内，然后使用BOARD_SEPOLICY变量将编入版本中。<br>(7)将新domain设为permissive domain，添加permissive声明。<br>(8)分析结果并优化domain定义。<br>(9)当userdebug版本中不再出现拒绝行为时，移除permissive声明。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Class</th>
+<th style="text-align:center">Permission</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">文件</td>
+<td style="text-align:center">ioctl read write create getattr setattr lock relabelfrom relabelto append unlink link rename execute swapon quotaon mounton</td>
+</tr>
+<tr>
+<td style="text-align:center">目录</td>
+<td style="text-align:center">add_name remove_name reparent search rmdir open audit_access execmod</td>
+</tr>
+<tr>
+<td style="text-align:center">套接字</td>
+<td style="text-align:center">ioctl read write create getattr setattr lock relabelfrom relabelto append bind connect listen accept getopt setopt shutdown recvfrom sendto recv_msg send_msg name_bind</td>
+</tr>
+<tr>
+<td style="text-align:center">文件系统</td>
+<td style="text-align:center">mount remount unmount getattr relabelfrom relabelto transition associate quotamod quotaget</td>
+</tr>
+<tr>
+<td style="text-align:center">进程</td>
+<td style="text-align:center">fork transition sigchld sigkill sigstop signull signal ptrace getsched setsched getsession getpgid setpgid getcap setcap share getattr setexec setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setcurrent execmem execstack execheap setkeycreate setsockcreate</td>
+</tr>
+<tr>
+<td style="text-align:center">安全</td>
+<td style="text-align:center">compute_av compute_create compute_member check_context load_policy compute_relabel compute_user setenforce setbool setsecparam setcheckreqprot read_policy</td>
+</tr>
+<tr>
+<td style="text-align:center">权能</td>
+<td style="text-align:center">chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_admin sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease audit_write audit_control setfcap</td>
+</tr>
+</tbody>
+</table>
+<p>SELinux neverallow规则用于禁止在任何情况下都不应该发生的行为。通过兼容性测试，现在设备上都会强制执行SELinux neverallow规则。</p>
+<p>可以通过getenforce命令来确认SELinux在设备上的运行模式是否正确。要确定每个域的SELinux模式，必须检查相应的文件，或运行带有相应(-p)标记的/platform/system/sepolicy/tools/sepolicy-analyze。</p>
+<p>SELinux日志消息中包含”avc:“字样，可以运行<code>cat /proc/kmsg | grep avc</code>来获取当前的拒绝行为日志。这些日志消息会指明在强制模式下哪些进程会失败以及失败原因。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">avc: denied  &#123; connectto &#125; for  pid=2671 comm=&quot;ping&quot; path=&quot;/dev/socket/dnsproxyd&quot;</span><br><span class="line">scontext=u:r:shell:s0 tcontext=u:r:netd:s0 tclass=unix_stream_socket</span><br></pre></td></tr></table></figure>
+<p>(1){ connectto }表示执行的操作。根据它和末尾的tclass(unix_stream_socket)，可以大致了解是对什么对象执行什么操作。此例中是操作方正在试图连接到UNIX信息流套接字。<br>(2)scontext(u:r:shell:s0)表示发起相应操作的环境，此例中是shell中运行的某个程序。<br>(3)tcontext(u:r:netd:s0)表示操作目标的环境，此例中是归netd所有的某个unix_stream_socket。<br>(4)comm=”ping”可帮助了解拒绝行为发生时正在运行的程序。</p>
+<p>SELinux强制模式可以在userdebug或eng版本中通过adb停用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb root</span><br><span class="line">adb shell setenforce 0</span><br></pre></td></tr></table></figure>
+<p>或在kernel cmdline中中输入以下命令（仅适用于开发初期）：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">androidboot.selinux=permissive</span><br><span class="line">androidboot.selinux=enforcing</span><br></pre></td></tr></table></figure>
+<p>selinux/policycoreutils/audit2allow工具可以获取dmesg拒绝行为并将其转换成相应的SELinux policy声明。命令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb pull /sys/fs/selinux/policy</span><br><span class="line">adb logcat -b all -d | audit2allow -p policy</span><br></pre></td></tr></table></figure>
+<p>不过务必仔细审核要添加到政策中的条目，以免出现权限过宽的情况。</p>
+<p>为新服务添加label并解决拒绝行为步骤：<br>(1)创建一个新域“foo” - 创建foo.te：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># foo service</span><br><span class="line">type foo, domain;</span><br><span class="line">type foo_exec, exec_type, file_type;</span><br><span class="line">init_daemon_domain(foo)</span><br></pre></td></tr></table></figure>
+<p>(2)为/system/bin/foo添加label - file_contexts：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/system/bin/foo   u:object_r:foo_exec:s0</span><br></pre></td></tr></table></figure>
+<p>(3)可以使用mma或mmma单编system/sepolicy目录并将system/etc/selinux和vendor/etc/selinux目录push到手机中，也可以重新编译打包boot(dtbo)、system（vendor、product)映像重新烧录。</p>
+<h3 id="4-SELinux的编译"><a href="#4-SELinux的编译" class="headerlink" title="4. SELinux的编译"></a>4. SELinux的编译</h3><p>AOSP中SELinux文件存于system/sepolicy目录，芯片商的SELinux文件一般存于device/manufacturer/sepolicy目录。在实际开发中，建议重新客制化一个sepolicy子目录来处理SELinux，避免修改原生或芯片商的sepolicy文件导致CTS/VTS等测试FAIL。可以通过修改BoardConfig.mk来引用sepolicy子目录和新的policy文件。</p>
+<p>system/sepolicy和BOARD_SEPOLICY_DIRS中的file_contexts文件内容会连接在一起，以便在设备上生成file_contexts.bin。sepolicy文件由多个源文件组成：纯文本policy.conf是通过连接security_classes、initial_sids、*.te 文件、genfs_contexts 以及port_contexts生成的。对于每个文件，其内容都是由system/sepolicy/和BOARDS_SEPOLICY_DIRS下的同名文件连接而成的。policy.conf会被发送到SELinux编译器进行语法检查并被编译为二进制格式，从而生成设备上的sepolicy。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">BOARD_SEPOLICY_DIRS += \</span><br><span class="line">    &lt;root&gt;/device/oem/project/sepolicy</span><br><span class="line">BOARD_SEPOLICY_UNION += \</span><br><span class="line">    genfs_contexts \</span><br><span class="line">    file_contexts \</span><br><span class="line">    sepolicy.te</span><br></pre></td></tr></table></figure>
+<h3 id="5-SELinux的兼容性"><a href="#5-SELinux的兼容性" class="headerlink" title="5. SELinux的兼容性"></a>5. SELinux的兼容性</h3><p>文件上下文<br>为避免启动时设备上产生额外的编译开销，file_contexts不再以二进制文件形式存在，而是可读的正则表达式文本文件，例如{property, service}_contexts。<br>(1)plat_file_contexts：没有任何设备特定label的平台file_context，必须位于/system/etc/selinux/plat_file_contexts中，并由init在启动时加载。<br>(2)vendor_file_contexts：设备特定file_context，必须位于/vendor/etc/selinux/vendor_file_contexts中，并在启动时由 init加载。</p>
+<p>属性上下文<br>(1)plat_property_contexts：没有任何设备特定label的平台property_context，必须位于/system/etc/selinux/plat_property_contexts中，并由init在启动时加载。<br>(2)vendor_property_contexts：设备特定property_context，必须位于/vendor/etc/selinux/vendor_property_contexts中，并由init在启动时加载。</p>
+<p>服务上下文<br>(1)plat_service_contexts：servicemanager的平台特定service_context，必须位于/system/etc/selinux/plat_service_contexts中，并由servicemanager在启动时加载。<br>(2)vendor_service_contexts：设备特定service_context，必须位于/vendor/etc/selinux/vendor_service_contexts中，并由servicemanager在启动时加载。但对于完全兼容的TREBLE设备，vendor_service_contexts绝不能存在，因为vendor和system进程之间的所有交互都必须执行hwservicemanager/hwbinder。<br>(3)plat_hwservice_contexts：hwservicemanager的平台hwservice_context（没有任何设备特定标签），必须位于/system/etc/selinux/plat_hwservice_contexts中，并由hwservicemanager在启动时加载。<br>(4)vendor_hwservice_contexts：设备特定hwservice_context，必须位于/vendor/etc/selinux/vendor_hwservice_contexts中，并由hwservicemanager在启动时加载。<br>(5)vndservice_contexts：vndservicemanager的设备特定service_context，必须位于/vendor/etc/selinux/vndservice_contexts中，并由vndservicemanager在启动时加载。</p>
+<p>Seapp上下文<br>(1)plat_seapp_contexts：没有设备特定更改的平台seapp_context，必须位于/system/etc/selinux/plat_seapp_contexts中。<br>(2)vendor_seapp_contexts：平台seapp_context的设备特定扩展，必须位于/vendor/etc/selinux/vendor_seapp_contexts中。</p>
+<p>MAC权限<br>(1)平台mac_permissions.xml：没有设备特定更改的平台mac_permissions.xml，必须位于/system/etc/selinux/中。<br>(2)非平台mac_permissions.xml：平台mac_permissions.xml的设备特定扩展，必须位于/vendor/etc/selinux/中。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/19/Boot/开机时间优化总结/" rel="next" title="开机时间优化总结">
+                <i class="fa fa-chevron-left"></i> 开机时间优化总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-SELinux的概述"><span class="nav-text">1. SELinux的概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-SELinux的实现"><span class="nav-text">2. SELinux的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-SELinux的自定义"><span class="nav-text">3. SELinux的自定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-SELinux的编译"><span class="nav-text">4. SELinux的编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-SELinux的兼容性"><span class="nav-text">5. SELinux的兼容性</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

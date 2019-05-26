@@ -329,6 +329,170 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/03/Filesystem/Userdata分区resize功能/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/03/Filesystem/Userdata分区resize功能/" class="post-title-link" itemprop="url">Userdata分区resize功能</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-03 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-03T00:00:00+08:00">2018-11-03</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-挂载分区时添加resize功能"><a href="#1-挂载分区时添加resize功能" class="headerlink" title="1. 挂载分区时添加resize功能"></a>1. 挂载分区时添加resize功能</h3><p>system/core/fs_mgr/fs_mgr.cpp</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cryptfs.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> RESIZE2FS_BIN   <span class="meta-string">"/system/bin/resize2fs"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">resize_fs</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *blk_device, <span class="keyword">char</span> *fs_type, <span class="keyword">char</span> *key_loc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sz;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_ss;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sn;</span><br><span class="line">    <span class="keyword">int</span> status = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    android::base::<span class="function">unique_fd <span class="title">fd</span><span class="params">(TEMP_FAILURE_RETRY(open(blk_device, O_RDONLY | O_CLOEXEC)))</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"Failed to open '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"'"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Cannot use BLKGETSIZE to get the number of sectors,</span></span><br><span class="line"><span class="comment">    * because need to do device_sz -= CRYPT_FOOTER_OFFSET</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKGETSIZE64, &amp;device_sz)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKGETSIZE64) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKSSZGET, &amp;device_ss)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKSSZGET) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Format the partition using the calculated length */</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(key_loc, KEY_IN_FOOTER))</span><br><span class="line">        device_sz -= CRYPT_FOOTER_OFFSET;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (is_extfs(fs_type)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (access(RESIZE2FS_BIN, X_OK)) &#123;</span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Not running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device</span><br><span class="line">            &lt;&lt; <span class="string">" (executable not in system image)"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> size_kb_str(android::base::StringPrintf(<span class="string">"%"</span> PRIu64 <span class="string">"K"</span>, device_sz / <span class="number">1024</span>));</span><br><span class="line"></span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/* extX cmd */</span></span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span> *resize2fs_argv[] = &#123;</span><br><span class="line">                RESIZE2FS_BIN,</span><br><span class="line">                <span class="string">"-f"</span>,</span><br><span class="line">                blk_device,</span><br><span class="line">                size_kb_str.c_str()</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            ret = android_fork_execvp_ext(ARRAY_SIZE(resize2fs_argv),</span><br><span class="line">                <span class="keyword">const_cast</span>&lt;<span class="keyword">char</span> **&gt;(resize2fs_argv),</span><br><span class="line">                &amp;status, <span class="literal">true</span>, LOG_KLOG,</span><br><span class="line">                <span class="literal">false</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">/* No need to check for error in fork, we can't really handle it now */</span></span><br><span class="line">                LERROR &lt;&lt; <span class="string">"Failed trying to run "</span> &lt;&lt; RESIZE2FS_BIN;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">prepare_fs_for_mount</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* blk_device, <span class="keyword">const</span> struct fstab_rec* rec)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> ((rec-&gt;fs_mgr_flags &amp; MF_RESIZE) &amp;&amp; !<span class="built_in">strcmp</span>(blk_device, rec-&gt;blk_device)) &#123;</span><br><span class="line">        resize_fs(blk_device, rec-&gt;fs_type, rec-&gt;key_loc);</span><br><span class="line">        check_fs(blk_device, rec-&gt;fs_type, rec-&gt;mount_point, &amp;fs_stat);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/03/Filesystem/Userdata分区resize功能/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/10/27/Filesystem/StorageManagerService的启动/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1796,169 +1960,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/22/Framework/PackageManagerService之Apk安装/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/07/22/Framework/PackageManagerService之Apk安装/" class="post-title-link" itemprop="url">PackageManagerService之Apk安装</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-07-22 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-22T00:00:00+08:00">2018-07-22</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、adb-command"><a href="#一、adb-command" class="headerlink" title="一、adb command"></a>一、adb command</h3><h4 id="1-1-cmmandline-cpp-adb-commandline"><a href="#1-1-cmmandline-cpp-adb-commandline" class="headerlink" title="1.1 cmmandline.cpp::adb_commandline()"></a>1.1 cmmandline.cpp::adb_commandline()</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">adb_commandline</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"devices"</span>)) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span> *listopt;</span><br><span class="line">        <span class="keyword">if</span> (argc &lt; <span class="number">2</span>) &#123;</span><br><span class="line">            listopt = <span class="string">""</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; !<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"-l"</span>)) &#123;</span><br><span class="line">            listopt = argv[<span class="number">1</span>];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Usage: adb devices [-l]\n"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> query = android::base::StringPrintf(<span class="string">"host:%s%s"</span>, argv[<span class="number">0</span>], listopt);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"List of devices attached\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> adb_query_command(query);</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"install"</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (argc &lt; <span class="number">2</span>) <span class="keyword">return</span> usage();</span><br><span class="line">        <span class="keyword">if</span> (_use_legacy_install()) &#123;</span><br><span class="line">            <span class="comment">// 不支持CanUseFeature时调用 install_app_legacy</span></span><br><span class="line">            <span class="keyword">return</span> install_app_legacy(transport_type, serial, argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 否则调用install_app</span></span><br><span class="line">        <span class="keyword">return</span> install_app(transport_type, serial, argc, argv);</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"reconnect"</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (argc == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> adb_query_command(<span class="string">"host:reconnect"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; !<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"device"</span>)) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> err;</span><br><span class="line">            adb_connect(<span class="string">"reconnect"</span>, &amp;err);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    usage();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/07/22/Framework/PackageManagerService之Apk安装/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2007,7 +2008,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">64</span>
+                    <span class="site-state-item-count">65</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
