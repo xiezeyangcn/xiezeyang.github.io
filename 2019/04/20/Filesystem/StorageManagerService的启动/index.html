@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. StorageManagerService的创建frameworks/base/services/java/com/android/server/SystemServer.java 在SystemServer的startOtherServices()中启动StorageManagerService 12345678910111213141516171819202122private stat">
+<meta name="keywords" content="Boot,Filesystem">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StorageManagerService的启动">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/04/20/Filesystem/StorageManagerService的启动/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1. StorageManagerService的创建frameworks/base/services/java/com/android/server/SystemServer.java 在SystemServer的startOtherServices()中启动StorageManagerService 12345678910111213141516171819202122private stat">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-26T14:52:34.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="StorageManagerService的启动">
+<meta name="twitter:description" content="1. StorageManagerService的创建frameworks/base/services/java/com/android/server/SystemServer.java 在SystemServer的startOtherServices()中启动StorageManagerService 12345678910111213141516171819202122private stat">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/04/20/Filesystem/StorageManagerService的启动/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>StorageManagerService的启动 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/04/20/Filesystem/StorageManagerService的启动/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">StorageManagerService的启动
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-20 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-20T00:00:00+08:00">2019-04-20</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-StorageManagerService的创建"><a href="#1-StorageManagerService的创建" class="headerlink" title="1. StorageManagerService的创建"></a>1. StorageManagerService的创建</h3><p>frameworks/base/services/java/com/android/server/SystemServer.java</p>
+<p>在SystemServer的startOtherServices()中启动StorageManagerService</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String STORAGE_MANAGER_SERVICE_CLASS =</span><br><span class="line">        <span class="string">"com.android.server.StorageManagerService$Lifecycle"</span>;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startOtherServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    IStorageManager storageManager = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (mFactoryTestMode != FactoryTest.FACTORY_TEST_LOW_LEVEL) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!<span class="string">"0"</span>.equals(SystemProperties.get(<span class="string">"system_init.startmountservice"</span>))) &#123;</span><br><span class="line">                traceBeginAndSlog(<span class="string">"StartStorageManagerService"</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">// 创建STORAGE_MANAGER_SERVICE_CLASS对象，并将其加入ServiceManager服务列表</span></span><br><span class="line">                    mSystemServiceManager.startService(STORAGE_MANAGER_SERVICE_CLASS);</span><br><span class="line">                    storageManager = IStorageManager.Stub.asInterface(</span><br><span class="line">                            ServiceManager.getService(<span class="string">"mount"</span>));</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">                    reportWtf(<span class="string">"starting StorageManagerService"</span>, e);</span><br><span class="line">                &#125;</span><br><span class="line">                traceEnd();</span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="2-StorageManagerService的onStart-方法"><a href="#2-StorageManagerService的onStart-方法" class="headerlink" title="2. StorageManagerService的onStart()方法"></a>2. StorageManagerService的onStart()方法</h3><p>frameworks/base/services/core/java/com/android/server/StorageManagerService.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Lifecycle</span> <span class="keyword">extends</span> <span class="title">SystemService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 创建StorageManagerService对象</span></span><br><span class="line">        mStorageManagerService = <span class="keyword">new</span> StorageManagerService(getContext());</span><br><span class="line">        <span class="comment">// 登记Binder服务，其名为'mount'</span></span><br><span class="line">        publishBinderService(<span class="string">"mount"</span>, mStorageManagerService);</span><br><span class="line">        <span class="comment">// 启动StorageManagerService，包括'storaged'与'vold'</span></span><br><span class="line">        mStorageManagerService.start();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-StorageManagerService的onBootPhase-方法"><a href="#3-StorageManagerService的onBootPhase-方法" class="headerlink" title="3. StorageManagerService的onBootPhase()方法"></a>3. StorageManagerService的onBootPhase()方法</h3><p>frameworks/base/services/core/java/com/android/server/StorageManagerService.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Lifecycle</span> <span class="keyword">extends</span> <span class="title">SystemService</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBootPhase</span><span class="params">(<span class="keyword">int</span> phase)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 系统启动到PHASE_ACTIVITY_MANAGER_READY时回调</span></span><br><span class="line">        <span class="keyword">if</span> (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) &#123;</span><br><span class="line">            mStorageManagerService.systemReady();</span><br><span class="line">        <span class="comment">// 系统启动到PHASE_BOOT_COMPLETED时回调</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (phase == SystemService.PHASE_BOOT_COMPLETED) &#123;</span><br><span class="line">            mStorageManagerService.bootCompleted();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">systemReady</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    LocalServices.getService(ActivityManagerInternal.class)</span><br><span class="line">            .registerScreenObserver(<span class="keyword">this</span>);</span><br><span class="line">    mSystemReady = <span class="keyword">true</span>;</span><br><span class="line">    <span class="comment">// 发送H_SYSTEM_READY消息</span></span><br><span class="line">    mHandler.obtainMessage(H_SYSTEM_READY).sendToTarget();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleSystemReady</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    initIfReadyAndConnected();</span><br><span class="line">    resetIfReadyAndConnected();</span><br><span class="line">    <span class="comment">// 开始每日fstrim操作</span></span><br><span class="line">    MountServiceIdler.scheduleIdlePass(mContext);</span><br><span class="line">    <span class="comment">// 切换zram-enable系统属性以响应设置</span></span><br><span class="line">    mContext.getContentResolver().registerContentObserver(</span><br><span class="line">        Settings.Global.getUriFor(Settings.Global.ZRAM_ENABLED),</span><br><span class="line">        <span class="keyword">false</span> <span class="comment">/*notifyForDescendants*/</span>,</span><br><span class="line">        <span class="keyword">new</span> ContentObserver(<span class="keyword">null</span> <span class="comment">/* current thread */</span>) &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onChange</span><span class="params">(<span class="keyword">boolean</span> selfChange)</span> </span>&#123;</span><br><span class="line">                refreshZramSettings();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    refreshZramSettings();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">resetIfReadyAndConnected</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Slog.d(TAG, <span class="string">"Thinking about reset, mSystemReady="</span> + mSystemReady</span><br><span class="line">            + <span class="string">", mDaemonConnected="</span> + mDaemonConnected);</span><br><span class="line">    <span class="comment">// vold守护进程已连接，则执行reset操作</span></span><br><span class="line">    <span class="keyword">if</span> (mSystemReady &amp;&amp; mDaemonConnected) &#123;</span><br><span class="line">        <span class="keyword">final</span> List&lt;UserInfo&gt; users = mContext.getSystemService(UserManager.class).getUsers();</span><br><span class="line">        killMediaProvider(users);</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span>[] systemUnlockedUsers;</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            systemUnlockedUsers = mSystemUnlockedUsers;</span><br><span class="line">            mDisks.clear();</span><br><span class="line">            mVolumes.clear();</span><br><span class="line">            <span class="comment">// 将/data路径的private volume添加到mVolumes</span></span><br><span class="line">            addInternalVolumeLocked();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            mVold.reset();</span><br><span class="line">            <span class="comment">// 告知vold所有已存在、启动的users</span></span><br><span class="line">            <span class="keyword">for</span> (UserInfo user : users) &#123;</span><br><span class="line">                mVold.onUserAdded(user.id, user.serialNumber);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> userId : systemUnlockedUsers) &#123;</span><br><span class="line">                mVold.onUserStarted(userId);</span><br><span class="line">                mStoraged.onUserStarted(userId);</span><br><span class="line">            &#125;</span><br><span class="line">            mVold.onSecureKeyguardStateChanged(mSecureKeyguardShowing);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            Slog.wtf(TAG, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="4-StorageManagerService的构造函数"><a href="#4-StorageManagerService的构造函数" class="headerlink" title="4. StorageManagerService的构造函数"></a>4. StorageManagerService的构造函数</h3><p>frameworks/base/services/core/java/com/android/server/StorageManagerService.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">StorageManagerService</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">    sSelf = <span class="keyword">this</span>;</span><br><span class="line">    mContext = context;</span><br><span class="line">    <span class="comment">// FgThread名为'android.fg'，创建IStorageEventListener回调</span></span><br><span class="line">    mCallbacks = <span class="keyword">new</span> Callbacks(FgThread.get().getLooper());</span><br><span class="line">    mLockPatternUtils = <span class="keyword">new</span> LockPatternUtils(mContext);</span><br><span class="line">    <span class="comment">// 创建PMS的客户端对象</span></span><br><span class="line">    mPms = (PackageManagerService) ServiceManager.getService(<span class="string">"package"</span>);</span><br><span class="line">    <span class="comment">// 创建线程</span></span><br><span class="line">    HandlerThread hthread = <span class="keyword">new</span> HandlerThread(TAG);</span><br><span class="line">    hthread.start();</span><br><span class="line">    mHandler = <span class="keyword">new</span> StorageManagerServiceHandler(hthread.getLooper());</span><br><span class="line">    <span class="comment">// IoThread名为'android.io'，创建Obb handler</span></span><br><span class="line">    mObbActionHandler = <span class="keyword">new</span> ObbActionHandler(IoThread.get().getLooper());</span><br><span class="line">    File dataDir = Environment.getDataDirectory();</span><br><span class="line">    <span class="comment">// /data/system目录</span></span><br><span class="line">    File systemDir = <span class="keyword">new</span> File(dataDir, <span class="string">"system"</span>);</span><br><span class="line">    <span class="comment">// LAST_FSTRIM_FILE - last-fstrim</span></span><br><span class="line">    mLastMaintenanceFile = <span class="keyword">new</span> File(systemDir, LAST_FSTRIM_FILE);</span><br><span class="line">    <span class="comment">// 若last-fstrim文件不存在则创建，若存在则更新其修改时间</span></span><br><span class="line">    <span class="keyword">if</span> (!mLastMaintenanceFile.exists()) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            (<span class="keyword">new</span> FileOutputStream(mLastMaintenanceFile)).close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            Slog.e(TAG, <span class="string">"Unable to create fstrim record "</span> + mLastMaintenanceFile.getPath());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        mLastMaintenance = mLastMaintenanceFile.lastModified();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 解析/data/system/storage.xml文件，其标签为'storage-settings'</span></span><br><span class="line">    mSettingsFile = <span class="keyword">new</span> AtomicFile(</span><br><span class="line">            <span class="keyword">new</span> File(Environment.getDataSystemDirectory(), <span class="string">"storage.xml"</span>), <span class="string">"storage-settings"</span>);</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        readSettingsLocked();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将StorageManagerInternalImpl加入到LocalServices服务列表</span></span><br><span class="line">    LocalServices.addService(StorageManagerInternal.class, mStorageManagerInternal);</span><br><span class="line">    <span class="keyword">final</span> IntentFilter userFilter = <span class="keyword">new</span> IntentFilter();</span><br><span class="line">    userFilter.addAction(Intent.ACTION_USER_ADDED);</span><br><span class="line">    userFilter.addAction(Intent.ACTION_USER_REMOVED);</span><br><span class="line">    mContext.registerReceiver(mUserReceiver, userFilter, <span class="keyword">null</span>, mHandler);</span><br><span class="line">    <span class="comment">// 创建内部存储存储根</span></span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        addInternalVolumeLocked();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// watchdog监视器</span></span><br><span class="line">    <span class="keyword">if</span> (WATCHDOG_ENABLE) &#123;</span><br><span class="line">        Watchdog.getInstance().addMonitor(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="5-StorageManagerServiceHandler的handleMessage-方法"><a href="#5-StorageManagerServiceHandler的handleMessage-方法" class="headerlink" title="5. StorageManagerServiceHandler的handleMessage()方法"></a>5. StorageManagerServiceHandler的handleMessage()方法</h3><p>frameworks/base/services/core/java/com/android/server/StorageManagerService.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">StorageManagerServiceHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StorageManagerServiceHandler</span><span class="params">(Looper looper)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(looper);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">switch</span> (msg.what) &#123;</span><br><span class="line">            <span class="keyword">case</span> H_SYSTEM_READY: &#123;</span><br><span class="line">                handleSystemReady();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_DAEMON_CONNECTED: &#123;</span><br><span class="line">                handleDaemonConnected();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_FSTRIM: &#123;</span><br><span class="line">                Slog.i(TAG, <span class="string">"Running fstrim idle maintenance"</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    mLastMaintenance = System.currentTimeMillis();</span><br><span class="line">                    mLastMaintenanceFile.setLastModified(mLastMaintenance);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    Slog.e(TAG, <span class="string">"Unable to record last fstrim!"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                fstrim(<span class="number">0</span>, <span class="keyword">null</span>);</span><br><span class="line">                Runnable callback = (Runnable) msg.obj;</span><br><span class="line">                <span class="keyword">if</span> (callback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    callback.run();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_SHUTDOWN: &#123;</span><br><span class="line">                <span class="keyword">final</span> IStorageShutdownObserver obs = (IStorageShutdownObserver) msg.obj;</span><br><span class="line">                <span class="keyword">boolean</span> success = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    mVold.shutdown();</span><br><span class="line">                    success = <span class="keyword">true</span>;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    Slog.wtf(TAG, e);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (obs != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        obs.onShutDownComplete(success ? <span class="number">0</span> : -<span class="number">1</span>);</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Exception ignored) &#123;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_VOLUME_MOUNT: &#123;</span><br><span class="line">                <span class="keyword">final</span> VolumeInfo vol = (VolumeInfo) msg.obj;</span><br><span class="line">                <span class="keyword">if</span> (isMountDisallowed(vol)) &#123;</span><br><span class="line">                    Slog.i(TAG, <span class="string">"Ignoring mount "</span> + vol.getId() + <span class="string">" due to policy"</span>);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    mVold.mount(vol.id, vol.mountFlags, vol.mountUserId);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    Slog.wtf(TAG, e);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_VOLUME_UNMOUNT: &#123;</span><br><span class="line">                <span class="keyword">final</span> VolumeInfo vol = (VolumeInfo) msg.obj;</span><br><span class="line">                unmount(vol.getId());</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_VOLUME_BROADCAST: &#123;</span><br><span class="line">                <span class="keyword">final</span> StorageVolume userVol = (StorageVolume) msg.obj;</span><br><span class="line">                <span class="keyword">final</span> String envState = userVol.getState();</span><br><span class="line">                Slog.d(TAG, <span class="string">"Volume "</span> + userVol.getId() + <span class="string">" broadcasting "</span> + envState + <span class="string">" to "</span></span><br><span class="line">                        + userVol.getOwner());</span><br><span class="line">                <span class="keyword">final</span> String action = VolumeInfo.getBroadcastForEnvironment(envState);</span><br><span class="line">                <span class="keyword">if</span> (action != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">final</span> Intent intent = <span class="keyword">new</span> Intent(action,</span><br><span class="line">                            Uri.fromFile(userVol.getPathFile()));</span><br><span class="line">                    intent.putExtra(StorageVolume.EXTRA_STORAGE_VOLUME, userVol);</span><br><span class="line">                    intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT</span><br><span class="line">                            | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);</span><br><span class="line">                    mContext.sendBroadcastAsUser(intent, userVol.getOwner());</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_INTERNAL_BROADCAST: &#123;</span><br><span class="line">                <span class="keyword">final</span> Intent intent = (Intent) msg.obj;</span><br><span class="line">                mContext.sendBroadcastAsUser(intent, UserHandle.ALL,</span><br><span class="line">                        android.Manifest.permission.WRITE_MEDIA_STORAGE);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_PARTITION_FORGET: &#123;</span><br><span class="line">                <span class="keyword">final</span> VolumeRecord rec = (VolumeRecord) msg.obj;</span><br><span class="line">                forgetPartition(rec.partGuid, rec.fsUuid);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_RESET: &#123;</span><br><span class="line">                resetIfReadyAndConnected();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_RUN_IDLE_MAINT: &#123;</span><br><span class="line">                Slog.i(TAG, <span class="string">"Running idle maintenance"</span>);</span><br><span class="line">                runIdleMaint((Runnable)msg.obj);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_ABORT_IDLE_MAINT: &#123;</span><br><span class="line">                Slog.i(TAG, <span class="string">"Aborting idle maintenance"</span>);</span><br><span class="line">                abortIdleMaint((Runnable)msg.obj);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Filesystem/" rel="tag"># Filesystem</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/14/Filesystem/OTG的挂载流程/" rel="next" title="OTG的挂载流程">
+                <i class="fa fa-chevron-left"></i> OTG的挂载流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/27/Filesystem/UFS Provision那点事儿/" rel="prev" title="UFS Provision那点事儿">
+                UFS Provision那点事儿 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-StorageManagerService的创建"><span class="nav-text">1. StorageManagerService的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-StorageManagerService的onStart-方法"><span class="nav-text">2. StorageManagerService的onStart()方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-StorageManagerService的onBootPhase-方法"><span class="nav-text">3. StorageManagerService的onBootPhase()方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-StorageManagerService的构造函数"><span class="nav-text">4. StorageManagerService的构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-StorageManagerServiceHandler的handleMessage-方法"><span class="nav-text">5. StorageManagerServiceHandler的handleMessage()方法</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

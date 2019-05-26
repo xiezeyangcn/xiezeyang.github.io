@@ -329,7 +329,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/08/Power/Doze的启动流程/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/27/Other/Android基础知识点/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -349,7 +349,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/01/08/Power/Doze的启动流程/" class="post-title-link" itemprop="url">Doze的启动流程</a>
+                <a href="/2018/01/27/Other/Android基础知识点/" class="post-title-link" itemprop="url">Android基础知识点</a>
               
             
           </h1>
@@ -374,7 +374,7 @@
                 
               
 
-              <time title="创建时间：2018-01-08 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-08T00:00:00+08:00">2018-01-08</time>
+              <time title="创建时间：2018-01-27 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-27T00:00:00+08:00">2018-01-27</time>
             
 
             
@@ -392,7 +392,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
 
                 
                 
@@ -428,11 +428,16 @@
 
       
         
-          <h3 id="一、SystemServer启动DeviceIdleController服务"><a href="#一、SystemServer启动DeviceIdleController服务" class="headerlink" title="一、SystemServer启动DeviceIdleController服务"></a>一、SystemServer启动DeviceIdleController服务</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startOtherServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//　非工厂模式，且非核心服务未被禁用时执行</span></span><br><span class="line">    <span class="keyword">if</span> (!disableNonCoreService) &#123;</span><br><span class="line">        ...</span><br><span class="line">        traceBeginAndSlog(<span class="string">"StartDeviceIdleController"</span>);</span><br><span class="line">        <span class="comment">// 通过反射方式创建DeviceIdleController服务</span></span><br><span class="line">        mSystemServiceManager.startService(DeviceIdleController.class);</span><br><span class="line">        traceEnd();</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <h3 id="1-JNI调用过程"><a href="#1-JNI调用过程" class="headerlink" title="1. JNI调用过程"></a>1. JNI调用过程</h3><p><1> 安装、下载Cygwin，下载AndroidNDK</1></p>
+<p><2>在ndk项目中JNI接口的设计</2></p>
+<p><3>使用C/C++实现本地方法</3></p>
+<p><4>JNI生成动态链接库.so文件</4></p>
+<p><5>将动态链接库复制到java工程中</5></p>
+<h3 id="2-View-SurfaceView-GLSurfaceView"><a href="#2-View-SurfaceView-GLSurfaceView" class="headerlink" title="2. View, SurfaceView, GLSurfaceView"></a>2. View, SurfaceView, GLSurfaceView</h3><p>view必须在UI主线程中刷新，handle.sendmessage发送消息，然后在handle的getmessage中执行invaliate或者postinvaliate。<br>SurfaceView 是View的子类，使用了双缓机制，在新的线程中更新画面所以刷新界面速度比View快。<br>SurfaceView一般会与SurfaceHolder结合使用，调用SurfaceView的getHolder()方法即可获取SurfaceView关联的SurfaceHolder，SurfaceHolder用于向与之关联的SurfaceView上绘图，<br>SurfaceHolder提供了如下方法来获取Canvas对象：<br>－ CanvaslockCanvas()：锁定整个SurfaceView对象，获取该Surface上的Canvas。<br>－ CanvaslockCanvas(Rect dirty)：锁定SurfaceView上Rect划分的区域，获取该Surface上的Canvas。<br>当对同一个SurfaceView调用上面两个方法时，两个方法所返回的是同一个Canvas对象。但当程序调用第二个方法获取指定区域的Canvas时，SurfaceView将只对Rect所“圈”出来的区域进行更新，通过这种方式可以提高画面的更新速度。<br>当通过lockCanvas()获取指定了SurfaceView上的Canvas之后，接下来程序就可调用Canvas进行绘图了，Canvas绘图完成后通过如下方法来释放绘图、提交所绘制的图形：<br>－unlockCanvasAndPost(canvas);<br>GLSurfaceView 是SurfaceView的子类，OpenGL专用的。</p>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/01/08/Power/Doze的启动流程/#more" rel="contents">
+              <a class="btn" href="/2018/01/27/Other/Android基础知识点/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -492,7 +497,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/27/Power/Doze白名单简介/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/20/Other/Parcelable接口用法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -512,7 +517,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/12/27/Power/Doze白名单简介/" class="post-title-link" itemprop="url">Doze白名单介绍</a>
+                <a href="/2018/01/20/Other/Parcelable接口用法/" class="post-title-link" itemprop="url">Parcelable接口用法</a>
               
             
           </h1>
@@ -537,7 +542,7 @@
                 
               
 
-              <time title="创建时间：2017-12-27 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-27T00:00:00+08:00">2017-12-27</time>
+              <time title="创建时间：2018-01-20 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-20T00:00:00+08:00">2018-01-20</time>
             
 
             
@@ -555,7 +560,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
 
                 
                 
@@ -591,11 +596,13 @@
 
       
         
-          <h3 id="一、三种情况处理"><a href="#一、三种情况处理" class="headerlink" title="一、三种情况处理"></a>一、三种情况处理</h3><h4 id="1-1-System-excidle-system-app-used-for-doze"><a href="#1-1-System-excidle-system-app-used-for-doze" class="headerlink" title="1.1 System-excidle (system app) : used for doze"></a>1.1 System-excidle (system app) : used for doze</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ArrayMap&lt;String, Interger&gt; mPowerSaveWhitelistAppsExceptIdle</span><br><span class="line">String: packageName</span><br><span class="line">Interger: app Uid</span><br><span class="line">From etc/permissions/platform.xml tag: allow-in-power-save-except-idle (SystemConfig.mAllowInPowerSaveExceptIdle)</span><br></pre></td></tr></table></figure>
+          <h3 id="1-Parcelable接口"><a href="#1-Parcelable接口" class="headerlink" title="1. Parcelable接口"></a>1. Parcelable接口</h3><p>Interface for classes whose instances can be written to and restored from a Parcel。 Classes implementing the Parcelable interface must also have a static field called CREATOR， which is an object implementing the Parcelable.Creator interface。</p>
+<h3 id="2-实现Parcelable就是为了进行序列化，那么为什么要序列化？"><a href="#2-实现Parcelable就是为了进行序列化，那么为什么要序列化？" class="headerlink" title="2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？"></a>2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？</h3><p>1）永久性保存对象，保存对象的字节序列到本地文件中；<br>2）通过序列化对象在网络中传递对象；<br>3）通过序列化在进程间传递对象。</p>
+<h3 id="3-实现序列化的方法"><a href="#3-实现序列化的方法" class="headerlink" title="3. 实现序列化的方法"></a>3. 实现序列化的方法</h3><p>Android中实现序列化有两个选择：一是实现Serializable接口（是JavaSE本身就支持的），一是实现Parcelable接口（是Android特有功能，效率比实现Serializable接口高效，可用于Intent数据传递，也可以用于进程间通信（IPC））。实现Serializable接口非常简单，声明一下就可以了，而实现Parcelable接口稍微复杂一些，但效率更高，推荐用这种方法提高性能。<br>注：Android中Intent传递对象有两种方法：一是Bundle.putSerializable(Key，Object)，另一种是Bundle.putParcelable(Key，Object)。当然这些Object是有一定的条件的，前者是实现了Serializable接口，而后者是实现了Parcelable接口。</p>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/12/27/Power/Doze白名单简介/#more" rel="contents">
+              <a class="btn" href="/2018/01/20/Other/Parcelable接口用法/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -655,7 +662,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/20/Power/Doze模式概述/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/14/Build/Android系统源码编译环境搭建/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -675,7 +682,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/12/20/Power/Doze模式概述/" class="post-title-link" itemprop="url">Doze模式概述</a>
+                <a href="/2018/01/14/Build/Android系统源码编译环境搭建/" class="post-title-link" itemprop="url">Android系统源码编译环境搭建</a>
               
             
           </h1>
@@ -700,7 +707,7 @@
                 
               
 
-              <time title="创建时间：2017-12-20 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-20T00:00:00+08:00">2017-12-20</time>
+              <time title="创建时间：2018-01-14 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-14T00:00:00+08:00">2018-01-14</time>
             
 
             
@@ -718,7 +725,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
 
                 
                 
@@ -754,11 +761,11 @@
 
       
         
-          <h3 id="一、初识Doze模式"><a href="#一、初识Doze模式" class="headerlink" title="一、初识Doze模式"></a>一、初识Doze模式</h3><p>&emsp;&emsp;从Android 6.0(API级别23)开始，Android引入了2个省电功能，可通过管理应用在设备未连接至电源时的行为方式为用户延长电池寿命。低电耗模式(Doze)通过在设备长时间处于闲置状态时推迟应用的后台CPU和网络Activity来减少电池消耗。应用待机模式(App Standby)可推迟用户近期未与之交互的应用的后台网络Activity。</p>
+          <h3 id="一、Ubuntu-14-04"><a href="#一、Ubuntu-14-04" class="headerlink" title="一、Ubuntu 14.04"></a>一、Ubuntu 14.04</h3><h4 id="1-1-安装openjdk"><a href="#1-1-安装openjdk" class="headerlink" title="1.1 安装openjdk"></a>1.1 安装openjdk</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get purge openjdk*</span><br><span class="line">sudo add-apt-repository ppa:webupd8team/java</span><br><span class="line">sudo add-apt-repository ppa:openjdk-r/ppa</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install oracle-java8-installer</span><br><span class="line">sudo apt-get install openjdk-8-jdk</span><br><span class="line">#同时安装多个版本的Jdk，切换JDK版本的方法</span><br><span class="line">sudo update-alternatives --config java</span><br><span class="line">sudo update-alternatives --config javac</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/12/20/Power/Doze模式概述/#more" rel="contents">
+              <a class="btn" href="/2018/01/14/Build/Android系统源码编译环境搭建/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -818,7 +825,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/12/UI/常见控件属性详解/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/06/Build/Android.mk语法介绍/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -838,7 +845,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/12/12/UI/常见控件属性详解/" class="post-title-link" itemprop="url">常见控件属性详解</a>
+                <a href="/2018/01/06/Build/Android.mk语法介绍/" class="post-title-link" itemprop="url">Android mk的语法介绍</a>
               
             
           </h1>
@@ -863,7 +870,171 @@
                 
               
 
-              <time title="创建时间：2017-12-12 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-12T00:00:00+08:00">2017-12-12</time>
+              <time title="创建时间：2018-01-06 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-06T00:00:00+08:00">2018-01-06</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、Android-mk"><a href="#一、Android-mk" class="headerlink" title="一、Android.mk"></a>一、Android.mk</h3><p>(1)Android.mk文件首先需要指定LOCAL_PATH变量，用于查找源文件:<br>   LOCAL_PATH:=$(call my-dir)<br>   上面的语句的意思是将LOCAL_PATH变量定义成本文件所在目录路径。</p>
+<p>(2)Android.mk中可以定义多个编译模块，每个编译模块都是以include $(CLEAR_VARS)开始以include $(BUILD_XXX)结束:<br>   include $(CLEAR_VARS)<br>   CLEAR_VARS由编译系统提供，指定让GNU MAKEFILE清除LOCAL_PATH以外的所有LOCAL_XXX变量，如LOCAL_MODULE，LOCAL_SRC_FILES，LOCAL_SHARED_LIBRARIES，LOCAL_STATIC_LIBRARIES等。<br>   include $(BUILD_STATIC_LIBRARY): 表示编译成静态库<br>   include $(BUILD_SHARED_LIBRARY): 表示编译成动态库<br>   include $(BUILD_EXECUTABLE): 表示编译成可执行程序</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/01/06/Build/Android.mk语法介绍/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/24/UI/常见控件属性详解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/12/24/UI/常见控件属性详解/" class="post-title-link" itemprop="url">常见控件属性详解</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-12-24 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-24T00:00:00+08:00">2017-12-24</time>
             
 
             
@@ -924,7 +1095,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/12/12/UI/常见控件属性详解/#more" rel="contents">
+              <a class="btn" href="/2017/12/24/UI/常见控件属性详解/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -984,7 +1155,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/04/UI/常见布局属性详解/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/16/UI/常见布局属性详解/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1004,7 +1175,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/12/04/UI/常见布局属性详解/" class="post-title-link" itemprop="url">常见布局属性详解</a>
+                <a href="/2017/12/16/UI/常见布局属性详解/" class="post-title-link" itemprop="url">常见布局属性详解</a>
               
             
           </h1>
@@ -1029,7 +1200,7 @@
                 
               
 
-              <time title="创建时间：2017-12-04 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-04T00:00:00+08:00">2017-12-04</time>
+              <time title="创建时间：2017-12-16 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-16T00:00:00+08:00">2017-12-16</time>
             
 
             
@@ -1088,7 +1259,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/12/04/UI/常见布局属性详解/#more" rel="contents">
+              <a class="btn" href="/2017/12/16/UI/常见布局属性详解/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1148,7 +1319,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/30/Build/Android.mk语法介绍/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/12/03/Debug/FileUriExposedException异常追溯/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1168,7 +1339,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/11/30/Build/Android.mk语法介绍/" class="post-title-link" itemprop="url">Android mk的语法介绍</a>
+                <a href="/2017/12/03/Debug/FileUriExposedException异常追溯/" class="post-title-link" itemprop="url">FileUriExposeException异常追溯</a>
               
             
           </h1>
@@ -1193,171 +1364,7 @@
                 
               
 
-              <time title="创建时间：2017-11-30 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-30T00:00:00+08:00">2017-11-30</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、Android-mk"><a href="#一、Android-mk" class="headerlink" title="一、Android.mk"></a>一、Android.mk</h3><p>(1)Android.mk文件首先需要指定LOCAL_PATH变量，用于查找源文件:<br>   LOCAL_PATH:=$(call my-dir)<br>   上面的语句的意思是将LOCAL_PATH变量定义成本文件所在目录路径。</p>
-<p>(2)Android.mk中可以定义多个编译模块，每个编译模块都是以include $(CLEAR_VARS)开始以include $(BUILD_XXX)结束:<br>   include $(CLEAR_VARS)<br>   CLEAR_VARS由编译系统提供，指定让GNU MAKEFILE清除LOCAL_PATH以外的所有LOCAL_XXX变量，如LOCAL_MODULE，LOCAL_SRC_FILES，LOCAL_SHARED_LIBRARIES，LOCAL_STATIC_LIBRARIES等。<br>   include $(BUILD_STATIC_LIBRARY): 表示编译成静态库<br>   include $(BUILD_SHARED_LIBRARY): 表示编译成动态库<br>   include $(BUILD_EXECUTABLE): 表示编译成可执行程序</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2017/11/30/Build/Android.mk语法介绍/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/22/Debug/FileUriExposedException异常追溯/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2017/11/22/Debug/FileUriExposedException异常追溯/" class="post-title-link" itemprop="url">FileUriExposeException异常追溯</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2017-11-22 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-22T00:00:00+08:00">2017-11-22</time>
+              <time title="创建时间：2017-12-03 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-03T00:00:00+08:00">2017-12-03</time>
             
 
             
@@ -1416,7 +1423,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/11/22/Debug/FileUriExposedException异常追溯/#more" rel="contents">
+              <a class="btn" href="/2017/12/03/Debug/FileUriExposedException异常追溯/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1476,7 +1483,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/19/Tool/adb常用指令详解/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/25/Security/ICU那点事儿/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1496,7 +1503,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/11/19/Tool/adb常用指令详解/" class="post-title-link" itemprop="url">adb常用指令详解</a>
+                <a href="/2017/11/25/Security/ICU那点事儿/" class="post-title-link" itemprop="url">ICU那点事儿</a>
               
             
           </h1>
@@ -1521,7 +1528,7 @@
                 
               
 
-              <time title="创建时间：2017-11-19 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-19T00:00:00+08:00">2017-11-19</time>
+              <time title="创建时间：2017-11-25 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-25T00:00:00+08:00">2017-11-25</time>
             
 
             
@@ -1539,7 +1546,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
 
                 
                 
@@ -1575,14 +1582,12 @@
 
       
         
-          <p>所有 adb 客户端均使用端口 5037 与 adb服务器通信<br>设置-&gt;关于手机-&gt;版本号点击7次-&gt;返回上一级，进入开发者选项-&gt;打开USB调试</p>
-<p>显示已连接的模拟器/设备的列表</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">serial_number state</span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb -s serial_number command</span><br></pre></td></tr></table></figure>
+          <h3 id="1-ICU概述"><a href="#1-ICU概述" class="headerlink" title="1. ICU概述"></a>1. ICU概述</h3><p>ICU(International Component for Unicode)是用于支持软件国际化的开源项目。ICU4C是ICU在C/C++平台下的版本, ICU4C提供了C/C++平台强大的国际化开发能力，软件开发者几乎可以使用ICU4C解决任何国际化的问题，根据各地的风俗和语言习惯，实现对数字、货币、时间、日期、和消息的格式化、解析，对字符串进行大小写转换、整理、搜索和排序等功能，必须一提的是，ICU4C提供了强大的BIDI算法，对阿拉伯语等BIDI语言提供了完善的支持。</p>
+<p>ICU相关的问题主要有：时间客制化，时间格式，数字显示这几部分。ICU主要是由Language和DateTime两块使用。主要目录：external/icu/icu4c/source/data<br>lang目录： 各种语言对其他语言的翻译,常见地方为setting中的语言列表<br>locales目录： 月份，星期，日期，AM/PM等日期相关的翻译<br>zone目录： 时区名称的定义<br>region目录： 地区，国家名称</p>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/11/19/Tool/adb常用指令详解/#more" rel="contents">
+              <a class="btn" href="/2017/11/25/Security/ICU那点事儿/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1642,7 +1647,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/11/Tool/Git常用命令详解/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/18/Security/DRM常见问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1662,7 +1667,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/11/11/Tool/Git常用命令详解/" class="post-title-link" itemprop="url">Git常用命令详解</a>
+                <a href="/2017/11/18/Security/DRM常见问题/" class="post-title-link" itemprop="url">DRM常见问题</a>
               
             
           </h1>
@@ -1687,7 +1692,7 @@
                 
               
 
-              <time title="创建时间：2017-11-11 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-11T00:00:00+08:00">2017-11-11</time>
+              <time title="创建时间：2017-11-18 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-18T00:00:00+08:00">2017-11-18</time>
             
 
             
@@ -1705,7 +1710,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
 
                 
                 
@@ -1741,14 +1746,12 @@
 
       
         
-          <p>—-写在前面：</p>
-<p>  自打成为社会人以来，接触Git也四年有余了吧，说它是工作必备工具真是毫不夸张呢。本篇将讲述Git的基础操作，掌握了它们开发者基本够用了。除非你志在软件配置管理SCM，那就要移步官网深入研究了。</p>
-<h3 id="一、Git的安装"><a href="#一、Git的安装" class="headerlink" title="一、Git的安装"></a>一、Git的安装</h3><p>下面以Ubuntu系统为例:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 需先加入git软件源，再执行install操作</span><br><span class="line">$ sudo add-apt-repository ppa:git-core/ppa</span><br><span class="line">$ sudo apt update</span><br><span class="line">$ sudo apt-get install git</span><br></pre></td></tr></table></figure>
+          <h3 id="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框"><a href="#一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框" class="headerlink" title="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框"></a>一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框</h3><h4 id="1-1-DrmLayer"><a href="#1-1-DrmLayer" class="headerlink" title="1.1 DrmLayer"></a>1.1 DrmLayer</h4><p>packages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmLayer.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">showDrmDialog</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (OmaDrmStore.RightsStatus.RIGHTS_VALID == rights) &#123;</span><br><span class="line">        OmaDrmUiUtils.showConsumeDialog(mActivity,</span><br><span class="line">            <span class="keyword">new</span> DialogInterface.OnClickListener() &#123;</span><br><span class="line">              ...</span><br><span class="line">         &#125;);</span><br><span class="line">     drmManagerClient.consumeRights(imageItem.filePath,OmaDrmStore.Action.DISPLAY);</span><br><span class="line">        mModel.enterConsumeMode();</span><br><span class="line">        hideBars();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        …</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/11/11/Tool/Git常用命令详解/#more" rel="contents">
+              <a class="btn" href="/2017/11/18/Security/DRM常见问题/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1808,7 +1811,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/03/Security/DRM基本介绍/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/12/Security/DRM基本介绍/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1828,7 +1831,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/11/03/Security/DRM基本介绍/" class="post-title-link" itemprop="url">DRM基本介绍</a>
+                <a href="/2017/11/12/Security/DRM基本介绍/" class="post-title-link" itemprop="url">DRM基本介绍</a>
               
             
           </h1>
@@ -1853,7 +1856,7 @@
                 
               
 
-              <time title="创建时间：2017-11-03 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-03T00:00:00+08:00">2017-11-03</time>
+              <time title="创建时间：2017-11-12 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-12T00:00:00+08:00">2017-11-12</time>
             
 
             
@@ -1911,7 +1914,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/11/03/Security/DRM基本介绍/#more" rel="contents">
+              <a class="btn" href="/2017/11/12/Security/DRM基本介绍/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>

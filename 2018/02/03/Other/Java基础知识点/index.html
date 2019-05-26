@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. 面向对象的特征(1)封装：把过程和数据包围起来，对数据的访问只能通过已定义的界面。即现实世界可以被描绘成一系列完全自治、封装的对象，这些对象通过一个受保护的接口访问其他对象；(2)继承：是一种联结类的层次模型，并且允许和鼓励对类的重用，它提供了一种明确表述共性的方法。对象的一个新类可以从现有的类中派生，这个过程称为类继承。新类继承了原始类的特性，新类称为原始类的派生类（子类），而原始类称为新">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java基础知识点">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/02/03/Other/Java基础知识点/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1. 面向对象的特征(1)封装：把过程和数据包围起来，对数据的访问只能通过已定义的界面。即现实世界可以被描绘成一系列完全自治、封装的对象，这些对象通过一个受保护的接口访问其他对象；(2)继承：是一种联结类的层次模型，并且允许和鼓励对类的重用，它提供了一种明确表述共性的方法。对象的一个新类可以从现有的类中派生，这个过程称为类继承。新类继承了原始类的特性，新类称为原始类的派生类（子类），而原始类称为新">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-26T15:12:43.997Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java基础知识点">
+<meta name="twitter:description" content="1. 面向对象的特征(1)封装：把过程和数据包围起来，对数据的访问只能通过已定义的界面。即现实世界可以被描绘成一系列完全自治、封装的对象，这些对象通过一个受保护的接口访问其他对象；(2)继承：是一种联结类的层次模型，并且允许和鼓励对类的重用，它提供了一种明确表述共性的方法。对象的一个新类可以从现有的类中派生，这个过程称为类继承。新类继承了原始类的特性，新类称为原始类的派生类（子类），而原始类称为新">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/02/03/Other/Java基础知识点/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java基础知识点 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/02/03/Other/Java基础知识点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Java基础知识点
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-02-03 00:00:00" itemprop="dateCreated datePublished" datetime="2018-02-03T00:00:00+08:00">2018-02-03</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-面向对象的特征"><a href="#1-面向对象的特征" class="headerlink" title="1. 面向对象的特征"></a>1. 面向对象的特征</h3><p>(1)封装：把过程和数据包围起来，对数据的访问只能通过已定义的界面。即现实世界可以被描绘成一系列完全自治、封装的对象，这些对象通过一个受保护的接口访问其他对象；<br>(2)继承：是一种联结类的层次模型，并且允许和鼓励对类的重用，它提供了一种明确表述共性的方法。对象的一个新类可以从现有的类中派生，这个过程称为类继承。新类继承了原始类的特性，新类称为原始类的派生类（子类），而原始类称为新类的基类（父类）。派生类可以从它的基类那里继承方法和实例变量，并且类可以修改或增加新的方法使之更适合特殊的需要；<br>(3)多态：是指允许不同类的对象对同一消息作出响应。多态性包括参数化多态性和包含多态性。多态性语言具有灵活、抽象、行为共享、代码共享的优势，很好解决了应用程序函数同名问题；(4)抽象：忽略一个主题中与当前目标无关的那些方面，以便更充分地注意与当前目标有关的方面。抽象并不打算了解全部问题，而只是选择其中的一部分，暂时不用部分细节。抽象包括两个方面，一是过程抽象，二是数据抽象。</p>
+<h3 id="2-接口和抽象类的区别"><a href="#2-接口和抽象类的区别" class="headerlink" title="2. 接口和抽象类的区别"></a>2. 接口和抽象类的区别</h3><p>(1)接口是公开的，不能有私有方法及变量，而抽象类可以有私有方法及变量；<br>(2)抽象类表示一种继承关系，一个类只能继承一个抽象类，而一个类可以实现多个接口；<br>(3)抽象类是一种功能不全的类，接口只是一个抽象方法声明和静态不能被修改的数数据集合，两者均不能被实例化。</p>
+<a id="more"></a>
+<h3 id="3-final、finally、finalize的区别"><a href="#3-final、finally、finalize的区别" class="headerlink" title="3. final、finally、finalize的区别"></a>3. final、finally、finalize的区别</h3><p>(1)final用于声明属性、方法和类，分别表示属性不可变，方法不可覆盖，类不可继承；<br>(2)finally是异常处理语句结构的一部分，表示总是执行；<br>(3)finalize是Object类的方法，在垃圾收集器执行的时候会调用被回收对象的此方法，可以覆盖此方法提供垃圾收集时的其它资源回收，如关闭文件等。</p>
+<h3 id="4-重载Overload和重写Override的区别"><a href="#4-重载Overload和重写Override的区别" class="headerlink" title="4. 重载Overload和重写Override的区别"></a>4. 重载Overload和重写Override的区别</h3><p>(1)重写Override父类与子类之间多态性的一种表现，重载Overload是一个类中多态性的一种表现；<br>(2)Overload要求两个方法具有方法名相同、形参列表不同的要求，返回值类型不能作为重载的条件；Override要求父类方法、子类方法的方法名相同、形参列表相同，子类方法返回值类型要么是父类方法返回值类型的子类、要么与父类方法返回值类型相同；子类方法声明抛出的异常类型要么是父类方法声明抛出的异常类型的子类、要么与父类声明抛出的异常类型相同，子类方法的访问权限要么与父类方法的访问权限相同，要么比父类方法的访问权限更大；<br>(3)Overload的方法是可以改变返回值的类型。</p>
+<h3 id="5-equal和＝＝的区别"><a href="#5-equal和＝＝的区别" class="headerlink" title="5. equal和＝＝的区别"></a>5. equal和＝＝的区别</h3><p>(1)＝＝运用在基本数据类型比较时，通过比较它们实际的值来判定是否相同，而用于比较引用类型的时候，则是比较两个引用的地址是否相等，也就是是否指向同一个对象；<br>(2)equal方法时java.lang.Object的方法，也就是所有Java类都会有的方法；它可以被覆盖重写，通过自定义的方式来判定两个对象是否相等；对于字符串java.lang.String类来说，它的equal方法用来比较字符串的字符序列是否完全相等。</p>
+<h3 id="6-int和Integer的区别"><a href="#6-int和Integer的区别" class="headerlink" title="6. int和Integer的区别"></a>6. int和Integer的区别</h3><p>Java提供两种不同的类型：引用类型和原始类型（或内置类型）。Int是java的原始数据类型，Integer是java为int提供的封装类。Java为每个原始类型提供了封装类。Java的基本数据类型有byte、int、char、long、float、double、boolean和short八种。</p>
+<h3 id="7-String-StringBuffer和StringBuilder的区别"><a href="#7-String-StringBuffer和StringBuilder的区别" class="headerlink" title="7. String, StringBuffer和StringBuilder的区别"></a>7. String, StringBuffer和StringBuilder的区别</h3><p>(1)String是字符串常量，final修饰；StringBuffer是字符串变量(线程安全)；StringBuilder是字符串变量(线程不安全)；<br>(2)String是不可变对象，每次对String类型进行操作都等同于产生了一个新的String对象，然后指向新的String对象。所以尽量不在对String进行大量的拼接操作，否则会产生很多临时对象，导致GC开始工作，影响系统性能。StringBuffer是对对象本身操作，而不是产生新的对象，因此在有大量拼接的情况下，建议使用StringBuffer；<br>(3)StringBuffer是线程安全的可变字符串，其内部实现是可变数组。StringBuilder是jdk 1.5新增的，其功能和StringBuffer类似，但是非线程安全。因此，在没有多线程问题的前提下，使用StringBuilder会取得更好的性能。</p>
+<h3 id="8-静态成员的特点"><a href="#8-静态成员的特点" class="headerlink" title="8. 静态成员的特点"></a>8. 静态成员的特点</h3><p>类的静态成员是通过static关键字修饰的成员，主要包括：静态成员变量、静态方法和静态代码块，它们具有以下特点：<br>(1)在类加载的时候，就进行创建和初始化或执行代码；<br>(2)它们对于一个类来说，都只有一份；<br>(3)类的所有实例都可以访问到它们。</p>
+<h3 id="9-变量及其作用范围"><a href="#9-变量及其作用范围" class="headerlink" title="9. 变量及其作用范围"></a>9. 变量及其作用范围</h3><p>(1)静态变量指的是在类中用static修饰的变量，它的生存周期是由类来决定的；<br>(2)成员变量则是在类中没有用static修饰的变量，它的生存周期是由对象来决定；<br>(3)局部变量则是定义在方法里的变量、方法的的参数或代码块里定义的变量，它的作用范围用大括号来界定。</p>
+<h3 id="10-内部类的实质"><a href="#10-内部类的实质" class="headerlink" title="10. 内部类的实质"></a>10. 内部类的实质</h3><p>(1)静态内部类：它相当于外部类的静态成员一样，，使用static修饰的内部类，隶属于外部类，使用起来相当于独立的外部类；<br>(2)成员内部类：它相当于外部类普通成员一样，隶属于外部类的具体对象，在定义它时，需先创建外部类对象，再创建它的实例；<br>(3)局部内部类：它定义在一个方法的方法体中，往往仅作为方法短暂使用，只能访问用final修饰的局部变量；<br>(4)匿名内部类：它也定义在方法体中，但是没有具体的名字，具有非常强大灵活性，工作本质与局部内部类类似。</p>
+<h3 id="11-Collection和Collections的区别"><a href="#11-Collection和Collections的区别" class="headerlink" title="11. Collection和Collections的区别"></a>11. Collection和Collections的区别</h3><p>(1)Collection是集合类的上级接口，继承与他的接口主要有Set 和List；<br>(2)Collections是针对集合类的一个帮助类，他提供一系列静态方法实现对各种集合的搜索、排序、线程安全化等操作。</p>
+<h3 id="12-Set、List、Map的区别"><a href="#12-Set、List、Map的区别" class="headerlink" title="12. Set、List、Map的区别"></a>12. Set、List、Map的区别</h3><p>(1)Set和List都继承自collection接口；<br>(2)List是对象集合，元素有序存放，可重复；同数组类似，可动态增长，查找销量高，插入、删除效率低，会引起其它元素位置改变；<br>(3)Set特点：元素无序存放，不可重复；检索效率低下，删除、插入效率高，插入、删除不会引起元素位置改变；<br>(4)Map是键值对的集合，不允许key重复。</p>
+<h3 id="13-HashMap、HashTable、HashSet的区别"><a href="#13-HashMap、HashTable、HashSet的区别" class="headerlink" title="13. HashMap、HashTable、HashSet的区别"></a>13. HashMap、HashTable、HashSet的区别</h3><p>(1)HashMap是HashtTable的轻量级实现（非线程安全的实现），他们都完成了Map接口，主要区别在于HashMap允许空（null）键值（key）,由于非线程安全，效率上可能高于HashTable，HashMap允许将null作为一个entry的key或者value，而HashTable不允许；<br>(2)HashMap把HashTable的contains方法去掉了，改成containsvalue和containsKey。因为contains方法容易让人引起误解；<br>(3)HashTable继承自Dictionary类，而HashMap是Java1.2引进的Map interface的一个实现。Hashtable的方法是Synchronize的，而HashMap不是，在多个线程访问Hashtable时，不需要自己为它的方法实现同步，而HashMap 就必须为之提供外同步；<br>(4)Hashtable和HashMap采用的hash/rehash算法都大概一样，所以性能不会有很大的差异；<br>(5)Set是线性结构。其值不能重复，HashSet是Set的Hash实现，HashSet中值是不能重复的，而HashMap的值是Key来实现的。</p>
+<h3 id="14-ArrayList、Vector、LinkedList的区别"><a href="#14-ArrayList、Vector、LinkedList的区别" class="headerlink" title="14. ArrayList、Vector、LinkedList的区别"></a>14. ArrayList、Vector、LinkedList的区别</h3><p>(1)ArrayList是基于动态数组的数据结构，地址连续，一旦存储好了，查询操作效率高；但是插入、删除操作效率比较低；<br>(2)LinkedList是基于链表的数据结构，地址是任意的，新增或删除操作效率比较高，但是移动指针会导致查询性能比较低；<br>(3)Vector使用了synchronized方法，是多线程安全的，可设置增长因子，Vector是老的动态数组，线程同步，效率低下，不推荐使用。</p>
+<h3 id="15-堆heap和栈stack的区别"><a href="#15-堆heap和栈stack的区别" class="headerlink" title="15. 堆heap和栈stack的区别"></a>15. 堆heap和栈stack的区别</h3><p>栈是一种线形集合，其添加和删除元素的操作应在同一段完成，栈按照后进先出的方式进行处理；堆是栈的一个组成元素。</p>
+<h3 id="16-深拷贝和浅拷贝的区别"><a href="#16-深拷贝和浅拷贝的区别" class="headerlink" title="16. 深拷贝和浅拷贝的区别"></a>16. 深拷贝和浅拷贝的区别</h3><p>(1)浅拷贝：被复制对象的所有变量都含有与原来的对象相同的值，而所有的对其他对象的引用仍然指向原来的对象。换言之，浅拷贝仅仅复制所考虑的对象，而不复制它所引用的对象；<br>(2)深拷贝：被复制对象的所有变量都含有与原来的对象相同的值，而那些引用其他对象的变量将指向被复制过的新对象，而不再是原有的那些被引用的对象。换言之，深拷贝把要复制的对象所引用的对象都复制了一遍。</p>
+<h3 id="17-error和exception的区别"><a href="#17-error和exception的区别" class="headerlink" title="17. error和exception的区别"></a>17. error和exception的区别</h3><p>(1)error一般是指虚拟机相关的问题，如系统崩溃、虚拟机出错误、动态链接失败等，这种错误无法恢复或不可能捕获，将导致应用程序中断。通常应用程序无法处理这些错误，因此应用程序不应该试图使用catch块来捕获Error对象；<br>(2)exception表示一种设计或实现问题。也就是说，程序员应该对这些情况进行考虑、并提供相应的处理。</p>
+<h3 id="18-线程类"><a href="#18-线程类" class="headerlink" title="18. 线程类"></a>18. 线程类</h3><p><1>实现Runnable接口</1></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RunnableTest</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(“thread running …<span class="string">");</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br></pre></td></tr></table></figure>
+<p><2>继承Thread类</2></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadTest</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(“thread running …<span class="string">");</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br></pre></td></tr></table></figure>
+<p><3>启动线程</3></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThredStartTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        ThreadTest t1 = <span class="keyword">new</span> ThreadTest();</span><br><span class="line">        Tread t2  = <span class="keyword">new</span> Thread(<span class="keyword">new</span> RunnableTest());</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="19-Runnable接口和Thread类区别"><a href="#19-Runnable接口和Thread类区别" class="headerlink" title="19. Runnable接口和Thread类区别"></a>19. Runnable接口和Thread类区别</h3><p>(1)线程类继承自Thread则不能继承自其它类，而Runnable接口可以；<br>(2)线程类继承自Thread相对于Runnable来说，使用线程的方法更方便一些；<br>(3)实现Runnable接口的线程类的多个线程，可以更方便的访问同一变量，而Thread类则需要内部类来进行替代。</p>
+<h3 id="20-sychronized关键字"><a href="#20-sychronized关键字" class="headerlink" title="20. sychronized关键字"></a>20. sychronized关键字</h3><p>(1)sychronized关键字代表要为某一段代码加上一个同步锁，这样的锁是绑定在某一个对象上边的。如果是同步代码块，需要为该sychronized关键字提供一个对象的引用；如果是同步方法，只需要加一个sychronized关键字的修饰；<br>(2)sychronized为某段代码加上锁以后，某个线程进入该段代码之前，首先需要检查该锁是否被占用，如果没有被占用则继续执行；如果已经被占用，则需要等到该锁被释放以后才能继续执行。其中，线程执行完该段代码就是释放锁的标志。</p>
+<h3 id="21-线程同步的方法"><a href="#21-线程同步的方法" class="headerlink" title="21. 线程同步的方法"></a>21. 线程同步的方法</h3><p>(1)wait():使一个线程处于等待状态，并且释放所持有的对象的lock；<br>(2)sleep():使一个正在运行的线程处于睡眠状态，是一个静态方法，调用此方法要捕捉InterruptedException异常；<br>(3)notify():唤醒一个处于等待状态的线程，注意的是在调用此方法的时候，并不能确切的唤醒某一个等待状态的线程，而是由JVM确定唤醒哪个线程，而且不是按优先级；<br>(4)notityAll():唤醒所有处入等待状态的线程，注意并不是给所有唤醒线程一个对象的锁，而是让它们竞争。</p>
+<h3 id="22-sleep和wait的区别"><a href="#22-sleep和wait的区别" class="headerlink" title="22. sleep和wait的区别"></a>22. sleep和wait的区别</h3><p>(1)sleep是线程类（Thread）的方法，导致此线程暂停执行指定时间，给执行机会给其他线程，但是监控状态依然保持，到时后会自动恢复。调用sleep不会释放对象锁；<br>(2)wait是Object类的方法，对此对象调用wait方法导致本线程放弃对象锁，进入等待此对象的等待锁定池，只有针对此对象发出notify方法（或notifyAll）后本线程才进入对象锁定池准备获得对象锁进入运行状态。</p>
+<h3 id="23-线程的生命周期"><a href="#23-线程的生命周期" class="headerlink" title="23. 线程的生命周期"></a>23. 线程的生命周期</h3><p>包括新建(New)、就绪（Runnable）、运行（Running）、 阻塞(Blocked)和死亡(Dead)5种状态。</p>
+<h3 id="24-获取Class对象的方法"><a href="#24-获取Class对象的方法" class="headerlink" title="24. 获取Class对象的方法"></a>24. 获取Class对象的方法</h3><p>每一个Class类的对象就代表了一种被加载进入JVM的类，它代表了该类的一种信息映射。<br>(1)Class类的forName()方法的返回值；<br>(2)访问所有类都会拥有的静态的class属性；<br>(2)调用所有对象都会有的getClass()方法。</p>
+<h3 id="25-java序列化"><a href="#25-java序列化" class="headerlink" title="25. java序列化"></a>25. java序列化</h3><p>(1)序列化就是一种用来处理对象流的机制，所谓对象流也就是将对象的内容进行流化。可以对流化后的对象进行读写操作，也可将流化后的对象传输于网络之间。序列化是为了解决在对对象流进行读写操作时所引发的问题；<br>(2)序列化的实现：将需要被序列化的类实现Serializable接口，该接口没有需要实现的方法，implements Serializable只是为了标注该对象是可被序列化的，然后使用一个输出流(如：FileOutputStream)来构造一个ObjectOutputStream(对象流)对象，接着，使用ObjectOutputStream对象的writeObject(Object obj)方法就可以将参数为obj的对象写出(即保存其状态)，要恢复的话则用输入流。</p>
+<h3 id="26-反射的用途及实现"><a href="#26-反射的用途及实现" class="headerlink" title="26. 反射的用途及实现"></a>26. 反射的用途及实现</h3><p>在运行时构造一个类的对象，判断一个类所具有的成员变量和方法，调用一个对象的方法，生成动态代理。</p>
+<h3 id="27-单例模式Singleton"><a href="#27-单例模式Singleton" class="headerlink" title="27. 单例模式Singleton"></a>27. 单例模式Singleton</h3><p>Singleton模式主要作用是保证在Java应用程序中，一个类Class只有一个实例存在。<br>第一种形式: 定义一个类，它的构造函数为private的，它有一个static的private的该类变量，在类初始化时实例话，通过一个public的getInstance方法获取对它的引用,继而调用其中的方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    <span class="comment">//在自己内部定义自己一个实例</span></span><br><span class="line">    <span class="comment">//注意这是private 只供内部调用</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    <span class="comment">//这里提供了一个供外部访问本class的静态方法，可以直接访问　　</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第二种形式:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//这个方法比上面有所改进，不用每次都进行生成对象，只是第一次</span></span><br><span class="line">        <span class="comment">//使用时生成实例，提高了效率！</span></span><br><span class="line">        <span class="keyword">if</span> (instance==<span class="keyword">null</span>)</span><br><span class="line">        instance＝<span class="keyword">new</span> Singleton();</span><br><span class="line">        <span class="keyword">return</span> instance; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其他形式:<br>定义一个类，它的构造函数为private的，所有方法为static的。<br>一般认为第一种形式要更加安全些</p>
+<h3 id="28-设计模式"><a href="#28-设计模式" class="headerlink" title="28. 设计模式"></a>28. 设计模式</h3><p>(1)Factory（工厂模式）<br>(2)Builder（建造模式）<br>(3))Factory Method（工厂方法模式）<br>(4)Prototype（原始模型模式）<br>(5)Singleton（单例模式）<br>(6)Facade（门面模式）<br>(7)Adapter（适配器模式）<br>(8)Bridge（桥梁模式）<br>(9)Composite（合成模式）<br>(10)Decorator（装饰模式）<br>(11)Flyweight（享元模式）<br>(12)Proxy（代理模式）<br>(13)Command（命令模式）<br>(14)Interpreter（解释器模式）<br>(15)Visitor（访问者模式）<br>(16)Iterator（迭代子模式）<br>(17)Mediator（调停者模式）<br>(18)Memento（备忘录模式）<br>(19)Observer（观察者模式）<br>(20)State（状态模式）<br>(21)Strategy（策略模式）<br>(22)Template Method（模板方法模式）<br>(23)Chain Of Responsibleity（责任链模式）</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/27/Other/Android基础知识点/" rel="next" title="Android基础知识点">
+                <i class="fa fa-chevron-left"></i> Android基础知识点
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/24/Power/Doze模式概述/" rel="prev" title="Doze模式概述">
+                Doze模式概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-面向对象的特征"><span class="nav-text">1. 面向对象的特征</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-接口和抽象类的区别"><span class="nav-text">2. 接口和抽象类的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-final、finally、finalize的区别"><span class="nav-text">3. final、finally、finalize的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-重载Overload和重写Override的区别"><span class="nav-text">4. 重载Overload和重写Override的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-equal和＝＝的区别"><span class="nav-text">5. equal和＝＝的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-int和Integer的区别"><span class="nav-text">6. int和Integer的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-String-StringBuffer和StringBuilder的区别"><span class="nav-text">7. String, StringBuffer和StringBuilder的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-静态成员的特点"><span class="nav-text">8. 静态成员的特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-变量及其作用范围"><span class="nav-text">9. 变量及其作用范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-内部类的实质"><span class="nav-text">10. 内部类的实质</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-Collection和Collections的区别"><span class="nav-text">11. Collection和Collections的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-Set、List、Map的区别"><span class="nav-text">12. Set、List、Map的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-HashMap、HashTable、HashSet的区别"><span class="nav-text">13. HashMap、HashTable、HashSet的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-ArrayList、Vector、LinkedList的区别"><span class="nav-text">14. ArrayList、Vector、LinkedList的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-堆heap和栈stack的区别"><span class="nav-text">15. 堆heap和栈stack的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-深拷贝和浅拷贝的区别"><span class="nav-text">16. 深拷贝和浅拷贝的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-error和exception的区别"><span class="nav-text">17. error和exception的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-线程类"><span class="nav-text">18. 线程类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-Runnable接口和Thread类区别"><span class="nav-text">19. Runnable接口和Thread类区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-sychronized关键字"><span class="nav-text">20. sychronized关键字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#21-线程同步的方法"><span class="nav-text">21. 线程同步的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-sleep和wait的区别"><span class="nav-text">22. sleep和wait的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-线程的生命周期"><span class="nav-text">23. 线程的生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-获取Class对象的方法"><span class="nav-text">24. 获取Class对象的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#25-java序列化"><span class="nav-text">25. java序列化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#26-反射的用途及实现"><span class="nav-text">26. 反射的用途及实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#27-单例模式Singleton"><span class="nav-text">27. 单例模式Singleton</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#28-设计模式"><span class="nav-text">28. 设计模式</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

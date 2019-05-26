@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="下面将以MT6765平台新增oem partition为例：(更多请参考https://android-review.googlesource.com/q/topic:product_partition+(status:open+OR+status:merged)) 一、device/mediatek目录1.1 mt6765/BoardConfig.mk12345# oem image大小限制BO">
+<meta name="keywords" content="Build,Filesystem">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MTK平台新增一个分区">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/12/08/Filesystem/MTK平台新增一个分区/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="下面将以MT6765平台新增oem partition为例：(更多请参考https://android-review.googlesource.com/q/topic:product_partition+(status:open+OR+status:merged)) 一、device/mediatek目录1.1 mt6765/BoardConfig.mk12345# oem image大小限制BO">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-26T15:01:48.550Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MTK平台新增一个分区">
+<meta name="twitter:description" content="下面将以MT6765平台新增oem partition为例：(更多请参考https://android-review.googlesource.com/q/topic:product_partition+(status:open+OR+status:merged)) 一、device/mediatek目录1.1 mt6765/BoardConfig.mk12345# oem image大小限制BO">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/12/08/Filesystem/MTK平台新增一个分区/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>MTK平台新增一个分区 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/08/Filesystem/MTK平台新增一个分区/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MTK平台新增一个分区
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-08T00:00:00+08:00">2018-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>下面将以MT6765平台新增oem partition为例：<br>(更多请参考<a href="https://android-review.googlesource.com/q/topic:product_partition+(status:open+OR+status:merged)" target="_blank" rel="noopener">https://android-review.googlesource.com/q/topic:product_partition+(status:open+OR+status:merged)</a>)</p>
+<h3 id="一、device-mediatek目录"><a href="#一、device-mediatek目录" class="headerlink" title="一、device/mediatek目录"></a>一、device/mediatek目录</h3><h4 id="1-1-mt6765-BoardConfig-mk"><a href="#1-1-mt6765-BoardConfig-mk" class="headerlink" title="1.1 mt6765/BoardConfig.mk"></a>1.1 mt6765/BoardConfig.mk</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># oem image大小限制</span></span><br><span class="line">BOARD_OEMIMAGE_PARTITION_SIZE := 314572800</span><br><span class="line"></span><br><span class="line"><span class="comment"># oem image类型定义</span></span><br><span class="line">BOARD_OEMIMAGE_FILE_SYSTEM_TYPE := ext4</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-2-mt6765-partition-table-MT6765-xls"><a href="#1-2-mt6765-partition-table-MT6765-xls" class="headerlink" title="1.2 mt6765/partition_table_MT6765.xls"></a>1.2 mt6765/partition_table_MT6765.xls</h4><p>在分区表中新增oem分区，其中：<br>Partition Name: 分区名称<br>Type: 分区类型<br>Size_KB：分区大小<br>Region：memory区域，默认EMMC_USER<br>Reserved：是否预置，默认N<br>Download：是否支持flashtool烧录<br>Download_File：分区对应的image文件<br>OTA_Update：是否支持OTA升级<br>EmptyBoot_Needed：是否空启动，默认N<br>FastBoot_Erase：是否支持fastboot擦除<br>Fastboot_Download：是否支持fastboot下载<br>Operation_Type：操作类型，默认AUTO</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Partition_Name</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">Size_KB</th>
+<th style="text-align:center">Region</th>
+<th style="text-align:center">Reserved</th>
+<th style="text-align:center">Download</th>
+<th style="text-align:center">Download_File</th>
+<th style="text-align:center">OTA_Update</th>
+<th style="text-align:center">EmptyBoot_Needed</th>
+<th style="text-align:center">FastBoot_Erase</th>
+<th style="text-align:center">FastBoot_Download</th>
+<th style="text-align:center">Operation_Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">oem</td>
+<td style="text-align:center">EXT4</td>
+<td style="text-align:center">3145728</td>
+<td style="text-align:center">EMMC_USER</td>
+<td style="text-align:center">N</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">oem.img</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">N</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">AUTO</td>
+</tr>
+</tbody>
+</table>
+<h4 id="1-3-common-sepolicy"><a href="#1-3-common-sepolicy" class="headerlink" title="1.3 common/sepolicy"></a>1.3 common/sepolicy</h4><p>1.file_contexts</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/platform/bootdevice/by-name/oem(_[ab])?           u:object_r:oem_block_device:s0</span><br></pre></td></tr></table></figure>
+<p>2.device.te</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type oem_block_device, dev_type;</span><br></pre></td></tr></table></figure>
+<h3 id="二、build目录"><a href="#二、build目录" class="headerlink" title="二、build目录"></a>二、build目录</h3><h4 id="2-1-core-Makefile"><a href="#2-1-core-Makefile" class="headerlink" title="2.1 core/Makefile"></a>2.1 core/Makefile</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 输出oem分区相关信息</span></span><br><span class="line"><span class="keyword">define</span> generate-userimage-prop-dictionary</span><br><span class="line"><span class="variable">$(hide)</span> echo <span class="string">"ext_mkuserimg=$(notdir <span class="variable">$(MKEXTUSERIMG)</span>)"</span> &gt;&gt; $(1)</span><br><span class="line">...</span><br><span class="line"><span class="variable">$(<span class="built_in">if</span> <span class="variable">$(BOARD_OEMIMAGE_PARTITION_SIZE)</span>,<span class="variable">$(hide)</span> echo "oem_size=<span class="variable">$(BOARD_OEMIMAGE_PARTITION_SIZE)</span>" &gt;&gt; $(1)</span>)</span><br><span class="line"><span class="variable">$(<span class="built_in">if</span> <span class="variable">$(BOARD_OEMIMAGE_JOURNAL_SIZE)</span>,<span class="variable">$(hide)</span> echo "oem_journal_size=<span class="variable">$(BOARD_OEMIMAGE_JOURNAL_SIZE)</span>" &gt;&gt; $(1)</span>)</span><br><span class="line"><span class="variable">$(<span class="built_in">if</span> <span class="variable">$(BOARD_OEMIMAGE_EXTFS_INODE_COUNT)</span>,<span class="variable">$(hide)</span> echo "oem_extfs_inode_count=<span class="variable">$(BOARD_OEMIMAGE_EXTFS_INODE_COUNT)</span>" &gt;&gt; $(1)</span>)</span><br><span class="line"><span class="variable">$(<span class="built_in">if</span> <span class="variable">$(BOARD_OEMIMAGE_FILE_SYSTEM_TYPE)</span>,<span class="variable">$(hide)</span> echo "oem_fs_type=<span class="variable">$(BOARD_OEMIMAGE_FILE_SYSTEM_TYPE)</span>" &gt;&gt; $(1)</span>)</span><br><span class="line">...</span><br><span class="line"><span class="keyword">endef</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译oem image</span></span><br><span class="line"><span class="keyword">ifdef</span> BOARD_OEMIMAGE_FILE_SYSTEM_TYPE</span><br><span class="line">INTERNAL_OEMIMAGE_FILES := \</span><br><span class="line">    <span class="variable">$(<span class="built_in">filter</span> <span class="variable">$(TARGET_OUT_OEM)</span>/%,\</span></span><br><span class="line"><span class="variable">      <span class="variable">$(ALL_DEFAULT_INSTALLED_MODULES)</span>\</span></span><br><span class="line"><span class="variable">      <span class="variable">$(ALL_PDK_FUSION_FILES)</span>)</span></span><br><span class="line">INSTALLED_FILES_FILE_OEM := <span class="variable">$(PRODUCT_OUT)</span>/installed-files-oem.txt</span><br><span class="line"><span class="variable">$(INSTALLED_FILES_FILE_OEM)</span> : <span class="variable">$(INTERNAL_OEMIMAGE_FILES)</span> <span class="variable">$(FILESLIST)</span></span><br><span class="line">    @echo Installed file list: <span class="variable">$@</span></span><br><span class="line">    @mkdir -p <span class="variable">$(<span class="built_in">dir</span> <span class="variable">$@</span>)</span></span><br><span class="line">    @rm -f <span class="variable">$@</span></span><br><span class="line">    <span class="variable">$(hide)</span> <span class="variable">$(FILESLIST)</span> <span class="variable">$(TARGET_OUT_OEM)</span> &gt; $(@:.txt=.json)</span><br><span class="line">    <span class="variable">$(hide)</span> build/tools/fileslist_util.py -c $(@:.txt=.json) &gt; <span class="variable">$@</span></span><br><span class="line">oemimage_intermediates := \</span><br><span class="line">    <span class="variable">$(<span class="built_in">call</span> intermediates-<span class="built_in">dir</span>-for,PACKAGING,oem)</span></span><br><span class="line">BUILT_OEMIMAGE_TARGET := <span class="variable">$(PRODUCT_OUT)</span>/oem.img</span><br><span class="line"><span class="keyword">define</span> build-oemimage-target</span><br><span class="line">  <span class="variable">$(<span class="built_in">call</span> pretty,"Target oem fs image: <span class="variable">$(INSTALLED_OEMIMAGE_TARGET)</span>")</span></span><br><span class="line">  @mkdir -p <span class="variable">$(TARGET_OUT_OEM)</span></span><br><span class="line">  @mkdir -p <span class="variable">$(oemimage_intermediates)</span> &amp;&amp; rm -rf <span class="variable">$(oemimage_intermediates)</span>/oem_image_info.txt</span><br><span class="line">  <span class="variable">$(<span class="built_in">call</span> generate-userimage-prop-dictionary, <span class="variable">$(oemimage_intermediates)</span>/oem_image_info.txt, skip_fsck=true)</span></span><br><span class="line">  <span class="variable">$(hide)</span> PATH=<span class="variable">$(<span class="built_in">foreach</span> p,<span class="variable">$(INTERNAL_USERIMAGES_BINARY_PATHS)</span>,<span class="variable">$(p)</span>:)</span>$$PATH \</span><br><span class="line">      ./build/tools/releasetools/build_image.py \</span><br><span class="line">      <span class="variable">$(TARGET_OUT_OEM)</span> <span class="variable">$(oemimage_intermediates)</span>/oem_image_info.txt <span class="variable">$(INSTALLED_OEMIMAGE_TARGET)</span> <span class="variable">$(TARGET_OUT)</span></span><br><span class="line">  <span class="variable">$(hide)</span> <span class="variable">$(<span class="built_in">call</span> assert-max-image-size,<span class="variable">$(INSTALLED_OEMIMAGE_TARGET)</span>,<span class="variable">$(BOARD_OEMIMAGE_PARTITION_SIZE)</span>)</span></span><br><span class="line"><span class="keyword">endef</span></span><br><span class="line"><span class="comment"># We just build this directly to the install location.</span></span><br><span class="line">INSTALLED_OEMIMAGE_TARGET := <span class="variable">$(BUILT_OEMIMAGE_TARGET)</span></span><br><span class="line"><span class="variable">$(INSTALLED_OEMIMAGE_TARGET)</span>: <span class="variable">$(INTERNAL_USERIMAGES_DEPS)</span> <span class="variable">$(INTERNAL_OEMIMAGE_FILES)</span> <span class="variable">$(INSTALLED_FILES_FILE_OEM)</span> <span class="variable">$(BUILD_IMAGE_SRCS)</span></span><br><span class="line">    $(build-oemimage-target)</span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: oemimage-nodeps onod</span></span><br><span class="line">oemimage-nodeps onod: | <span class="variable">$(INTERNAL_USERIMAGES_DEPS)</span> <span class="variable">$(DEPMOD)</span></span><br><span class="line">    $(build-oemimage-target)</span><br><span class="line"><span class="section">sync: <span class="variable">$(INTERNAL_OEMIMAGE_FILES)</span></span></span><br><span class="line"><span class="keyword">endif</span> <span class="comment"># BOARD_OEMIMAGE_FILE_SYSTEM_TYPE</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立编译target file包和OEM之间的依赖</span></span><br><span class="line"><span class="variable">$(BUILT_TARGET_FILES_PACKAGE)</span>: \</span><br><span class="line">        <span class="variable">$(INSTALLED_BOOTIMAGE_TARGET)</span> \</span><br><span class="line">        ......</span><br><span class="line">        <span class="variable">$(INSTALLED_OEMIMAGE_TARGET)</span> \</span><br><span class="line">        ......</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将OEM目录copy到target file包对应的OEM目录</span></span><br><span class="line"><span class="keyword">ifdef</span> BOARD_OEMIMAGE_FILE_SYSTEM_TYPE</span><br><span class="line">    @<span class="comment"># Contents of the oem image</span></span><br><span class="line">    <span class="variable">$(hide)</span> <span class="variable">$(<span class="built_in">call</span> package_files-copy-root, \</span></span><br><span class="line"><span class="variable">        <span class="variable">$(TARGET_OUT_OEM)</span>,<span class="variable">$(zip_root)</span>/OEM)</span></span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成oem filesystem config文件</span></span><br><span class="line"><span class="keyword">ifdef</span> BOARD_OEMIMAGE_FILE_SYSTEM_TYPE</span><br><span class="line">    <span class="variable">$(hide)</span> <span class="variable">$(<span class="built_in">call</span> fs_config,<span class="variable">$(zip_root)</span>/OEM,oem/)</span> &gt; <span class="variable">$(zip_root)</span>/META/oem_filesystem_config.txt</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-2-core-main-mk"><a href="#2-2-core-main-mk" class="headerlink" title="2.2 core/main.mk"></a>2.2 core/main.mk</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加单编IMAGE支持</span></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: oemimage</span></span><br><span class="line"><span class="section">oemimage: <span class="variable">$(INSTALLED_OEMIMAGE_TARGET)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加到android core中</span></span><br><span class="line"><span class="section">droidcore: files \</span></span><br><span class="line">    systemimage \</span><br><span class="line">    <span class="variable">$(INSTALLED_BOOTIMAGE_TARGET)</span> \</span><br><span class="line">    ...</span><br><span class="line">    <span class="variable">$(INSTALLED_OEMIMAGE_TARGET)</span></span><br><span class="line">    ......</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-tools-releasetools-build-image-py"><a href="#2-3-tools-releasetools-build-image-py" class="headerlink" title="2.3 tools/releasetools/build_image.py"></a>2.3 tools/releasetools/build_image.py</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编译oem image</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ImagePropFromGlobalDict</span><span class="params">(glob_dict, mount_point)</span>:</span></span><br><span class="line">  ...</span><br><span class="line">  d[<span class="string">"mount_point"</span>] = mount_point</span><br><span class="line">  <span class="keyword">if</span> mount_point == <span class="string">"system"</span>:</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">elif</span> mount_point == <span class="string">"oem"</span>:</span><br><span class="line">    copy_prop(<span class="string">"fs_type"</span>, <span class="string">"fs_type"</span>)</span><br><span class="line">    copy_prop(<span class="string">"oem_size"</span>, <span class="string">"partition_size"</span>)</span><br><span class="line">    copy_prop(<span class="string">"oem_journal_size"</span>, <span class="string">"journal_size"</span>)</span><br><span class="line">    copy_prop(<span class="string">"has_ext4_reserved_blocks"</span>, <span class="string">"has_ext4_reserved_blocks"</span>)</span><br><span class="line">    copy_prop(<span class="string">"oem_extfs_inode_count"</span>, <span class="string">"extfs_inode_count"</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(argv)</span>:</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">if</span> <span class="string">"mount_point"</span> <span class="keyword">in</span> glob_dict:</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> image_filename == <span class="string">"system.img"</span>:</span><br><span class="line">      mount_point = <span class="string">"system"</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">elif</span> image_filename == <span class="string">"oem.img"</span>:</span><br><span class="line">      mount_point = <span class="string">"oem"</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-4-tools-releasetools-add-img-to-target-files-py"><a href="#2-4-tools-releasetools-add-img-to-target-files-py" class="headerlink" title="2.4 tools/releasetools/add_img_to_target_files.py"></a>2.4 tools/releasetools/add_img_to_target_files.py</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将oem image添加到target file包中，需生成oem.map文件</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">AddOem</span><span class="params">(output_zip, prefix=<span class="string">"IMAGES/"</span>)</span>:</span></span><br><span class="line">  <span class="string">"""Turn the contents of SYSTEM_OTHER into a system_other image</span></span><br><span class="line"><span class="string">  and store it in output_zip."""</span></span><br><span class="line"></span><br><span class="line">  img = OutputFile(output_zip, OPTIONS.input_tmp, prefix, <span class="string">"oem.img"</span>)</span><br><span class="line">  <span class="keyword">if</span> os.path.exists(img.input_name):</span><br><span class="line">    print(<span class="string">"oem.img already exists in %s, no need to rebuild..."</span> % (</span><br><span class="line">        prefix,))</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  block_list = OutputFile(output_zip, OPTIONS.input_tmp, prefix, <span class="string">"oem.map"</span>)</span><br><span class="line">  CreateImage(OPTIONS.input_tmp, OPTIONS.info_dict, <span class="string">"oem"</span>, img, block_list=block_list)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">AddImagesToTargetFiles</span><span class="params">(filename)</span>:</span></span><br><span class="line">  ......</span><br><span class="line">  has_system_other = os.path.isdir(os.path.join(OPTIONS.input_tmp,</span><br><span class="line">                                                <span class="string">"SYSTEM_OTHER"</span>))</span><br><span class="line">  ...</span><br><span class="line">  has_oem = os.path.isdir(os.path.join(OPTIONS.input_tmp, <span class="string">"OEM"</span>))</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">if</span> has_oem:</span><br><span class="line">    banner(<span class="string">"oem"</span>)</span><br><span class="line">    AddOem(output_zip)</span><br></pre></td></tr></table></figure>
+<h3 id="三、vendor-mediatek-proprietary目录"><a href="#三、vendor-mediatek-proprietary目录" class="headerlink" title="三、vendor/mediatek/proprietary目录"></a>三、vendor/mediatek/proprietary目录</h3><h4 id="3-1-hardware-fstab-mt6765-Android-mk"><a href="#3-1-hardware-fstab-mt6765-Android-mk" class="headerlink" title="3.1 hardware/fstab/mt6765/Android.mk"></a>3.1 hardware/fstab/mt6765/Android.mk</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编译生成fstab支持OEM</span></span><br><span class="line"><span class="keyword">ifneq</span> (<span class="variable">$(<span class="built_in">strip</span> <span class="variable">$(BOARD_OEMIMAGE_PARTITION_SIZE)</span>)</span>,)</span><br><span class="line">  __CFLAGS += -D__OEM_PARTITION_SUPPORT</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<h4 id="3-2-hardware-fstab-mt6765-fstab-in"><a href="#3-2-hardware-fstab-mt6765-fstab-in" class="headerlink" title="3.2 hardware/fstab/mt6765/fstab.in"></a>3.2 hardware/fstab/mt6765/fstab.in</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 分区挂载</span><br><span class="line">#ifndef __MTK_OEMIMG_FSTYPE</span><br><span class="line">#define __MTK_OEMIMG_FSTYPE ext4</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#ifdef __OEM_PARTITION_SUPPORT</span><br><span class="line">DEVPATH(oem)        /oem                 __MTK_OEMIMG_FSTYPE ro  FSMGR_FLAG_SYSTEM</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+<h4 id="3-3-scripts-releasetools-releasetools-replace-img-from-target-files-py"><a href="#3-3-scripts-releasetools-releasetools-replace-img-from-target-files-py" class="headerlink" title="3.3 scripts/releasetools/releasetools/replace_img_from_target_files.py"></a>3.3 scripts/releasetools/releasetools/replace_img_from_target_files.py</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编译target file包需用其中image替换out目录中的同分区image</span></span><br><span class="line">image_replace_list = [<span class="string">"boot.img"</span>,<span class="string">"system.img"</span>,<span class="string">"recovery.img"</span>,</span><br><span class="line">                      <span class="string">"userdata.img"</span>,<span class="string">"custom.img"</span>,<span class="string">"vendor.img"</span>,</span><br><span class="line">                      <span class="string">"odm.img"</span>,<span class="string">"vbmeta.img"</span>, <span class="string">"oem.img"</span>]</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Build/" rel="tag"># Build</a>
+          
+            <a href="/tags/Filesystem/" rel="tag"># Filesystem</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/02/OTA/AB升级之bootctrl流程/" rel="next" title="AB升级之bootctrl流程">
+                <i class="fa fa-chevron-left"></i> AB升级之bootctrl流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/15/Filesystem/Userdata分区resize功能/" rel="prev" title="Userdata分区resize功能">
+                Userdata分区resize功能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、device-mediatek目录"><span class="nav-text">一、device/mediatek目录</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-mt6765-BoardConfig-mk"><span class="nav-text">1.1 mt6765/BoardConfig.mk</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-mt6765-partition-table-MT6765-xls"><span class="nav-text">1.2 mt6765/partition_table_MT6765.xls</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-common-sepolicy"><span class="nav-text">1.3 common/sepolicy</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、build目录"><span class="nav-text">二、build目录</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-core-Makefile"><span class="nav-text">2.1 core/Makefile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-core-main-mk"><span class="nav-text">2.2 core/main.mk</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-tools-releasetools-build-image-py"><span class="nav-text">2.3 tools/releasetools/build_image.py</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-tools-releasetools-add-img-to-target-files-py"><span class="nav-text">2.4 tools/releasetools/add_img_to_target_files.py</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、vendor-mediatek-proprietary目录"><span class="nav-text">三、vendor/mediatek/proprietary目录</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-hardware-fstab-mt6765-Android-mk"><span class="nav-text">3.1 hardware/fstab/mt6765/Android.mk</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-hardware-fstab-mt6765-fstab-in"><span class="nav-text">3.2 hardware/fstab/mt6765/fstab.in</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-scripts-releasetools-releasetools-replace-img-from-target-files-py"><span class="nav-text">3.3 scripts/releasetools/releasetools/replace_img_from_target_files.py</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

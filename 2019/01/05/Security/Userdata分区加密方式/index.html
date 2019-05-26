@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Android系统主要支持FDE/FBE两种加密方式。Android P及更高版本支持元数据加密。该密钥受keymaster保护，而keymaster受verified boot保护。使用元数据加密时，启动出现的单个密钥会加密未通过文件级加密进行加密的任何内容。 一、 Full-disk encryption(FDE)1.1 概述Android L及更高版本支持全盘加密。全盘加密是使用密钥（由用户">
+<meta name="keywords" content="Filesystem,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Userdata分区加密方式">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/01/05/Security/Userdata分区加密方式/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="Android系统主要支持FDE/FBE两种加密方式。Android P及更高版本支持元数据加密。该密钥受keymaster保护，而keymaster受verified boot保护。使用元数据加密时，启动出现的单个密钥会加密未通过文件级加密进行加密的任何内容。 一、 Full-disk encryption(FDE)1.1 概述Android L及更高版本支持全盘加密。全盘加密是使用密钥（由用户">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-26T15:00:21.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Userdata分区加密方式">
+<meta name="twitter:description" content="Android系统主要支持FDE/FBE两种加密方式。Android P及更高版本支持元数据加密。该密钥受keymaster保护，而keymaster受verified boot保护。使用元数据加密时，启动出现的单个密钥会加密未通过文件级加密进行加密的任何内容。 一、 Full-disk encryption(FDE)1.1 概述Android L及更高版本支持全盘加密。全盘加密是使用密钥（由用户">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/01/05/Security/Userdata分区加密方式/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Userdata分区加密方式 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/05/Security/Userdata分区加密方式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Userdata分区加密方式
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-05 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-05T00:00:00+08:00">2019-01-05</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Android系统主要支持FDE/FBE两种加密方式。<br>Android P及更高版本支持元数据加密。该密钥受keymaster保护，而keymaster受verified boot保护。使用元数据加密时，启动出现的单个密钥会加密未通过文件级加密进行加密的任何内容。</p>
+<h3 id="一、-Full-disk-encryption-FDE"><a href="#一、-Full-disk-encryption-FDE" class="headerlink" title="一、 Full-disk encryption(FDE)"></a>一、 Full-disk encryption(FDE)</h3><h4 id="1-1-概述"><a href="#1-1-概述" class="headerlink" title="1.1 概述"></a>1.1 概述</h4><p>Android L及更高版本支持全盘加密。全盘加密是使用密钥（由用户设备密码保护）对设备上用户数据进行编码的过程。设备加密后，所有由用户创建的数据在存入磁盘前都会字典加密，且所有读取操作都会在将数据返回给调用进程之前自动解密数据。用户必须提供credentials才能访问磁盘。</p>
+<p>全盘加密采用128位AES加密算法，支持‘默认’，‘PIN码’，‘密码’，‘Pattern图案解锁’四种加密状态。首次启动，会先随机生成128位主密钥，然后使用默认密码’default_password’（cryptfs.cpp）和存储的salt对其进行hash处理，接着由TEE生成hash签名以加密该主密钥。（16kb）</p>
+<p>快速加密方式：只对userdata分区已使用的分块进行加密，避免首次开机耗时过长。目前仅ext4和f2fs类型文件系统支持该快速加密方式。</p>
+<p>加密过程由init/vold进程管理。init负责调用vold，然后vold来设置相关属性以触发init中事件。系统会使用vdc的cryptfs命令来调用vold中的加密功能。主要命令有：checkpw、restart、enablecrypto、changepw、cryptocomplete、verifypw、setfield、getfield、mountdefaultencrypted、getpwtype、getpw、clearpw等。</p>
+<p>无论加解密还是清除data分区过程，data分区都不能处于挂载状态。所以为了确保framework启动，data分区就需要挂载一个临时文件系统，使得android可提示输入密码以清除数据此类建议。</p>
+<p>在实际工作中可能会遇到一些加解密错误，比如密码匹配无法解密，用户输错密码此次达到30次。若这些错误未解决，则会提示用户清除数据恢复出厂设置。</p>
+<a id="more"></a>
+<h4 id="1-2-加密启动流程"><a href="#1-2-加密启动流程" class="headerlink" title="1.2 加密启动流程"></a>1.2 加密启动流程</h4><h5 id="1-2-1-首次启动强制加密"><a href="#1-2-1-首次启动强制加密" class="headerlink" title="1.2.1 首次启动强制加密"></a>1.2.1 首次启动强制加密</h5><p>forceencrypt flag：在fstab中新增forceencrypt标记，确保首次开机时执行加密。</p>
+<p>(1)检测<code>forceencrypt</code>标记的未加密文件系统。<br>(2)开始加密<code>data</code>分区：vold.decrypt = “trigger_encryption”触发加密。<br>(3)装载临时文件系统<code>tmpfs</code>：将vold.encrypt_progress设为0，将vold.decrypt设为trigger_restart_min_framework。<br>(4)启动framework显示进度：打开进度条界面，每5s查询一次vold.encrypt_progress属性并更新进度条。<br>(5)<code>data</code>分区加密后，关闭framework：将vold.decrypt设为trigger_default_encryption，以启动defaultcrypto服务检查加密类型。<br>(6)装载<code>data</code>：init从ro.crypto.tmpfs_options选取的参数以在tmpfs RAMDisk中装载data。<br>(7)重启framework，继续常规启动过程。</p>
+<h5 id="1-2-2-用户从设置中加密设备"><a href="#1-2-2-用户从设置中加密设备" class="headerlink" title="1.2.2 用户从设置中加密设备"></a>1.2.2 用户从设置中加密设备</h5><p>当用户启用设置中Encrypt phone功能时，界面上会提示用户‘确认电池是否充满电且充电器是否已插上’，以确保有充足的电量完成加密过程（Setting -&gt; Security &amp; location -&gt; Encryption &amp; credentials -&gt; Encrypt phone）。</p>
+<p>(1)检查<code>passwd</code>：使用cryptfs enablecrypto inplace指令调用vold进程。<br>(2)关闭<code>framework</code>：vold进程检查是否存在错误，若出错则返回-1并在log中打印原因。若无错误/可以加密，则将vold.decrypt设为trigger_shutdown_framework。<br>(3)创建加密footer和路径文件。<br>(4)重启并检查路径文件。<br>(5)加密<code>data</code>：vold创建一个映射到实际块设备的虚拟加密设备，在写入扇区数据时对相应的扇区加密，并在读取扇区数据时对相应扇区解密，然后创建写出加密元数据。<br>(6)加密时装载<code>tmpfs</code><br>(7)启动framework显示进度。<br>(8)<code>data</code>加密后更新加密footer：加密成功后，vold清除元数据中的ENCRYPTION_IN_PROGRESS标记。当设备解锁后，会使用密码来加密主密码，并更新加密footer。</p>
+<h5 id="1-2-3-启动未设置密码的已加密设备"><a href="#1-2-3-启动未设置密码的已加密设备" class="headerlink" title="1.2.3 启动未设置密码的已加密设备"></a>1.2.3 启动未设置密码的已加密设备</h5><p>(1)检查无密码的已加密<code>data</code>：若已加密，则data无法装载，且设置了encryptable和forceencrypt标记。<br>(2)解密<code>data</code>：基于块设备创建dm-crypt设备。<br>(3)装载<code>data</code>：vold装载已解密的实际data分区，将vold.post_fs_data_done设为0，vold.decrypt设为trigger_post_fs_data。init创建必要的目录/链接后将vold.post_fs_data_done设为1。vold再将vold.decrypt设为trigger_restart_framework，init重新启动main／late_start服务。<br>(4)启动framework。</p>
+<h5 id="1-2-4-启动设置了密码的已加密设备"><a href="#1-2-4-启动设置了密码的已加密设备" class="headerlink" title="1.2.4 启动设置了密码的已加密设备"></a>1.2.4 启动设置了密码的已加密设备</h5><p>(1)检查有密码的已加密设备：若已加密则有ro.crypto.state = “encrypted”标记。同时vold会将vold.decrypt 设为 trigger_restart_min_framework。<br>(2)装载<code>tmpfs</code>：vold会使用５个属性设置加密映射，分别是ro.crypto.fs_type、ro.crypto.fs_real_blkdev、ro.crypto.fs_mnt_point、ro.crypto.fs_options、ro.crypto.fs_flags。<br>(3)启动framework并提示输入passwd：界面向vold发送cryptfs cryptocomplete指令确认是否加密。若加密完成则返回０，若发送内部错误返回-1，若加密未完成返回-2。vold通过查询CRYPTO_ENCRYPTION_IN_PROGRESS标记的元数据确认应返回的值。若设置了该值表面加密过程中断，且设备上有可用数据。若vold返回错误，界面会提示用户点击按钮重启恢复出厂设置。<br>(4)通过密码解密数据：输入密码后界面向vold发送cryptfs checkpw指令检查密码是否匹配。若密码正确，vold会将已加密设备名称保存在ro.crypto.fs_crypto_blkdev中并返回０,若不正确则返回-1。<br>(5)停止framework：显示加密启动界面，使用cryptfs restart指令令调用vold，vold将vold.decrypt设为trigger_reset_main，init执行class_reset_main以停止main服务，确保卸载tmpfs data。<br>(6)装载<code>data</code>。<br>(7)启动framework。</p>
+<h4 id="1-3-加密属性"><a href="#1-3-加密属性" class="headerlink" title="1.3. 加密属性"></a>1.3. 加密属性</h4><h5 id="1-3-1-vold属性"><a href="#1-3-1-vold属性" class="headerlink" title="1.3.1 vold属性"></a>1.3.1 vold属性</h5><p>(1)vold.decrypt=trigger_encryption：以无密码方式加密存储卷。<br>(2)vold.decrypt trigger_default_encryption：检查存储卷是否采用了无密码加密。如果是，则解密并装载存储卷；如果不是，则将vold.decrypt设为 trigger_restart_min_framework。<br>(3))vold.decrypt=trigger_reset_main：由vold设置，用于关闭提示输入磁盘密码的界面。<br>(4)vold.decrypt=trigger_post_fs_data：由vold设置，用于准备具有必要目录等内容的/data。<br>(5)vold.decrypt=trigger_restart_framework：由vold设置，用于启动实际框架和所有服务。<br>(6)vold.decrypt=trigger_shutdown_framework：由vold设置，用于关闭整个框架以开始加密。<br>(7)vold.decrypt=trigger_restart_min_framework：由vold 设置，用于启动加密进度条界面或提示输入密码，具体取决于ro.crypto.state的值。<br>(8)vold.encrypt_progress：框架启动时，如果设置了此属性，则会进入进度条界面模式。<br>(9)vold.encrypt_progress=0/100：进度条界面中应按照设置显示百分比值。<br>(10)vold.encrypt_progress=error_partially_encrypted：进度条界面中应显示一条消息，告诉用户加密失败，并且界面中应为用户提供一个用于将设备恢复出厂设置的按钮。<br>(11)vold.encrypt_progress=error_reboot_failed：进度条界面中应显示一条消息，告诉用户加密已完成，并且界面中应为用户提供一个用于重新启动设备的按钮。此错误不应发生。<br>(12)vold.encrypt_progress=error_not_encrypted：进度条界面中应显示一条消息，告诉用户发生错误，没有已加密的数据或数据已丢失，并且界面中应为用户提供一个用于重新启动系统的按钮。<br>(13)vold.encrypt_progress=error_shutting_down：进度条界面未运行，因此不清楚谁将响应此错误。在任何情况下，都不应发生此错误。<br>(14)vold.post_fs_data_done=0：由vold 在将vold.decrypt设为trigger_post_fs_data的前一刻设置。<br>(15)vold.post_fs_data_done=1：由init.rc或init.rc在完成post-fs-data任务之后立即设置。</p>
+<h5 id="1-3-2-init属性"><a href="#1-3-2-init属性" class="headerlink" title="1.3.2 init属性"></a>1.3.2 init属性</h5><p>(1)ro.crypto.fs_crypto_blkdev：由vold命令checkpw设置，供vold命令restart以后使用。<br>(2)ro.crypto.state unencrypted：由init设置，用于说明相应系统正在未加密的/data分区ro.crypto.state encrypted中运行。由init设置，用于说明相应系统正在已加密的/data分区中运行。<br>(3)ro.crypto.fs_type、ro.crypto.fs_real_blkdev、ro.crypto.fs_mnt_point、ro.crypto.fs_options：这5个属性由init在尝试装载/data分区（包含从 init.rc传入的参数）时设置。vold会使用这些属性来设置加密映射。<br>(4)ro.crypto.fs_flags：由init.rc设置，包含init在装载 tmpfs /data文件系统时应使用的选项。</p>
+<h3 id="二、-File-based-encryption-FBE"><a href="#二、-File-based-encryption-FBE" class="headerlink" title="二、 File-based encryption(FBE)"></a>二、 File-based encryption(FBE)</h3><p>Android N及更高版本支持文件级加密。文件级加密既可使用不同的密钥对不同的文件进行加密，也可对不同加密文件进行单独解密。</p>
+<h4 id="2-1-Direct-Boot-直接启动"><a href="#2-1-Direct-Boot-直接启动" class="headerlink" title="2.1 Direct Boot(直接启动)"></a>2.1 Direct Boot(直接启动)</h4><p>文件级加密支持Direct Boot（直接启动），即已加密的设备在启动后直接进入Launcher锁屏界面，用户可快速使用重要的设备功能，如闹钟，无障碍服务等。应用可在用户提供credentials之前运行，与此同时系统仍然能够保护用户私密信息。</p>
+<p>在启动文件级加密的设备上，每个用户有两个可供应用使用的存储位置：<br>(1)CE（凭据加密）存储空间：默认存储位置，用户解锁后采用。<br>(2)DE（设备加密）存储空间：直接启动模式或用户解锁后可用。</p>
+<p>defaultToDeviceProtectedStorage属性仅适用于系统应用，directBootAware属性则适用于所有应用。directBootAware 属性的含义是将相应应用中的所有组件均标记为加密感知型组件。defaultToDeviceProtectedStorage属性用于将默认的应用存储位置重定向到DE存储空间（而非CE存储空间）。使用此标记的系统应用必须要仔细审核存储在默认位置的所有数据，并将敏感数据的路径更改为使用CE存储空间。使用此选项的设备制造商应仔细检查要存储的数据，以确保其中不含任何个人信息。</p>
+<h4 id="2-2-实现"><a href="#2-2-实现" class="headerlink" title="2.2 实现"></a>2.2 实现</h4><p>Android通用内核3.18及以上版本提供了对Ext4加密或F2FS加密的内核支持（内核配置选项：EXT4_FS_ENCRYPTION或F2FS_FS_ENCRYPTION）</p>
+<p>通过将 ileencryption=contents_encryption_mode[:filenames_encryption_mode]标记添加到userdata分区最后一列的fstab行中，可以启用FBE。contents_encryption_mode参数定义用于文件内容加密的算法，filenames_encryption_mode参数定义用于文件名加密的算法。contents_encryption_mode只能是 aes-256-xts。filenames_encryption_mode有两个可能的值：aes-256-cts和aes-256-heh。如果未指定filenames_encryption_mode，则使用aes-256-cts值。</p>
+<p>vold负责处理密钥生成和内核密钥环管理。AOSP的FBE实现要求设备支持1.0或更高版本的Keymaster HAL。首次启动时，在启动过程的早期阶段会生成并安装用户0的密钥。到init的on-post-fs阶段完成时，Keymaster必须已做好处理请求的准备。在Nexus设备上，这是通过设置一个脚本块处理的：确保Keymaster在/data装载之前启动指定文件加密算法套件：AOSP的文件级加密实现会用到采用XTS模式的AES-256算法</p>
+<p>在 AOSP 当前提供的文件级加密实现中，加密政策被硬编码到了以下位置：/system/extras/libfscrypt/fscrypt_init_extensions.cpp在Android P及更早版本中，该位置为：/system/extras/ext4_utils/ext4_crypt_init_extensions.cpp</p>
+<p>检查ro.crypto.state是否存在来确认是否已加密，检查ro.crypto.type是否存在来确认是否已设为file。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Filesystem/" rel="tag"># Filesystem</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/29/Filesystem/Vold进程的启动/" rel="next" title="Vold进程的启动">
+                <i class="fa fa-chevron-left"></i> Vold进程的启动
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/12/Security/Keymaster的SPL版本绑定/" rel="prev" title="Keymaster的SPL版本绑定">
+                Keymaster的SPL版本绑定 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、-Full-disk-encryption-FDE"><span class="nav-text">一、 Full-disk encryption(FDE)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-概述"><span class="nav-text">1.1 概述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-加密启动流程"><span class="nav-text">1.2 加密启动流程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-1-首次启动强制加密"><span class="nav-text">1.2.1 首次启动强制加密</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-2-用户从设置中加密设备"><span class="nav-text">1.2.2 用户从设置中加密设备</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-3-启动未设置密码的已加密设备"><span class="nav-text">1.2.3 启动未设置密码的已加密设备</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-4-启动设置了密码的已加密设备"><span class="nav-text">1.2.4 启动设置了密码的已加密设备</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-加密属性"><span class="nav-text">1.3. 加密属性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-1-vold属性"><span class="nav-text">1.3.1 vold属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-2-init属性"><span class="nav-text">1.3.2 init属性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、-File-based-encryption-FBE"><span class="nav-text">二、 File-based encryption(FBE)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-Direct-Boot-直接启动"><span class="nav-text">2.1 Direct Boot(直接启动)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-实现"><span class="nav-text">2.2 实现</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

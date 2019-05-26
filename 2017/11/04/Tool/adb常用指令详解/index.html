@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="所有 adb 客户端均使用端口 5037 与 adb服务器通信设置-&amp;gt;关于手机-&amp;gt;版本号点击7次-&amp;gt;返回上一级，进入开发者选项-&amp;gt;打开USB调试 显示已连接的模拟器/设备的列表 123adb devicesList of devices attachedserial_number state 1adb -s serial_number command">
+<meta name="keywords" content="Debug,Tool">
+<meta property="og:type" content="article">
+<meta property="og:title" content="adb常用指令详解">
+<meta property="og:url" content="http://www.xiezeyang.com/2017/11/04/Tool/adb常用指令详解/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="所有 adb 客户端均使用端口 5037 与 adb服务器通信设置-&amp;gt;关于手机-&amp;gt;版本号点击7次-&amp;gt;返回上一级，进入开发者选项-&amp;gt;打开USB调试 显示已连接的模拟器/设备的列表 123adb devicesList of devices attachedserial_number state 1adb -s serial_number command">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-26T15:08:09.751Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="adb常用指令详解">
+<meta name="twitter:description" content="所有 adb 客户端均使用端口 5037 与 adb服务器通信设置-&amp;gt;关于手机-&amp;gt;版本号点击7次-&amp;gt;返回上一级，进入开发者选项-&amp;gt;打开USB调试 显示已连接的模拟器/设备的列表 123adb devicesList of devices attachedserial_number state 1adb -s serial_number command">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2017/11/04/Tool/adb常用指令详解/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>adb常用指令详解 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/04/Tool/adb常用指令详解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">adb常用指令详解
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-11-04 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-04T00:00:00+08:00">2017-11-04</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>所有 adb 客户端均使用端口 5037 与 adb服务器通信<br>设置-&gt;关于手机-&gt;版本号点击7次-&gt;返回上一级，进入开发者选项-&gt;打开USB调试</p>
+<p>显示已连接的模拟器/设备的列表</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">serial_number state</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb -s serial_number command</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>将 Android 应用（使用 APK 文件的完整路径表示）推送到模拟器/设备。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb install path_to_apk</span><br></pre></td></tr></table></figure>
+<p>从模拟器/设备实例将指定文件复制到开发计算机。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb pull remote local</span><br></pre></td></tr></table></figure>
+<p>从开发计算机将指定文件复制到模拟器/设备实例。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push local remote</span><br></pre></td></tr></table></figure>
+<p>将 dumpsys、dumpstate 和 logcat 数据输出到屏幕，以用于报告错误。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb bugreport</span><br></pre></td></tr></table></figure>
+<p>阻止执行，直至设备处于在线状态，即直至此实例状态为 device。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb wait-for-device</span><br></pre></td></tr></table></figure>
+<p>检查 adb 服务器进程是否在运行，如果未运行则启动它。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb start-server</span><br></pre></td></tr></table></figure>
+<p>终止 adb 服务器进程。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb kill-server</span><br></pre></td></tr></table></figure>
+<p>启动 intent 指定的 Activity。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell am start -a android.intent.action.VIEW</span><br></pre></td></tr></table></figure>
+<p>启动 intent 指定的 Service。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell am startservice [options] intent</span><br></pre></td></tr></table></figure>
+<p>强行停止与 package（应用的包名称）关联的所有应用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell am force-stop package</span><br></pre></td></tr></table></figure>
+<p>终止与 package（应用的包名称）关联的所有进程。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell am kill [options] package</span><br></pre></td></tr></table></figure>
+<p>终止所有后台进程。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell am kill-all</span><br></pre></td></tr></table></figure>
+<p>发出广播 intent</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell am broadcast [options] intent</span><br></pre></td></tr></table></figure>
+<p>start [options] intent: 启动intent指定的Service。<br>options包括：<br>-D：启用调试。<br>-W：等待启动完成。<br>–start-profiler file：启动分析器并将结果发送到 file。<br>-P file：类似于 –start-profiler，但当应用进入空闲状态时分析停止。<br>-R count：重复 Activity 启动 count 次数。在每次重复前，将完成顶部 Activity。<br>-S：启动 Activity 前强行停止目标应用。<br>–opengl-trace：启用 OpenGL 函数的跟踪。<br>–user user_id | current：指定要作为哪个用户运行；如果未指定，则作为当前用户运行。</p>
+<p>startservice [options] intent: 启动intent指定的Service。<br>options包括：<br>–user user_id | current：指定要作为哪个用户运行；如果未指定，则作为当前用户运行。</p>
+<p>force-stop package 强行停止与 package（应用的包名称）关联的所有应用。<br>kill [options] package 终止与 package（应用的包名称）关联的所有进程。此命令仅终止可安全终止且不会影响用户体验的进程。<br>options包括：<br>–user user_id | all | current：指定将终止其进程的用户；如果未指定，则终止所有用户的进程。</p>
+<p>kill-all 终止所有后台进程。</p>
+<p>broadcast [options] intent: 发出广播intent。<br>options包括：<br>[–user user_id | all | current]：指定要发送到的用户；如果未指定，则发送到所有用户。</p>
+<p>instrument [options] component: 使用 Instrumentation 实例启动监控。通常，目标 component 是表单 test_package/runner_class。<br>options包括：<br>-r：输出原始结果（否则对 report_key_streamresult 进行解码）。与 [-e perf true] 结合使用以生成性能测量的原始输出。<br>-e name value：将参数 name 设为 value。对于测试运行器，通用表单为 -e testrunner_flag value[,value…]。<br>-p file：将分析数据写入 file。<br>-w：先等待仪器完成，然后再返回。测试运行器需要使用此选项。<br>–no-window-animation：运行时关闭窗口动画。<br>–user user_id | current：指定仪器在哪个用户中运行；如果未指定，则在当前用户中运行。</p>
+<p>profile start process file 启动 process 的分析器，将结果写入 file。<br>profile stop process 停止 process 的分析器。</p>
+<p>dumpheap [options] process file: 转储 process 的堆，写入 file。<br>options包括：<br>–user [user_id|current]：提供进程名称时，指定要转储的进程用户；如果未指定，则使用当前用户。<br>-n：转储原生堆，而非托管堆。</p>
+<p>set-debug-app [options] package: 将应用 package 设为调试。<br>options包括：<br>-w：应用启动时等待调试程序。<br>–persistent：保留此值。</p>
+<p>clear-debug-app: 使用 set-debug-app 清除以前针对调试用途设置的软件包。<br>monitor [options] 启动对崩溃或 ANR 的监控。<br>options包括：<br>–gdb：在崩溃/ANR 时在给定端口上启动 gdbserv。<br>screen-compat {on|off} package 控制 package 的屏幕兼容性模式。<br>display-size [reset|widthxheight] 替换模拟器/设备显示尺寸。此命令对于在不同尺寸的屏幕上测试您的应用非常有用，它支持使用大屏设备模仿小屏幕分辨率（反之亦然）。<br>display-density dpi替换模拟器/设备显示密度。此命令对于在不同密度的屏幕上测试您的应用非常有用，它支持使用低密度屏幕在高密度环境环境上进行测试（反之亦然）。<br>to-uri intent将给定的 intent 规范以 URI 的形式输出。<br>to-intent-uri intent 将给定的 intent 规范以 intent:URI 的形式输出。</p>
+<p>intent 参数的规范<br>对于采用 intent 参数的 Activity Manager 命令，您可以使用以下选项指定 intent：</p>
+<p>-a action<br>指定 intent 操作，如“android.intent.action.VIEW”。此指定只能声明一次。<br>-d data_uri<br>指定 intent 数据 URI，如“content://contacts/people/1”。此指定只能声明一次。<br>-t mime_type<br>指定 intent MIME 类型，如“image/png”。此指定只能声明一次。<br>-c category<br>指定 intent 类别，如“android.intent.category.APP_CONTACTS”。<br>-n component<br>指定带有软件包名称前缀的组件名称以创建显式 intent，如“com.example.app/.ExampleActivity”。<br>-f flags<br>将标志添加到 setFlags() 支持的 intent。<br>–esn extra_key<br>添加一个 null extra。URI intent 不支持此选项。<br>-e|–es extra_key extra_string_value<br>添加字符串数据作为键值对。<br>–ez extra_key extra_boolean_value<br>添加布尔型数据作为键值对。<br>–ei extra_key extra_int_value<br>添加整数型数据作为键值对。<br>–el extra_key extra_long_value<br>添加长整型数据作为键值对。<br>–ef extra_key extra_float_value<br>添加浮点型数据作为键值对。<br>–eu extra_key extra_uri_value<br>添加 URI 数据作为键值对。<br>–ecn extra_key extra_component_name_value<br>添加组件名称，将其作为 ComponentName 对象进行转换和传递。<br>–eia extra_key extra_int_value[,extra_int_value…]<br>添加整数数组。<br>–ela extra_key extra_long_value[,extra_long_value…]<br>添加长整型数组。<br>–efa extra_key extra_float_value[,extra_float_value…]<br>添加浮点型数组。<br>–grant-read-uri-permission<br>包含标志 FLAG_GRANT_READ_URI_PERMISSION。<br>–grant-write-uri-permission<br>包含标志 FLAG_GRANT_WRITE_URI_PERMISSION。<br>–debug-log-resolution<br>包含标志 FLAG_DEBUG_LOG_RESOLUTION。<br>–exclude-stopped-packages<br>包含标志 FLAG_EXCLUDE_STOPPED_PACKAGES。<br>–include-stopped-packages<br>包含标志 FLAG_INCLUDE_STOPPED_PACKAGES。<br>–activity-brought-to-front<br>包含标志 FLAG_ACTIVITY_BROUGHT_TO_FRONT。<br>–activity-clear-top<br>包含标志 FLAG_ACTIVITY_CLEAR_TOP。<br>–activity-clear-when-task-reset<br>包含标志 FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET。<br>–activity-exclude-from-recents<br>包含标志 FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS。<br>–activity-launched-from-history<br>包含标志 FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY。<br>–activity-multiple-task<br>包含标志 FLAG_ACTIVITY_MULTIPLE_TASK。<br>–activity-no-animation<br>包含标志 FLAG_ACTIVITY_NO_ANIMATION。<br>–activity-no-history<br>包含标志 FLAG_ACTIVITY_NO_HISTORY。<br>–activity-no-user-action<br>包含标志 FLAG_ACTIVITY_NO_USER_ACTION。<br>–activity-previous-is-top<br>包含标志 FLAG_ACTIVITY_PREVIOUS_IS_TOP。<br>–activity-reorder-to-front<br>包含标志 FLAG_ACTIVITY_REORDER_TO_FRONT。<br>–activity-reset-task-if-needed<br>包含标志 FLAG_ACTIVITY_RESET_TASK_IF_NEEDED。<br>–activity-single-top<br>包含标志 FLAG_ACTIVITY_SINGLE_TOP。<br>–activity-clear-task<br>包含标志 FLAG_ACTIVITY_CLEAR_TASK。<br>–activity-task-on-home<br>包含标志 FLAG_ACTIVITY_TASK_ON_HOME。<br>–receiver-registered-only<br>包含标志 FLAG_RECEIVER_REGISTERED_ONLY。<br>–receiver-replace-pending<br>包含标志 FLAG_RECEIVER_REPLACE_PENDING。<br>–selector<br>需要使用 -d 和 -t 选项以设置 intent 数据和类型。<br>URI component package<br>如果不受上述某一选项的限制，您可以直接指定 URI、软件包名称和组件名称。当参数不受限制时，如果参数包含一个“:”（冒号），则此工具假定参数是一个 URI；如果参数包含一个“/”（正斜杠），则此工具假定参数是一个组件名称；否则，此工具假定参数是一个软件包名称。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell pm uninstall com.example.MyApp</span><br></pre></td></tr></table></figure>
+<p>list packages [options] filter: 输出所有软件包，或者，仅输出包名称包含 filter 中的文本的软件包。<br>options:<br>-f：查看它们的关联文件。<br>-d：进行过滤以仅显示已停用的软件包。<br>-e：进行过滤以仅显示已启用的软件包。<br>-s：进行过滤以仅显示系统软件包。<br>-3：进行过滤以仅显示第三方软件包。<br>-i：查看软件包的安装程序。<br>-u：也包括卸载的软件包。<br>–user user_id：要查询的用户空间。</p>
+<p>list permission-groups 输出所有已知的权限组。<br>list permissions [options] group 输出所有已知权限，或者，仅输出 group 中的权限。<br>options：<br>-g：按组加以组织。<br>-f：输出所有信息。<br>-s：简短摘要。<br>-d：仅列出危险权限。<br>-u：仅列出用户将看到的权限。</p>
+<p>list instrumentation [options] 列出所有测试软件包。<br>options：<br>-f：列出用于测试软件包的 APK 文件。<br>target_package：列出仅用于此应用的测试软件包。<br>list features 输出系统的所有功能。<br>list libraries 输出当前设备支持的所有库。<br>list users 输出系统上的所有用户。<br>path package 输出给定 package 的 APK 的路径。</p>
+<p>install [options] path 将软件包（通过 path 指定）安装到系统。<br>options：<br>-l：安装具有转发锁定功能的软件包。<br>-r：重新安装现有应用，保留其数据。<br>-t：允许安装测试 APK。<br>-i installer_package_name：指定安装程序软件包名称。<br>-s：在共享的大容量存储（如 sdcard）上安装软件包。<br>-f：在内部系统内存上安装软件包。<br>-d：允许版本代码降级。<br>-g：授予应用清单中列出的所有权限。</p>
+<p>uninstall [options] package 从系统中移除软件包。<br>options：</p>
+<p>-k：移除软件包后保留数据和缓存目录。<br>clear package 删除与软件包关联的所有数据。<br>enable package_or_component 启用给定软件包或组件（作为“package/class”写入）。<br>disable package_or_component 停用给定软件包或组件（作为“package/class”写入）。</p>
+<p>disable-user [options] package_or_component<br>options：<br>–user user_id：要停用的用户。<br>grant package_name permission 向应用授予权限。在运行 Android 6.0（API 级别 23）及更高版本的设备上，可以是应用清单中声明的任何权限。在运行 Android 5.1（API 级别 22）和更低版本的设备上，必须是应用定义的可选权限。<br>revoke package_name permission 从应用中撤销权限。在运行 Android 6.0（API 级别 23）及更高版本的设备上，可以是应用清单中声明的任何权限。在运行 Android 5.1（API 级别 22）和更低版本的设备上，必须是应用定义的可选权限。<br>set-install-location location 更改默认安装位置。位置值：<br>0：自动—让系统决定最佳位置。<br>1：内部—安装在内部设备存储上。<br>2：外部—安装在外部介质上。<br>注：此命令仅用于调试目的；使用此命令会导致应用中断和其他意外行为。</p>
+<p>get-install-location 返回当前安装位置。返回值：<br>0 [auto]：让系统决定最佳位置。<br>1 [internal]：安装在内部设备存储上<br>2 [external]：安装在外部介质上<br>set-permission-enforced permission [true|false]    指定是否应强制执行给定的权限。<br>trim-caches desired_free_space 减少缓存文件以达到给定的可用空间。<br>create-user user_name 使用给定的 user_name 创建新用户，输出新用户的标识符。<br>remove-user user_id 移除具有给定的 user_id 的用户，删除与该用户关联的所有数据。<br>get-max-users 输出设备支持的最大用户数。</p>
+<p>屏幕截图</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell screencap /sdcard/screen.png</span><br></pre></td></tr></table></figure>
+<p>录制视频</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell screenrecord /sdcard/demo.mp4</span><br></pre></td></tr></table></figure>
+<p>screenrecord 选项<br>–help 显示命令语法和选项<br>–size widthxheight 设置视频大小：1280x720。默认值是设备的原生显示分辨率（如果支持），如果不支持，则使用 1280x720。为实现最佳结果，请使用设备的 Advanced Video Coding (AVC) 编码器支持的大小。<br>–bit-rate rate 设置视频的视频比特率（以兆比特每秒为单位）。默认值为 4Mbps。您可以增加比特率以提升视频质量，但这么做会导致影片文件变得更大。以下示例将录制比特率设为 6Mbps：<br>screenrecord –bit-rate 6000000 /sdcard/demo.mp4<br>–time-limit time 设置最大录制时长（以秒为单位）。默认值和最大值均为 180（3 分钟）。<br>–rotate 将输出旋转 90 度。此功能是实验性的。<br>–verbose 显示命令行屏幕上的日志信息。如果您不设置此选项，则运行时此实用程序不会显示任何信息。</p>
+<p>其他一些 adb shell 命令<br>dumpsys    将系统数据转储到屏幕。    Dalvik Debug Monitor Server (DDMS) 工具提供了一个集成调试环境，让您用起来更方便。<br>dumpstate 将状态转储到文件。<br>logcat [option]… [filter-spec]…启用系统和应用日志记录，并将输出传输到屏幕。<br>dmesg 将内核调试消息输出到屏幕。<br>start 启动（重启）模拟器/设备实例。<br>stop 停止执行模拟器/设备实例。</p>
+<p>下表介绍的是 logcat 的命令行选项。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-b &lt;buffer&gt; 加载可供查看的备用日志缓冲区，如 events 或 radio。默认情况下使用 main 缓冲区。请参阅查看备用日志缓冲区。</span><br><span class="line">-c 清除（刷新）整个日志并退出。</span><br><span class="line">-d 将日志转储到屏幕并退出。</span><br><span class="line">-f &lt;filename&gt; 将日志消息输出写入 &lt;filename&gt;。默认值为 <span class="built_in">stdout</span>。</span><br><span class="line">-g 打印指定日志缓冲区的大小并退出。</span><br><span class="line">-n &lt;count&gt; 将已旋转日志的最大数量设置为 &lt;count&gt;。默认值为 <span class="number">4</span>。 需要使用 -r 选项。</span><br><span class="line">-r &lt;kbytes&gt; 每输出 &lt;kbytes&gt; 时旋转日志文件。默认值为 <span class="number">16</span>。需要使用 -f 选项。</span><br><span class="line">-s 将默认过滤器规则设为静默式。</span><br><span class="line">-v &lt;format&gt; 设置日志消息的输出格式。默认值为 brief 格式有关支持的格式列表，请参阅控制日志输出格式。</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Debug/" rel="tag"># Debug</a>
+          
+            <a href="/tags/Tool/" rel="tag"># Tool</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/29/Tool/Git常用命令详解/" rel="next" title="Git常用命令详解">
+                <i class="fa fa-chevron-left"></i> Git常用命令详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/12/Security/DRM基本介绍/" rel="prev" title="DRM基本介绍">
+                DRM基本介绍 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

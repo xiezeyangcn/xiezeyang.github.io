@@ -329,7 +329,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/22/Framework/PackageManagerService之Apk安装/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/30/Framework/PackageManagerService之installed/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -349,7 +349,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/07/22/Framework/PackageManagerService之Apk安装/" class="post-title-link" itemprop="url">PackageManagerService之Apk安装</a>
+                <a href="/2018/06/30/Framework/PackageManagerService之installed/" class="post-title-link" itemprop="url">PackageManagerService之installed</a>
               
             
           </h1>
@@ -374,7 +374,170 @@
                 
               
 
-              <time title="创建时间：2018-07-22 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-22T00:00:00+08:00">2018-07-22</time>
+              <time title="创建时间：2018-06-30 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-30T00:00:00+08:00">2018-06-30</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、installd初始化"><a href="#一、installd初始化" class="headerlink" title="一、installd初始化"></a>一、installd初始化</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//installd.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">const</span> <span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> android::installd::installd_main(argc, argv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">installd_main</span><span class="params">(<span class="keyword">const</span> <span class="keyword">int</span> argc ATTRIBUTE_UNUSED, <span class="keyword">char</span> *argv[])</span> </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="comment">// 初始化全局变量</span></span><br><span class="line">    <span class="keyword">if</span> (!initialize_globals()) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (initialize_directories() &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (selinux_enabled &amp;&amp; selinux_status_open(<span class="literal">true</span>) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 得到"installd" socket</span></span><br><span class="line">    lsocket = android_get_control_socket(SOCKET_PATH);</span><br><span class="line">    <span class="keyword">if</span> (lsocket &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// "installd"变成服务端</span></span><br><span class="line">    <span class="keyword">if</span> (listen(lsocket, <span class="number">5</span>)) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    fcntl(lsocket, F_SETFD, FD_CLOEXEC);</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="comment">// 接受java层的installer服务连接，形成与之连接的socket “s”</span></span><br><span class="line">        alen = <span class="keyword">sizeof</span>(addr);</span><br><span class="line">        s = accept(lsocket, &amp;addr, &amp;alen);</span><br><span class="line">        <span class="keyword">if</span> (s &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        fcntl(s, F_SETFD, FD_CLOEXEC);</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">unsigned</span> <span class="keyword">short</span> count;</span><br><span class="line">            <span class="comment">// 读取收到消息的长度</span></span><br><span class="line">            <span class="keyword">if</span> (readx(s, &amp;count, <span class="keyword">sizeof</span>(count))) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 判断有效性</span></span><br><span class="line">            <span class="keyword">if</span> ((count &lt; <span class="number">1</span>) || (count &gt;= BUFFER_MAX)) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 读取cmd</span></span><br><span class="line">            <span class="keyword">if</span> (readx(s, buf, count)) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            buf[count] = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span> (selinux_enabled &amp;&amp; selinux_status_updated() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                selinux_android_seapp_context_reload();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 执行cmd</span></span><br><span class="line">            <span class="keyword">if</span> (execute(s, buf)) <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        close(s);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">execute</span><span class="params">(<span class="keyword">int</span> s, <span class="keyword">char</span> cmd[BUFFER_MAX])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> reply[REPLY_MAX];</span><br><span class="line">    <span class="keyword">char</span> *arg[TOKEN_MAX+<span class="number">1</span>];</span><br><span class="line">    …...</span><br><span class="line">    arg[<span class="number">0</span>] = cmd;</span><br><span class="line">    <span class="comment">// 解析参数个数</span></span><br><span class="line">    <span class="keyword">while</span> (*cmd) &#123;</span><br><span class="line">        <span class="comment">// 当发现空格时</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">isspace</span>(*cmd)) &#123;</span><br><span class="line">            *cmd++ = <span class="number">0</span>;</span><br><span class="line">            <span class="comment">// 参数个数加１</span></span><br><span class="line">            n++;</span><br><span class="line">            <span class="comment">// 保存参数</span></span><br><span class="line">            arg[n] = cmd;</span><br><span class="line">            <span class="keyword">if</span> (n == TOKEN_MAX) &#123;</span><br><span class="line">                <span class="keyword">goto</span> done;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (*cmd) &#123;</span><br><span class="line">          cmd++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// cmds为数组，保存了不同命令及处理函数</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(cmds) / <span class="keyword">sizeof</span>(cmds[<span class="number">0</span>]); i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(cmds[i].name,arg[<span class="number">0</span>])) &#123;</span><br><span class="line">            <span class="keyword">if</span> (n != cmds[i].numargs) &#123;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 参数正确时，调用对应的处理函数</span></span><br><span class="line">                ret = cmds[i].func(arg + <span class="number">1</span>, reply);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">goto</span> done;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">done:</span><br><span class="line">    …...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">cmdinfo</span> <span class="title">cmds</span>[] = &#123;</span></span><br><span class="line">    &#123; <span class="string">"ping"</span>,                 <span class="number">0</span>, do_ping &#125;,</span><br><span class="line">    &#123; <span class="string">"create_app_data"</span>,      <span class="number">7</span>, do_create_app_data &#125;,</span><br><span class="line">    …...</span><br><span class="line">    &#123; <span class="string">"freecache"</span>,            <span class="number">2</span>, do_free_cache &#125;,</span><br><span class="line">    …...</span><br><span class="line">    &#123; <span class="string">"delete_odex"</span>,          <span class="number">3</span>, do_delete_odex &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">do_ping</span><span class="params">(<span class="keyword">char</span> **arg ATTRIBUTE_UNUSED, <span class="keyword">char</span> reply[REPLY_MAX] ATTRIBUTE_UNUSED)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">do_free_cache</span><span class="params">(<span class="keyword">char</span> **arg, <span class="keyword">char</span> reply[REPLY_MAX] ATTRIBUTE_UNUSED)</span> <span class="comment">/* TODO int:free_size */</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> free_cache(parse_null(arg[<span class="number">0</span>]), (<span class="keyword">int64_t</span>)atoll(arg[<span class="number">1</span>])); <span class="comment">/* uuid, free_size */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/06/30/Framework/PackageManagerService之installed/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/24/Framework/PackageManagerService之Apk安装/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/06/24/Framework/PackageManagerService之Apk安装/" class="post-title-link" itemprop="url">PackageManagerService之Apk安装</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-24T00:00:00+08:00">2018-06-24</time>
             
 
             
@@ -432,7 +595,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/07/22/Framework/PackageManagerService之Apk安装/#more" rel="contents">
+              <a class="btn" href="/2018/06/24/Framework/PackageManagerService之Apk安装/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -492,7 +655,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/17/Framework/PackageManagerService之Intent匹配Activity/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/17/Framework/PackageManagerService之构造函数/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -512,7 +675,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/07/17/Framework/PackageManagerService之Intent匹配Activity/" class="post-title-link" itemprop="url">PackageManagerService之Intent匹配Activity</a>
+                <a href="/2018/06/17/Framework/PackageManagerService之构造函数/" class="post-title-link" itemprop="url">PackageManagerService的构造函数</a>
               
             
           </h1>
@@ -537,170 +700,7 @@
                 
               
 
-              <time title="创建时间：2018-07-17 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-17T00:00:00+08:00">2018-07-17</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、Activity信息管理"><a href="#一、Activity信息管理" class="headerlink" title="一、Activity信息管理"></a>一、Activity信息管理</h3><h4 id="1-1-PackageManagerService-java-scanPackageDirtyLI方法"><a href="#1-1-PackageManagerService-java-scanPackageDirtyLI方法" class="headerlink" title="1.1 PackageManagerService.java::scanPackageDirtyLI方法"></a>1.1 PackageManagerService.java::scanPackageDirtyLI方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">N = pkg.activities.size();</span><br><span class="line">r = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;N; i++) &#123;</span><br><span class="line">    PackageParser.Activity a = pkg.activities.get(i);</span><br><span class="line">    a.info.processName = fixProcessName(pkg.applicationInfo.processName,</span><br><span class="line">            a.info.processName, pkg.applicationInfo.uid);</span><br><span class="line">    mActivities.addActivity(a, <span class="string">"activity"</span>);</span><br><span class="line">    <span class="keyword">if</span> ((policyFlags&amp;PackageParser.PARSE_CHATTY) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (r == <span class="keyword">null</span>) &#123;</span><br><span class="line">            r = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            r.append(<span class="string">' '</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        r.append(a.info.name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/07/17/Framework/PackageManagerService之Intent匹配Activity/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/12/Framework/PackageManagerService之构造函数/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/07/12/Framework/PackageManagerService之构造函数/" class="post-title-link" itemprop="url">PackageManagerService的构造函数</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-07-12 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-12T00:00:00+08:00">2018-07-12</time>
+              <time title="创建时间：2018-06-17 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-17T00:00:00+08:00">2018-06-17</time>
             
 
             
@@ -758,7 +758,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/07/12/Framework/PackageManagerService之构造函数/#more" rel="contents">
+              <a class="btn" href="/2018/06/17/Framework/PackageManagerService之构造函数/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -818,7 +818,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/05/Framework/PackageManagerService的启动过程/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/09/Framework/PackageManagerService的启动过程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -838,7 +838,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/07/05/Framework/PackageManagerService的启动过程/" class="post-title-link" itemprop="url">PackageManagerService的启动过程</a>
+                <a href="/2018/06/09/Framework/PackageManagerService的启动过程/" class="post-title-link" itemprop="url">PackageManagerService的启动过程</a>
               
             
           </h1>
@@ -863,7 +863,7 @@
                 
               
 
-              <time title="创建时间：2018-07-05 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-05T00:00:00+08:00">2018-07-05</time>
+              <time title="创建时间：2018-06-09 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-09T00:00:00+08:00">2018-06-09</time>
             
 
             
@@ -927,7 +927,7 @@ ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变�
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/07/05/Framework/PackageManagerService的启动过程/#more" rel="contents">
+              <a class="btn" href="/2018/06/09/Framework/PackageManagerService的启动过程/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -987,7 +987,7 @@ ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/02/Framework/ActivityManagerService的启动过程/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/02/Power/状态栏的电池图标定制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1007,7 +1007,7 @@ ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变�
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/06/02/Framework/ActivityManagerService的启动过程/" class="post-title-link" itemprop="url">ActivityManagerService的启动过程</a>
+                <a href="/2018/06/02/Power/状态栏的电池图标定制/" class="post-title-link" itemprop="url">状态栏的电池图标定制</a>
               
             
           </h1>
@@ -1033,830 +1033,6 @@ ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变�
               
 
               <time title="创建时间：2018-06-02 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-02T00:00:00+08:00">2018-06-02</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>ActivityManagerService(简称AMS)作为最核心的Android系统服务之一，主要负责四大组件启动、调度及App的管理工作，下面简单分析下AMS的启动过程</p>
-<p><img src="/images/boot_ams.png" alt></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/06/02/Framework/ActivityManagerService的启动过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/05/06/Other/Android基础知识点/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/05/06/Other/Android基础知识点/" class="post-title-link" itemprop="url">Android基础知识点</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-05-06 00:00:00" itemprop="dateCreated datePublished" datetime="2018-05-06T00:00:00+08:00">2018-05-06</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-JNI调用过程"><a href="#1-JNI调用过程" class="headerlink" title="1. JNI调用过程"></a>1. JNI调用过程</h3><p><1> 安装、下载Cygwin，下载AndroidNDK</1></p>
-<p><2>在ndk项目中JNI接口的设计</2></p>
-<p><3>使用C/C++实现本地方法</3></p>
-<p><4>JNI生成动态链接库.so文件</4></p>
-<p><5>将动态链接库复制到java工程中</5></p>
-<h3 id="2-View-SurfaceView-GLSurfaceView"><a href="#2-View-SurfaceView-GLSurfaceView" class="headerlink" title="2. View, SurfaceView, GLSurfaceView"></a>2. View, SurfaceView, GLSurfaceView</h3><p>view必须在UI主线程中刷新，handle.sendmessage发送消息，然后在handle的getmessage中执行invaliate或者postinvaliate。<br>SurfaceView 是View的子类，使用了双缓机制，在新的线程中更新画面所以刷新界面速度比View快。<br>SurfaceView一般会与SurfaceHolder结合使用，调用SurfaceView的getHolder()方法即可获取SurfaceView关联的SurfaceHolder，SurfaceHolder用于向与之关联的SurfaceView上绘图，<br>SurfaceHolder提供了如下方法来获取Canvas对象：<br>－ CanvaslockCanvas()：锁定整个SurfaceView对象，获取该Surface上的Canvas。<br>－ CanvaslockCanvas(Rect dirty)：锁定SurfaceView上Rect划分的区域，获取该Surface上的Canvas。<br>当对同一个SurfaceView调用上面两个方法时，两个方法所返回的是同一个Canvas对象。但当程序调用第二个方法获取指定区域的Canvas时，SurfaceView将只对Rect所“圈”出来的区域进行更新，通过这种方式可以提高画面的更新速度。<br>当通过lockCanvas()获取指定了SurfaceView上的Canvas之后，接下来程序就可调用Canvas进行绘图了，Canvas绘图完成后通过如下方法来释放绘图、提交所绘制的图形：<br>－unlockCanvasAndPost(canvas);<br>GLSurfaceView 是SurfaceView的子类，OpenGL专用的。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/05/06/Other/Android基础知识点/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/30/Other/Parcelable接口用法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/04/30/Other/Parcelable接口用法/" class="post-title-link" itemprop="url">Parcelable接口用法</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-04-30 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-30T00:00:00+08:00">2018-04-30</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-Parcelable接口"><a href="#1-Parcelable接口" class="headerlink" title="1. Parcelable接口"></a>1. Parcelable接口</h3><p>Interface for classes whose instances can be written to and restored from a Parcel。 Classes implementing the Parcelable interface must also have a static field called CREATOR， which is an object implementing the Parcelable.Creator interface。</p>
-<h3 id="2-实现Parcelable就是为了进行序列化，那么为什么要序列化？"><a href="#2-实现Parcelable就是为了进行序列化，那么为什么要序列化？" class="headerlink" title="2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？"></a>2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？</h3><p>1）永久性保存对象，保存对象的字节序列到本地文件中；<br>2）通过序列化对象在网络中传递对象；<br>3）通过序列化在进程间传递对象。</p>
-<h3 id="3-实现序列化的方法"><a href="#3-实现序列化的方法" class="headerlink" title="3. 实现序列化的方法"></a>3. 实现序列化的方法</h3><p>Android中实现序列化有两个选择：一是实现Serializable接口（是JavaSE本身就支持的），一是实现Parcelable接口（是Android特有功能，效率比实现Serializable接口高效，可用于Intent数据传递，也可以用于进程间通信（IPC））。实现Serializable接口非常简单，声明一下就可以了，而实现Parcelable接口稍微复杂一些，但效率更高，推荐用这种方法提高性能。<br>注：Android中Intent传递对象有两种方法：一是Bundle.putSerializable(Key，Object)，另一种是Bundle.putParcelable(Key，Object)。当然这些Object是有一定的条件的，前者是实现了Serializable接口，而后者是实现了Parcelable接口。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/04/30/Other/Parcelable接口用法/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/22/Other/Java基础知识点/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/04/22/Other/Java基础知识点/" class="post-title-link" itemprop="url">Java基础知识点</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-04-22 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-22T00:00:00+08:00">2018-04-22</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-面向对象的特征"><a href="#1-面向对象的特征" class="headerlink" title="1. 面向对象的特征"></a>1. 面向对象的特征</h3><p>(1)封装：把过程和数据包围起来，对数据的访问只能通过已定义的界面。即现实世界可以被描绘成一系列完全自治、封装的对象，这些对象通过一个受保护的接口访问其他对象；<br>(2)继承：是一种联结类的层次模型，并且允许和鼓励对类的重用，它提供了一种明确表述共性的方法。对象的一个新类可以从现有的类中派生，这个过程称为类继承。新类继承了原始类的特性，新类称为原始类的派生类（子类），而原始类称为新类的基类（父类）。派生类可以从它的基类那里继承方法和实例变量，并且类可以修改或增加新的方法使之更适合特殊的需要；<br>(3)多态：是指允许不同类的对象对同一消息作出响应。多态性包括参数化多态性和包含多态性。多态性语言具有灵活、抽象、行为共享、代码共享的优势，很好解决了应用程序函数同名问题；(4)抽象：忽略一个主题中与当前目标无关的那些方面，以便更充分地注意与当前目标有关的方面。抽象并不打算了解全部问题，而只是选择其中的一部分，暂时不用部分细节。抽象包括两个方面，一是过程抽象，二是数据抽象。</p>
-<h3 id="2-接口和抽象类的区别"><a href="#2-接口和抽象类的区别" class="headerlink" title="2. 接口和抽象类的区别"></a>2. 接口和抽象类的区别</h3><p>(1)接口是公开的，不能有私有方法及变量，而抽象类可以有私有方法及变量；<br>(2)抽象类表示一种继承关系，一个类只能继承一个抽象类，而一个类可以实现多个接口；<br>(3)抽象类是一种功能不全的类，接口只是一个抽象方法声明和静态不能被修改的数数据集合，两者均不能被实例化。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/04/22/Other/Java基础知识点/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/14/Power/耗流算法分析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/04/14/Power/耗流算法分析/" class="post-title-link" itemprop="url">耗流算法分析</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-04-14 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-14T00:00:00+08:00">2018-04-14</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、软件功耗processAppUsage方法"><a href="#一、软件功耗processAppUsage方法" class="headerlink" title="一、软件功耗processAppUsage方法"></a>一、软件功耗processAppUsage方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">processAppUsage</span><span class="params">(SparseArray&lt;UserHandle&gt; asUsers)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 判断是否统计所有用户app耗电情况，forAllUsers默认为true </span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> forAllUsers = (asUsers.get(UserHandle.USER_ALL) != <span class="keyword">null</span>);</span><br><span class="line">    <span class="comment">// 耗电的统计时长</span></span><br><span class="line">    mStatsPeriod = mTypeBatteryRealtimeUs;</span><br><span class="line">    BatterySipper osSipper = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 获取每个uid的统计信息</span></span><br><span class="line">    <span class="keyword">final</span> SparseArray&lt;? extends Uid&gt; uidStats = mStats.getUidStats();</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> NU = uidStats.size();</span><br><span class="line">    <span class="comment">// 遍历每个uid耗电情况</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> iu = <span class="number">0</span>; iu &lt; NU; iu++) &#123;</span><br><span class="line">    <span class="keyword">final</span> Uid u = uidStats.valueAt(iu);</span><br><span class="line">    <span class="keyword">final</span> BatterySipper app = <span class="keyword">new</span> BatterySipper(BatterySipper.DrainType.APP, u, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 计算cpu功耗</span></span><br><span class="line">    mCpuPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算wakelock功耗</span></span><br><span class="line">    mWakelockPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算移动radio功耗</span></span><br><span class="line">    mMobileRadioPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算wifi功耗</span></span><br><span class="line">    mWifiPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算蓝牙功耗</span></span><br><span class="line">    mBluetoothPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算sensor传感器功耗</span></span><br><span class="line">    mSensorPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算相机功耗</span></span><br><span class="line">    mCameraPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算闪光灯功耗</span></span><br><span class="line">    mFlashlightPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 累加上述8项耗电</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">double</span> totalPower = app.sumPower();</span><br><span class="line">    <span class="comment">// 如果耗电，将app添加到app列表，WiFi、Bluetooth或其它用户列表</span></span><br><span class="line">    <span class="keyword">if</span> (totalPower != <span class="number">0</span> || u.getUid() == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> uid = app.getUid();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> userId = UserHandle.getUserId(uid);</span><br><span class="line">        <span class="comment">// uid为wifi的情况</span></span><br><span class="line">        <span class="keyword">if</span> (uid == Process.WIFI_UID) &#123;</span><br><span class="line">        mWifiSippers.add(app);</span><br><span class="line">        <span class="comment">// uid为蓝牙的情况</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (uid == Process.BLUETOOTH_UID) &#123;</span><br><span class="line">        mBluetoothSippers.add(app);</span><br><span class="line">        <span class="comment">// forAllUsers为true,不会进入</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!forAllUsers &amp;&amp; asUsers.get(userId) == <span class="keyword">null</span></span><br><span class="line">            &amp;&amp; UserHandle.getAppId(uid) &gt;= Process.FIRST_APPLICATION_UID) &#123;</span><br><span class="line">        List&lt;BatterySipper&gt; list = mUserSippers.get(userId);</span><br><span class="line">        <span class="keyword">if</span> (list == <span class="keyword">null</span>) &#123;</span><br><span class="line">            list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">            mUserSippers.put(userId, list);</span><br><span class="line">        &#125;</span><br><span class="line">        list.add(app);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 把app耗电加入到mUsageList中</span></span><br><span class="line">        mUsageList.add(app);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// root用户，即os耗电</span></span><br><span class="line">        <span class="keyword">if</span> (uid == <span class="number">0</span>) &#123;</span><br><span class="line">        osSipper = app;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (osSipper != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="comment">// app之外耗电</span></span><br><span class="line">    mWakelockPowerCalculator.calculateRemaining(osSipper, mStats, mRawRealtimeUs,</span><br><span class="line">        mRawUptimeUs, mStatsType);</span><br><span class="line">    osSipper.sumPower();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/04/14/Power/耗流算法分析/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/06/Power/状态栏的电池图标定制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/04/06/Power/状态栏的电池图标定制/" class="post-title-link" itemprop="url">状态栏的电池图标定制</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-04-06 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-06T00:00:00+08:00">2018-04-06</time>
             
 
             
@@ -1914,7 +1090,823 @@ ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变�
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/04/06/Power/状态栏的电池图标定制/#more" rel="contents">
+              <a class="btn" href="/2018/06/02/Power/状态栏的电池图标定制/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/05/26/Power/BatteryStatsService源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/05/26/Power/BatteryStatsService源码分析/" class="post-title-link" itemprop="url">BatteryStatsService源码分析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-26 00:00:00" itemprop="dateCreated datePublished" datetime="2018-05-26T00:00:00+08:00">2018-05-26</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1、AMS启动BatteryStatsService"><a href="#1、AMS启动BatteryStatsService" class="headerlink" title="1、AMS启动BatteryStatsService"></a>1、AMS启动BatteryStatsService</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ActivityManagerService</span><span class="params">(Context systemContext)</span> </span>&#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">// 创建BatteryStatsService对象，传入/data/system目录及AMS的mHandler </span></span><br><span class="line">    mBatteryStatsService = <span class="keyword">new</span> BatteryStatsService(systemDir, mHandler);</span><br><span class="line">    <span class="comment">// 调用BatteryStatsImpl的readLocked方法</span></span><br><span class="line">    mBatteryStatsService.getActiveStatistics().readLocked();</span><br><span class="line">    <span class="comment">// 更新BatteryStatsImpl最新信息，写入磁盘</span></span><br><span class="line">    mBatteryStatsService.scheduleWriteToDisk();</span><br><span class="line">    mOnBattery = DEBUG_POWER ? <span class="keyword">true</span></span><br><span class="line">            : mBatteryStatsService.getActiveStatistics().getIsOnBattery();</span><br><span class="line">    mBatteryStatsService.getActiveStatistics().setCallback(<span class="keyword">this</span>);</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/05/26/Power/BatteryStatsService源码分析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/05/20/Power/BatteryStatsImpl源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/05/20/Power/BatteryStatsImpl源码分析/" class="post-title-link" itemprop="url">BatteryStatsImpl源码分析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-20 00:00:00" itemprop="dateCreated datePublished" datetime="2018-05-20T00:00:00+08:00">2018-05-20</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1、BatteryStatsService调用BatteryStatsImpl"><a href="#1、BatteryStatsService调用BatteryStatsImpl" class="headerlink" title="1、BatteryStatsService调用BatteryStatsImpl"></a>1、BatteryStatsService调用BatteryStatsImpl</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BatteryStatsService(File systemDir, Handler handler) &#123;</span><br><span class="line">    ....</span><br><span class="line">    <span class="comment">// AMS创建BatteryStatsImpl类 </span></span><br><span class="line">    mStats = <span class="keyword">new</span> BatteryStatsImpl(systemDir, handler, mHandler, <span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/05/20/Power/BatteryStatsImpl源码分析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/05/12/Power/BatteryService源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/05/12/Power/BatteryService源码分析/" class="post-title-link" itemprop="url">BatteryService源码分析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-12 00:00:00" itemprop="dateCreated datePublished" datetime="2018-05-12T00:00:00+08:00">2018-05-12</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、启动过程"><a href="#一、启动过程" class="headerlink" title="一、启动过程"></a>一、启动过程</h3><h4 id="1-1-SystemServer启动BatteryService"><a href="#1-1-SystemServer启动BatteryService" class="headerlink" title="1.1 SystemServer启动BatteryService"></a>1.1 SystemServer启动BatteryService</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startCoreServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mSystemServiceManager.startService(BatteryService.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-BatteryService构造函数"><a href="#1-2-BatteryService构造函数" class="headerlink" title="1.2 BatteryService构造函数"></a>1.2 BatteryService构造函数</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">BatteryService</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(context);</span><br><span class="line">    mContext = context;</span><br><span class="line">    mHandler = <span class="keyword">new</span> Handler(<span class="keyword">true</span> <span class="comment">/*async*/</span>);</span><br><span class="line">    <span class="comment">// 电源指示灯服务 </span></span><br><span class="line">    mLed = <span class="keyword">new</span> Led(context, getLocalService(LightsManager.class));</span><br><span class="line">    <span class="comment">// 电量统计服务</span></span><br><span class="line">    mBatteryStats = BatteryStatsService.getService();</span><br><span class="line">    <span class="comment">// 从ro.cutoff_voltage_mv属性计算截止电压(默认为3200mV)</span></span><br><span class="line">    <span class="comment">// 如果该属性小于0，则忽略关机逻辑</span></span><br><span class="line">    mWeakChgCutoffVoltageMv = SystemProperties.getInt(<span class="string">"ro.cutoff_voltage_mv"</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (mWeakChgCutoffVoltageMv &gt; <span class="number">2700</span>)</span><br><span class="line">       mVoltageNowFile = <span class="keyword">new</span> File(<span class="string">"/sys/class/power_supply/battery/voltage_now"</span>);</span><br><span class="line">    <span class="comment">// 严重低电量警告值:5%</span></span><br><span class="line">    mCriticalBatteryLevel = mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_criticalBatteryWarningLevel);</span><br><span class="line">    <span class="comment">// 低电量警告值:15%</span></span><br><span class="line">    mLowBatteryWarningLevel = mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_lowBatteryWarningLevel);</span><br><span class="line">    <span class="comment">// 低电量停止警告值:5%</span></span><br><span class="line">    mLowBatteryCloseWarningLevel = mLowBatteryWarningLevel + mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_lowBatteryCloseWarningBump);</span><br><span class="line">    <span class="comment">// 高温关机值:68度</span></span><br><span class="line">    mShutdownBatteryTemperature = mContext.getResources().getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_shutdownBatteryTemperature);</span><br><span class="line">    <span class="comment">// 如果invalid_charger开关存在，则关注不合法充电器信息</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">new</span> File(<span class="string">"/sys/devices/virtual/switch/invalid_charger/state"</span>).exists()) &#123;</span><br><span class="line">            UEventObserver invalidChargerObserver = <span class="keyword">new</span> UEventObserver() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onUEvent</span><span class="params">(UEvent event)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span> invalidCharger = <span class="string">"1"</span>.equals(event.get(<span class="string">"SWITCH_STATE"</span>)) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">                    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (mInvalidCharger != invalidCharger) &#123;</span><br><span class="line">                            mInvalidCharger = invalidCharger;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            invalidChargerObserver.startObserving(</span><br><span class="line">                    <span class="string">"DEVPATH=/devices/virtual/switch/invalid_charger"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/05/12/Power/BatteryService源码分析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/05/06/Power/耗流算法分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/05/06/Power/耗流算法分析/" class="post-title-link" itemprop="url">耗流算法分析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-06 00:00:00" itemprop="dateCreated datePublished" datetime="2018-05-06T00:00:00+08:00">2018-05-06</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、软件功耗processAppUsage方法"><a href="#一、软件功耗processAppUsage方法" class="headerlink" title="一、软件功耗processAppUsage方法"></a>一、软件功耗processAppUsage方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">processAppUsage</span><span class="params">(SparseArray&lt;UserHandle&gt; asUsers)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 判断是否统计所有用户app耗电情况，forAllUsers默认为true </span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> forAllUsers = (asUsers.get(UserHandle.USER_ALL) != <span class="keyword">null</span>);</span><br><span class="line">    <span class="comment">// 耗电的统计时长</span></span><br><span class="line">    mStatsPeriod = mTypeBatteryRealtimeUs;</span><br><span class="line">    BatterySipper osSipper = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 获取每个uid的统计信息</span></span><br><span class="line">    <span class="keyword">final</span> SparseArray&lt;? extends Uid&gt; uidStats = mStats.getUidStats();</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> NU = uidStats.size();</span><br><span class="line">    <span class="comment">// 遍历每个uid耗电情况</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> iu = <span class="number">0</span>; iu &lt; NU; iu++) &#123;</span><br><span class="line">    <span class="keyword">final</span> Uid u = uidStats.valueAt(iu);</span><br><span class="line">    <span class="keyword">final</span> BatterySipper app = <span class="keyword">new</span> BatterySipper(BatterySipper.DrainType.APP, u, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 计算cpu功耗</span></span><br><span class="line">    mCpuPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算wakelock功耗</span></span><br><span class="line">    mWakelockPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算移动radio功耗</span></span><br><span class="line">    mMobileRadioPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算wifi功耗</span></span><br><span class="line">    mWifiPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算蓝牙功耗</span></span><br><span class="line">    mBluetoothPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算sensor传感器功耗</span></span><br><span class="line">    mSensorPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算相机功耗</span></span><br><span class="line">    mCameraPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 计算闪光灯功耗</span></span><br><span class="line">    mFlashlightPowerCalculator.calculateApp(app, u, mRawRealtimeUs, mRawUptimeUs, mStatsType);</span><br><span class="line">    <span class="comment">// 累加上述8项耗电</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">double</span> totalPower = app.sumPower();</span><br><span class="line">    <span class="comment">// 如果耗电，将app添加到app列表，WiFi、Bluetooth或其它用户列表</span></span><br><span class="line">    <span class="keyword">if</span> (totalPower != <span class="number">0</span> || u.getUid() == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> uid = app.getUid();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> userId = UserHandle.getUserId(uid);</span><br><span class="line">        <span class="comment">// uid为wifi的情况</span></span><br><span class="line">        <span class="keyword">if</span> (uid == Process.WIFI_UID) &#123;</span><br><span class="line">        mWifiSippers.add(app);</span><br><span class="line">        <span class="comment">// uid为蓝牙的情况</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (uid == Process.BLUETOOTH_UID) &#123;</span><br><span class="line">        mBluetoothSippers.add(app);</span><br><span class="line">        <span class="comment">// forAllUsers为true,不会进入</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!forAllUsers &amp;&amp; asUsers.get(userId) == <span class="keyword">null</span></span><br><span class="line">            &amp;&amp; UserHandle.getAppId(uid) &gt;= Process.FIRST_APPLICATION_UID) &#123;</span><br><span class="line">        List&lt;BatterySipper&gt; list = mUserSippers.get(userId);</span><br><span class="line">        <span class="keyword">if</span> (list == <span class="keyword">null</span>) &#123;</span><br><span class="line">            list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">            mUserSippers.put(userId, list);</span><br><span class="line">        &#125;</span><br><span class="line">        list.add(app);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 把app耗电加入到mUsageList中</span></span><br><span class="line">        mUsageList.add(app);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// root用户，即os耗电</span></span><br><span class="line">        <span class="keyword">if</span> (uid == <span class="number">0</span>) &#123;</span><br><span class="line">        osSipper = app;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (osSipper != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="comment">// app之外耗电</span></span><br><span class="line">    mWakelockPowerCalculator.calculateRemaining(osSipper, mStats, mRawRealtimeUs,</span><br><span class="line">        mRawUptimeUs, mStatsType);</span><br><span class="line">    osSipper.sumPower();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/05/06/Power/耗流算法分析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/28/Power/ProximitySensor工作原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/04/28/Power/ProximitySensor工作原理/" class="post-title-link" itemprop="url">ProximitySensor工作原理</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-28 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-28T00:00:00+08:00">2018-04-28</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1、DisplayPowerController构造函数"><a href="#1、DisplayPowerController构造函数" class="headerlink" title="1、DisplayPowerController构造函数"></a>1、DisplayPowerController构造函数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DisplayPowerController</span><span class="params">(Context context,</span></span></span><br><span class="line"><span class="function"><span class="params">        DisplayPowerCallbacks callbacks, Handler handler,</span></span></span><br><span class="line"><span class="function"><span class="params">        SensorManager sensorManager, DisplayBlanker blanker)</span> </span>&#123;</span><br><span class="line">    mHandler = <span class="keyword">new</span> DisplayControllerHandler(handler.getLooper());</span><br><span class="line">    mCallbacks = callbacks;</span><br><span class="line">    <span class="comment">// 获取电池统计服务</span></span><br><span class="line">    mBatteryStats = BatteryStatsService.getService();</span><br><span class="line">    <span class="comment">// 初始化传感器</span></span><br><span class="line">    mSensorManager = sensorManager;</span><br><span class="line">    <span class="comment">// 窗口管理策略</span></span><br><span class="line">    mWindowManagerPolicy = LocalServices.getService(WindowManagerPolicy.class);</span><br><span class="line">    <span class="comment">// 显示屏</span></span><br><span class="line">    mBlanker = blanker;</span><br><span class="line">    mContext = context;</span><br><span class="line">    <span class="keyword">final</span> Resources resources = context.getResources();</span><br><span class="line">    <span class="comment">// 最低屏幕亮度：10</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> screenBrightnessSettingMinimum = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessSettingMinimum));</span><br><span class="line">    <span class="comment">// Doze状态最低屏幕亮度：1</span></span><br><span class="line">    mScreenBrightnessDozeConfig = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessDoze));</span><br><span class="line">    <span class="comment">// Dim状态屏幕亮度：10</span></span><br><span class="line">    mScreenBrightnessDimConfig = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessDim));</span><br><span class="line">    <span class="comment">// 暗间中最低屏幕亮度：1</span></span><br><span class="line">    mScreenBrightnessDarkConfig = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessDark));</span><br><span class="line">    <span class="keyword">if</span> (mScreenBrightnessDarkConfig &gt; mScreenBrightnessDimConfig) &#123;</span><br><span class="line">        Slog.w(TAG, <span class="string">"Expected config_screenBrightnessDark ("</span></span><br><span class="line">                + mScreenBrightnessDarkConfig + <span class="string">") to be less than or equal to "</span></span><br><span class="line">                + <span class="string">"config_screenBrightnessDim ("</span> + mScreenBrightnessDimConfig + <span class="string">")."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mScreenBrightnessDarkConfig &gt; mScreenBrightnessDimConfig) &#123;</span><br><span class="line">        Slog.w(TAG, <span class="string">"Expected config_screenBrightnessDark ("</span></span><br><span class="line">                + mScreenBrightnessDarkConfig + <span class="string">") to be less than or equal to "</span></span><br><span class="line">                + <span class="string">"config_screenBrightnessSettingMinimum ("</span></span><br><span class="line">                + screenBrightnessSettingMinimum + <span class="string">")."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 取Min、Dim、Dark中最小值</span></span><br><span class="line">    <span class="keyword">int</span> screenBrightnessRangeMinimum = Math.min(Math.min(</span><br><span class="line">            screenBrightnessSettingMinimum, mScreenBrightnessDimConfig),</span><br><span class="line">            mScreenBrightnessDarkConfig);</span><br><span class="line">    <span class="comment">// 亮度最大值：255</span></span><br><span class="line">    mScreenBrightnessRangeMaximum = PowerManager.BRIGHTNESS_ON;</span><br><span class="line">    <span class="comment">// 软件自动调节亮度：false</span></span><br><span class="line">    mUseSoftwareAutoBrightnessConfig = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_automatic_brightness_available);</span><br><span class="line">    <span class="comment">// Doze模式自动调节亮度：false</span></span><br><span class="line">    mAllowAutoBrightnessWhileDozingConfig = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_allowAutoBrightnessWhileDozing);</span><br><span class="line">    <span class="comment">// 快速动画亮度每秒缓变率：200</span></span><br><span class="line">    mBrightnessRampRateFast = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_brightness_ramp_rate_fast);</span><br><span class="line">    <span class="comment">// 慢速动画亮度每秒缓变率：40</span></span><br><span class="line">    mBrightnessRampRateSlow = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_brightness_ramp_rate_slow);</span><br><span class="line">    <span class="comment">// 亮度传感器事件传输速率：250ms</span></span><br><span class="line">    <span class="keyword">int</span> lightSensorRate = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessLightSensorRate);</span><br><span class="line">    <span class="comment">// 设备退出Doze模式时用于获取首次亮度，该值为0即禁用该功能</span></span><br><span class="line">    <span class="keyword">int</span> initialLightSensorRate = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessInitialLightSensorRate);</span><br><span class="line">    <span class="keyword">if</span> (initialLightSensorRate == -<span class="number">1</span>) &#123;</span><br><span class="line">      initialLightSensorRate = lightSensorRate;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialLightSensorRate &gt; lightSensorRate) &#123;</span><br><span class="line">      Slog.w(TAG, <span class="string">"Expected config_autoBrightnessInitialLightSensorRate ("</span></span><br><span class="line">              + initialLightSensorRate + <span class="string">") to be less than or equal to "</span></span><br><span class="line">              + <span class="string">"config_autoBrightnessLightSensorRate ("</span> + lightSensorRate + <span class="string">")."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 亮光度抖动值：8000ms</span></span><br><span class="line">    <span class="keyword">long</span> brighteningLightDebounce = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessBrighteningLightDebounce);</span><br><span class="line">    <span class="comment">// 暗光度抖动值：4000ms</span></span><br><span class="line">    <span class="keyword">long</span> darkeningLightDebounce = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessDarkeningLightDebounce);</span><br><span class="line">    <span class="comment">// 默认为true，计算发现光度变化后立即重置屏幕亮度；否则会很慢根据光度变化屏幕亮度（适用于手表）</span></span><br><span class="line">    <span class="keyword">boolean</span> autoBrightnessResetAmbientLuxAfterWarmUp = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_autoBrightnessResetAmbientLuxAfterWarmUp);</span><br><span class="line">    <span class="comment">// 毫秒计算亮度，10000</span></span><br><span class="line">    <span class="keyword">int</span> ambientLightHorizon = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessAmbientLightHorizon);</span><br><span class="line">    <span class="comment">// 自动调整gamma的范围：300%</span></span><br><span class="line">    <span class="keyword">float</span> autoBrightnessAdjustmentMaxGamma = resources.getFraction(</span><br><span class="line">            com.android.internal.R.fraction.config_autoBrightnessAdjustmentMaxGamma,</span><br><span class="line">            <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (mUseSoftwareAutoBrightnessConfig) &#123;</span><br><span class="line">        <span class="comment">// 自动亮度级别</span></span><br><span class="line">        <span class="keyword">int</span>[] lux = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_autoBrightnessLevels);</span><br><span class="line">        <span class="comment">// 自动亮度lcd背光灯亮度</span></span><br><span class="line">        <span class="keyword">int</span>[] screenBrightness = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_autoBrightnessLcdBacklightValues);</span><br><span class="line">        <span class="comment">// 光感预估时间：0</span></span><br><span class="line">        <span class="keyword">int</span> lightSensorWarmUpTimeConfig = resources.getInteger(</span><br><span class="line">                com.android.internal.R.integer.config_lightSensorWarmupTime);</span><br><span class="line">        <span class="comment">// doze状态允许自动调节亮度值的规模：100%</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">float</span> dozeScaleFactor = resources.getFraction(</span><br><span class="line">                com.android.internal.R.fraction.config_screenAutoBrightnessDozeScaleFactor,</span><br><span class="line">                <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// 亮度滞后level配置</span></span><br><span class="line">        <span class="keyword">int</span>[] brightHysteresisLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dynamicHysteresisBrightLevels);</span><br><span class="line">        <span class="keyword">int</span>[] darkHysteresisLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dynamicHysteresisDarkLevels);</span><br><span class="line">        <span class="keyword">int</span>[] luxHysteresisLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dynamicHysteresisLuxLevels);</span><br><span class="line">        <span class="comment">// Doze模式亮度level配置</span></span><br><span class="line">        <span class="keyword">int</span>[] dozeSensorLuxLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dozeSensorLuxLevels);</span><br><span class="line">        <span class="keyword">int</span>[] dozeBrightnessBacklightValues = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dozeBrightnessBacklightValues);</span><br><span class="line">        <span class="keyword">boolean</span> useNewSensorSamplesForDoze = resources.getBoolean(</span><br><span class="line">                com.android.internal.R.bool.config_useNewSensorSamplesForDoze);</span><br><span class="line">        mUseActiveDozeLightSensorConfig = resources.getBoolean(</span><br><span class="line">                com.android.internal.R.bool.config_allowAutoBrightnessActiveDozeLightSensor);</span><br><span class="line">        LuxLevels luxLevels = <span class="keyword">new</span> LuxLevels(brightHysteresisLevels, darkHysteresisLevels,</span><br><span class="line">                luxHysteresisLevels, dozeSensorLuxLevels, dozeBrightnessBacklightValues);</span><br><span class="line">        Spline screenAutoBrightnessSpline = createAutoBrightnessSpline(lux, screenBrightness);</span><br><span class="line">        <span class="keyword">if</span> (screenAutoBrightnessSpline == <span class="keyword">null</span>) &#123;</span><br><span class="line">            Slog.e(TAG, <span class="string">"Error in config.xml.  config_autoBrightnessLcdBacklightValues "</span></span><br><span class="line">                    + <span class="string">"(size "</span> + screenBrightness.length + <span class="string">") "</span></span><br><span class="line">                    + <span class="string">"must be monotic and have exactly one more entry than "</span></span><br><span class="line">                    + <span class="string">"config_autoBrightnessLevels (size "</span> + lux.length + <span class="string">") "</span></span><br><span class="line">                    + <span class="string">"which must be strictly increasing.  "</span></span><br><span class="line">                    + <span class="string">"Auto-brightness will be disabled."</span>);</span><br><span class="line">            mUseSoftwareAutoBrightnessConfig = <span class="keyword">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">int</span> bottom = clampAbsoluteBrightness(screenBrightness[<span class="number">0</span>]);</span><br><span class="line">            <span class="keyword">if</span> (mScreenBrightnessDarkConfig &gt; bottom) &#123;</span><br><span class="line">                Slog.w(TAG, <span class="string">"config_screenBrightnessDark ("</span> + mScreenBrightnessDarkConfig</span><br><span class="line">                        + <span class="string">") should be less than or equal to the first value of "</span></span><br><span class="line">                        + <span class="string">"config_autoBrightnessLcdBacklightValues ("</span></span><br><span class="line">                        + bottom + <span class="string">")."</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (bottom &lt; screenBrightnessRangeMinimum) &#123;</span><br><span class="line">                screenBrightnessRangeMinimum = bottom;</span><br><span class="line">            &#125;</span><br><span class="line">            mAutomaticBrightnessController = <span class="keyword">new</span> AutomaticBrightnessController(<span class="keyword">this</span>,</span><br><span class="line">                    handler.getLooper(), sensorManager, screenAutoBrightnessSpline,</span><br><span class="line">                    lightSensorWarmUpTimeConfig, screenBrightnessRangeMinimum,</span><br><span class="line">                    mScreenBrightnessRangeMaximum, dozeScaleFactor, lightSensorRate,</span><br><span class="line">                    initialLightSensorRate, brighteningLightDebounce, darkeningLightDebounce,</span><br><span class="line">                    autoBrightnessResetAmbientLuxAfterWarmUp, ambientLightHorizon,</span><br><span class="line">                    autoBrightnessAdjustmentMaxGamma, mUseActiveDozeLightSensorConfig,</span><br><span class="line">                    useNewSensorSamplesForDoze, luxLevels);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    mScreenBrightnessRangeMinimum = screenBrightnessRangeMinimum;</span><br><span class="line">    <span class="comment">// 默认为false,屏幕不会淡出</span></span><br><span class="line">    mColorFadeFadesConfig = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_animateScreenLights);</span><br><span class="line">    <span class="comment">// 初始化接近传感器</span></span><br><span class="line">    <span class="keyword">if</span> (!DEBUG_PRETEND_PROXIMITY_SENSOR_ABSENT) &#123;</span><br><span class="line">        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);</span><br><span class="line">        <span class="keyword">if</span> (mProximitySensor != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mProximityThreshold = Math.min(mProximitySensor.getMaximumRange(),</span><br><span class="line">                    TYPICAL_PROXIMITY_THRESHOLD);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/04/28/Power/ProximitySensor工作原理/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>

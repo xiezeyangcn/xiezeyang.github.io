@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、初识Doze模式&amp;emsp;&amp;emsp;从Android 6.0(API级别23)开始，Android引入了2个省电功能，可通过管理应用在设备未连接至电源时的行为方式为用户延长电池寿命。低电耗模式(Doze)通过在设备长时间处于闲置状态时推迟应用的后台CPU和网络Activity来减少电池消耗。应用待机模式(App Standby)可推迟用户近期未与之交互的应用的后台网络Activity。">
+<meta name="keywords" content="Framework,Power">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Doze模式概述">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/02/24/Power/Doze模式概述/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、初识Doze模式&amp;emsp;&amp;emsp;从Android 6.0(API级别23)开始，Android引入了2个省电功能，可通过管理应用在设备未连接至电源时的行为方式为用户延长电池寿命。低电耗模式(Doze)通过在设备长时间处于闲置状态时推迟应用的后台CPU和网络Activity来减少电池消耗。应用待机模式(App Standby)可推迟用户近期未与之交互的应用的后台网络Activity。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/doze_m.bmp">
+<meta property="og:image" content="http://www.xiezeyang.com/images/doze_n.bmp">
+<meta property="og:image" content="http://www.xiezeyang.com/images/doze_device_idle_controller.bmp">
+<meta property="og:image" content="http://www.xiezeyang.com/images/doze_state_m.bmp">
+<meta property="og:image" content="http://www.xiezeyang.com/images/doze_support_case.bmp">
+<meta property="og:updated_time" content="2019-05-26T15:13:28.521Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Doze模式概述">
+<meta name="twitter:description" content="一、初识Doze模式&amp;emsp;&amp;emsp;从Android 6.0(API级别23)开始，Android引入了2个省电功能，可通过管理应用在设备未连接至电源时的行为方式为用户延长电池寿命。低电耗模式(Doze)通过在设备长时间处于闲置状态时推迟应用的后台CPU和网络Activity来减少电池消耗。应用待机模式(App Standby)可推迟用户近期未与之交互的应用的后台网络Activity。">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/doze_m.bmp">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/02/24/Power/Doze模式概述/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Doze模式概述 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/02/24/Power/Doze模式概述/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Doze模式概述
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-02-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-02-24T00:00:00+08:00">2018-02-24</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、初识Doze模式"><a href="#一、初识Doze模式" class="headerlink" title="一、初识Doze模式"></a>一、初识Doze模式</h3><p>&emsp;&emsp;从Android 6.0(API级别23)开始，Android引入了2个省电功能，可通过管理应用在设备未连接至电源时的行为方式为用户延长电池寿命。低电耗模式(Doze)通过在设备长时间处于闲置状态时推迟应用的后台CPU和网络Activity来减少电池消耗。应用待机模式(App Standby)可推迟用户近期未与之交互的应用的后台网络Activity。</p>
+<a id="more"></a>
+<h3 id="二、理解Doze模式"><a href="#二、理解Doze模式" class="headerlink" title="二、理解Doze模式"></a>二、理解Doze模式</h3><h4 id="2-1-进入Doze模式时机"><a href="#2-1-进入Doze模式时机" class="headerlink" title="2.1 进入Doze模式时机"></a>2.1 进入Doze模式时机</h4><p>&emsp;1、如果用户设备未插入电源;</p>
+<p>&emsp;2、处于静止状态一段时间且屏幕关闭。</p>
+<h4 id="2-2-进入Doze模式应用变化"><a href="#2-2-进入Doze模式应用变化" class="headerlink" title="2.2 进入Doze模式应用变化"></a>2.2 进入Doze模式应用变化</h4><p>&emsp;1、系统会尝试通过限制应用对网络和CPU密集型服务的访问来节省电量。</p>
+<p>&emsp;2、还可以阻止应用访问网络并推迟其作业、同步和标准闹铃。</p>
+<p>&emsp;3、系统会定期退出Doze模式一会儿，好让应用完成其已推迟的Activity。在此维护时段内，系统会运行所有待定同步、作业和闹铃并允许应用访问网络。</p>
+<p>&emsp;4、在每个维护时段结束后，系统会再次进入Doze模式，暂停网络访问并推迟作业、同步和闹铃。随着时间的推移，系统安排维护时段的次数越来越少。</p>
+<p><img src="/images/doze_m.bmp" alt></p>
+<h4 id="2-3-退出Doze模式时机"><a href="#2-3-退出Doze模式时机" class="headerlink" title="2.3 退出Doze模式时机"></a>2.3 退出Doze模式时机</h4><p>&emsp;1、移动设备；</p>
+<p>&emsp;2、打开屏幕；</p>
+<p>&emsp;3、连接到充电器唤醒设备。</p>
+<h4 id="2-4-Doze模式类型"><a href="#2-4-Doze模式类型" class="headerlink" title="2.4 Doze模式类型"></a>2.4 Doze模式类型</h4><p>&emsp;&emsp;在Android M上只有Deep Doze模式，在Android N上既有Deep Doze模式也有Light Doze模式，其区别与联系如下：</p>
+<p>&emsp;<1>Deep Doze模式需要静止一会儿，但是Light Doze模式无需静止；</1></p>
+<p>&emsp;<2>Deep Doze和Light Doze模式能同时在设备上运行；</2></p>
+<p>&emsp;<3>设备首先进入Light Doze模式，然后才能进入Deep Doze模式；</3></p>
+<p>&emsp;<4>如果设备进入Deep Doze模式，则忽略Light Doze模式。</4></p>
+<p><img src="/images/doze_n.bmp" alt></p>
+<h4 id="2-5-Doze模式限制-Deep-Mode"><a href="#2-5-Doze模式限制-Deep-Mode" class="headerlink" title="2.5 Doze模式限制(Deep Mode)"></a>2.5 Doze模式限制(Deep Mode)</h4><p>&emsp;1、暂停访问网络。</p>
+<p>&emsp;2、系统将忽略wake locks。</p>
+<p>&emsp;3、标准AlarmManager闹铃(包括setExact()和setWindow())推迟到下一维护时段。</p>
+<p>&emsp;&emsp;<1>如果需要设置在Doze模式下触发的闹铃，需使用setAndAllowWhileIdle()或setExactAndAllowWhileIdle()。</1></p>
+<p>&emsp;&emsp;<2>一般情况下，使用setAlarmClock()设置的闹铃将继续触发，但系统会在这些闹铃触发之前不久退出Doze模式。</2></p>
+<p>&emsp;4、系统不执行Wi-Fi扫描。</p>
+<p>&emsp;5、系统不允许运行同步适配器。</p>
+<p>&emsp;6、系统不允许运行JobScheduler。</p>
+<p>&emsp;注：1、5、6适用于Light Doze模式。</p>
+<h4 id="2-6-Doze模式检查清单"><a href="#2-6-Doze模式检查清单" class="headerlink" title="2.6 Doze模式检查清单"></a>2.6 Doze模式检查清单</h4><p>&emsp;1、尽可能使用 FCM 进行下游消息传递。</p>
+<p>&emsp;2、如果用户必须立即查看通知，需使用FCM高优先级消息。</p>
+<p>&emsp;3、在初始消息负载中提供足够的信息，这样随后就无需访问网络。</p>
+<p>&emsp;4、使用setAndAllowWhileIdle()和setExactAndAllowWhileIdle()设置关键闹铃。</p>
+<p>&emsp;5、在Doze模式下测试应用。</p>
+<h4 id="2-7-Doze代码分布"><a href="#2-7-Doze代码分布" class="headerlink" title="2.7 Doze代码分布"></a>2.7 Doze代码分布</h4><p>&emsp;&emsp;为实现Doze模式，Android M中新增了一个DeviceIdle服务，其实现代码位置为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frameworks/base/services/core/java/com/android/server/DeviceIdleController.java。</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;SystemServer在开机时会启动这个服务：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mSystemServiceManager.startService(DeviceIdleController.class)</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;除了上述的Doze模式限制控制逻辑外，还在NetworkPolicyManagerService、JobSchedulerService、SyncManager、PowerManagerService和AlarmManagerService中加入了对Doze状态的监听和查询接口来进行响应的操作。在DeviceIdleController中实现对设备状态的控制和改变，并且通知其他相关注册了AppIdleStateChangeListener接口的服务进行处理，而反过来这些服务也可以向DeviceIdleController查询device的状态，是一种交互的关系。其控制逻辑和策略实现的代码关系如下图所示：</p>
+<p><img src="/images/doze_device_idle_controller.bmp" alt></p>
+<h4 id="2-8-Doze状态机"><a href="#2-8-Doze状态机" class="headerlink" title="2.8 Doze状态机"></a>2.8 Doze状态机</h4><p>&emsp;1、 Android M</p>
+<p>&emsp;&emsp;<1>当设备亮屏或者处于正常使用状态时即为ACTIVE状态；</1></p>
+<p>&emsp;&emsp;<2>ACTIVE状态下不插充电器或USB且灭屏，则设备就会切换到INACTIVE状态；</2></p>
+<p>&emsp;&emsp;<3>INACTIVE状态经过30分钟，期间检测没有打断状态的行为，Doze就切换到IDLE_PENDING的状态；</3></p>
+<p>&emsp;&emsp;<4>然后再经过30分钟以及一系列的判断，状态切换到SENSING；</4></p>
+<p>&emsp;&emsp;<5>在SENSING状态下会去检测是否有地理位置变化，没有的话就切到LOCATION状态；</5></p>
+<p>&emsp;&emsp;<6>LOCATION状态下再经过30s的检测时间之后就进入了Doze的核心状态IDLE；</6></p>
+<p>&emsp;&emsp;<7>在IDLE模式下每隔一段时间就会进入一次IDLE_MAINTANCE，此间用来处理之前被挂起的一些任务；</7></p>
+<p>&emsp;&emsp;<8>IDLE_MAINTANCE状态持续5分钟之后会重新回到IDLE状态；</8></p>
+<p>&emsp;&emsp;<9>在除ACTIVE以外的所有状态中，检测到打断的行为如亮屏、插入充电器，位置的改变等状态就会回到ACTIVE，重新开始下一个轮回。</9></p>
+<p><img src="/images/doze_state_m.bmp" alt></p>
+<p>&emsp;2、Android N</p>
+<p>&emsp;&emsp;详见Deep/Light Mode介绍</p>
+<h3 id="三、理解App-standby模式"><a href="#三、理解App-standby模式" class="headerlink" title="三、理解App standby模式"></a>三、理解App standby模式</h3><p>&emsp;&emsp;App Standby模式允许系统判定应用在用户未主动使用它时处于空闲状态。当用户有一段时间未触摸应用时，系统便会作出此判定，以下条件均不适用：</p>
+<p>&emsp;<1>用户显式启动应用。</1></p>
+<p>&emsp;<2>应用当前有一个进程位于前台(表现为Activity或前台服务形式，或被另一Activity 或前台服务占用)。</2></p>
+<p>&emsp;<3>应用生成用户可在锁屏或通知托盘中看到的通知。</3></p>
+<p>&emsp;&emsp;当用户将设备插入电源时，系统将从待机状态释放应用，从而让它们可以自由访问网络并执行任何待定作业和同步。如果设备长时间处于空闲状态，系统将按每天大约一次的频率允许空闲应用访问网络</p>
+<h3 id="四、测试Doze模式和App-Standby模式"><a href="#四、测试Doze模式和App-Standby模式" class="headerlink" title="四、测试Doze模式和App Standby模式"></a>四、测试Doze模式和App Standby模式</h3><h4 id="4-1-Doze模式"><a href="#4-1-Doze模式" class="headerlink" title="4.1 Doze模式"></a>4.1 Doze模式</h4><p>&emsp;1、使用(Android 6.0(API级别23)或更高版本的系统映像配置硬件设备或虚拟设备。</p>
+<p>&emsp;2、将设备连接到开发计算机并安装应用</p>
+<p>&emsp;3、运行应用并使其保持活动状态</p>
+<p>&emsp;4、关闭设备屏幕。(应用保持活动状态)</p>
+<p>&emsp;5、通过运行以下命令强制系统在Doze模式之间循环切换：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> adb shell dumpsys battery unplug</span><br><span class="line"><span class="meta">$</span> adb shell dumpsys deviceidle step light/deep</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;可能需要多次运行第二个命令。不断地重复，直到设备变为空闲状态。</p>
+<p>&emsp;6、通过运行下面指令enable Doze、dump Doze：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> adb shell dumpsys deviceidle enable light/deep/all</span><br><span class="line"><span class="meta">$</span> adb shell dumpsys deviceidle</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;MTK平台可将persist.config.AutoPowerModes设置为1来enable Doze</p>
+<p>&emsp;7、在重新激活设备后观察应用的行为。确保应用在设备退出Doze模式时正常恢复。</p>
+<h4 id="4-2-App-Standby模式"><a href="#4-2-App-Standby模式" class="headerlink" title="4.2 App Standby模式"></a>4.2 App Standby模式</h4><p>&emsp;1、使用Android 6.0(API级别23)或更高版本的系统映像配置硬件设备或虚拟设备。</p>
+<p>&emsp;2、运行应用并使其保持活动状态。</p>
+<p>&emsp;3、通过运行以下命令强制应用进入App Standby模式：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> adb shell dumpsys battery unplug</span><br><span class="line"><span class="meta">$</span> adb shell am set-inactive &lt;packageName&gt; true</span><br></pre></td></tr></table></figure>
+<p>&emsp;4、使用以下命令模拟唤醒应用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> adb shell am set-inactive &lt;packageName&gt; false</span><br><span class="line"><span class="meta">$</span> adb shell am get-inactive &lt;packageName&gt;</span><br></pre></td></tr></table></figure>
+<p>&emsp;5、观察唤醒后的应用行为。确保应用从待机模式中正常恢复。特别地，应检查应用的通知和后台作业是否按预期继续运行。</p>
+<h3 id="五、其它"><a href="#五、其它" class="headerlink" title="五、其它"></a>五、其它</h3><h4 id="5-1-FCM简介"><a href="#5-1-FCM简介" class="headerlink" title="5.1 FCM简介"></a>5.1 FCM简介</h4><p>&emsp;&emsp;Firebase Cloud Messaging(FCM)是一项云端至设备的服务，允许支持在后端服务与Android设备上的应用之间实时进行下游消息传递。FCM提供了单一持久的云连接；所有需要实时传递消息的应用均可共享此连接。此共享连接使多个应用无需消耗电池即可维持自身单独的持久连接，避免快速耗尽电池，从而显著优化电池消耗。 因此，如果应用需要与后端服务进行消息传递集成，我们强烈建议尽量使用FCM，而非维持自身持久的网络连接。</p>
+<p>&emsp;&emsp;FCM经过优化，可通过高优先级FCM消息用于Doze模式和App Standby模式。FCM高优先级消息允许可靠地唤醒应用访问网络，即使用户设备处于Doze模式或应用处于AppStandby模式也不例外。在Doze模式或App Standby模式下，系统将传递消息并允许应用临时访问网络服务和部分唤醒锁，然后将设备或应用恢复到空闲状态。</p>
+<p>&emsp;&emsp;高优先级FCM消息不会影响Doze模式，也不会影响任何其他应用的状态。这意味着应用可以使用这些消息进行有效的通信，同时尽可能减少对整个系统和设备的电池影响。</p>
+<p>&emsp;&emsp;作为一项常规最佳做法，如果应用需要下游消息传递，则应使用FCM。如果服务器和客户端已经使用FCM，请确保服务对关键消息使用高优先级消息，因为即使设备处于Doze模式，这也会可靠地唤醒应用。</p>
+<h4 id="5-2-对其它用例支持"><a href="#5-2-对其它用例支持" class="headerlink" title="5.2 对其它用例支持"></a>5.2 对其它用例支持</h4><p><img src="/images/doze_support_case.bmp" alt></p>
+<p>&emsp;&emsp;通过妥善管理网络连接、闹铃、作业和同步并使用FCM高优先级消息，几乎所有应用都应该能够支持Doze模式。对于一小部分用例，这可能还不够。对于此类用例，系统为部分免除Doze模式和AppStandby模式优化的应用提供了一份可配置的白名单。</p>
+<p>&emsp;&emsp;在Doze模式和App Standby模式期间，加入白名单的应用可以使用网络并保留部分wake locks。不过，正如其他应用一样，其他限制仍然适用于加入白名单的应用。 例如，加入白名单的应用的作业和同步将推迟(在API级别23及更低级别中)，并且其常规AlarmManager 闹铃不会触发。通过调用isIgnoringBatteryOptimizations()，应用可以检查自身当前是否位于豁免白名单中。</p>
+<p>&emsp;&emsp;用户可以在Settings&gt;Battery&gt;BatteryOptimization中手动配置该白名单。或者，系统会为应用提供请求用户将应用加入白名单的方式：</p>
+<p>&emsp;<1>应用可以触发ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS Intent，让用户直接进入 Battery Optimization，他们可以在其中添加应用。</1></p>
+<p>&emsp;<2>具有REQUEST_IGNORE_BATTERY_OPTIMIZATIONS权限的应用可以触发系统对话框，让用户无需转到“设置”即可直接将应用添加到白名单。应用将通过触发ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS Intent来触发该对话框。</2></p>
+<p>&emsp;<3>用户可以根据需要手动从白名单中移除应用。</3></p>
+<p>&emsp;&emsp;在请求用户将应用添加到白名单之前，请确保应用符合加入白名单的可接受用例。</p>
+<p>&emsp;注：除非应用的核心功能受到不利影响，否则Google Play政策禁止应用请求直接豁免Android 6.0+中的电源管理功能(Doze模式和App Standby模式)。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/Power/" rel="tag"># Power</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/03/Other/Java基础知识点/" rel="next" title="Java基础知识点">
+                <i class="fa fa-chevron-left"></i> Java基础知识点
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/04/Power/Doze的启动流程/" rel="prev" title="Doze的启动流程">
+                Doze的启动流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、初识Doze模式"><span class="nav-text">一、初识Doze模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、理解Doze模式"><span class="nav-text">二、理解Doze模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-进入Doze模式时机"><span class="nav-text">2.1 进入Doze模式时机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-进入Doze模式应用变化"><span class="nav-text">2.2 进入Doze模式应用变化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-退出Doze模式时机"><span class="nav-text">2.3 退出Doze模式时机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-Doze模式类型"><span class="nav-text">2.4 Doze模式类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-Doze模式限制-Deep-Mode"><span class="nav-text">2.5 Doze模式限制(Deep Mode)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-Doze模式检查清单"><span class="nav-text">2.6 Doze模式检查清单</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-7-Doze代码分布"><span class="nav-text">2.7 Doze代码分布</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-8-Doze状态机"><span class="nav-text">2.8 Doze状态机</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、理解App-standby模式"><span class="nav-text">三、理解App standby模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、测试Doze模式和App-Standby模式"><span class="nav-text">四、测试Doze模式和App Standby模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-Doze模式"><span class="nav-text">4.1 Doze模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-App-Standby模式"><span class="nav-text">4.2 App Standby模式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、其它"><span class="nav-text">五、其它</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-FCM简介"><span class="nav-text">5.1 FCM简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-对其它用例支持"><span class="nav-text">5.2 对其它用例支持</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

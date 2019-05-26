@@ -329,7 +329,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/28/Security/DRM常见问题/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/04/Tool/adb常用指令详解/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -349,7 +349,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/10/28/Security/DRM常见问题/" class="post-title-link" itemprop="url">DRM常见问题</a>
+                <a href="/2017/11/04/Tool/adb常用指令详解/" class="post-title-link" itemprop="url">adb常用指令详解</a>
               
             
           </h1>
@@ -374,7 +374,7 @@
                 
               
 
-              <time title="创建时间：2017-10-28 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-28T00:00:00+08:00">2017-10-28</time>
+              <time title="创建时间：2017-11-04 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-04T00:00:00+08:00">2017-11-04</time>
             
 
             
@@ -392,7 +392,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
 
                 
                 
@@ -428,12 +428,14 @@
 
       
         
-          <h3 id="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框"><a href="#一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框" class="headerlink" title="一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框"></a>一、图库查看DRM类型IMAGE和VIDEO不弹出Dialog对话框</h3><h4 id="1-1-DrmLayer"><a href="#1-1-DrmLayer" class="headerlink" title="1.1 DrmLayer"></a>1.1 DrmLayer</h4><p>packages/apps/Gallery2/mtkgallery/src/com/mediatek/galleryfeature/drm/DrmLayer.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">showDrmDialog</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (OmaDrmStore.RightsStatus.RIGHTS_VALID == rights) &#123;</span><br><span class="line">        OmaDrmUiUtils.showConsumeDialog(mActivity,</span><br><span class="line">            <span class="keyword">new</span> DialogInterface.OnClickListener() &#123;</span><br><span class="line">              ...</span><br><span class="line">         &#125;);</span><br><span class="line">     drmManagerClient.consumeRights(imageItem.filePath,OmaDrmStore.Action.DISPLAY);</span><br><span class="line">        mModel.enterConsumeMode();</span><br><span class="line">        hideBars();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        …</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>所有 adb 客户端均使用端口 5037 与 adb服务器通信<br>设置-&gt;关于手机-&gt;版本号点击7次-&gt;返回上一级，进入开发者选项-&gt;打开USB调试</p>
+<p>显示已连接的模拟器/设备的列表</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">serial_number state</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb -s serial_number command</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/10/28/Security/DRM常见问题/#more" rel="contents">
+              <a class="btn" href="/2017/11/04/Tool/adb常用指令详解/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -493,7 +495,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/21/Security/ICU那点事儿/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/29/Tool/Git常用命令详解/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -513,7 +515,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/10/21/Security/ICU那点事儿/" class="post-title-link" itemprop="url">ICU那点事儿</a>
+                <a href="/2017/10/29/Tool/Git常用命令详解/" class="post-title-link" itemprop="url">Git常用命令详解</a>
               
             
           </h1>
@@ -538,7 +540,7 @@
                 
               
 
-              <time title="创建时间：2017-10-21 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-21T00:00:00+08:00">2017-10-21</time>
+              <time title="创建时间：2017-10-29 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-29T00:00:00+08:00">2017-10-29</time>
             
 
             
@@ -556,7 +558,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
 
                 
                 
@@ -592,12 +594,14 @@
 
       
         
-          <h3 id="1-ICU概述"><a href="#1-ICU概述" class="headerlink" title="1. ICU概述"></a>1. ICU概述</h3><p>ICU(International Component for Unicode)是用于支持软件国际化的开源项目。ICU4C是ICU在C/C++平台下的版本, ICU4C提供了C/C++平台强大的国际化开发能力，软件开发者几乎可以使用ICU4C解决任何国际化的问题，根据各地的风俗和语言习惯，实现对数字、货币、时间、日期、和消息的格式化、解析，对字符串进行大小写转换、整理、搜索和排序等功能，必须一提的是，ICU4C提供了强大的BIDI算法，对阿拉伯语等BIDI语言提供了完善的支持。</p>
-<p>ICU相关的问题主要有：时间客制化，时间格式，数字显示这几部分。ICU主要是由Language和DateTime两块使用。主要目录：external/icu/icu4c/source/data<br>lang目录： 各种语言对其他语言的翻译,常见地方为setting中的语言列表<br>locales目录： 月份，星期，日期，AM/PM等日期相关的翻译<br>zone目录： 时区名称的定义<br>region目录： 地区，国家名称</p>
+          <p>—-写在前面：</p>
+<p>  自打成为社会人以来，接触Git也四年有余了吧，说它是工作必备工具真是毫不夸张呢。本篇将讲述Git的基础操作，掌握了它们开发者基本够用了。除非你志在软件配置管理SCM，那就要移步官网深入研究了。</p>
+<h3 id="一、Git的安装"><a href="#一、Git的安装" class="headerlink" title="一、Git的安装"></a>一、Git的安装</h3><p>下面以Ubuntu系统为例:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 需先加入git软件源，再执行install操作</span><br><span class="line">$ sudo add-apt-repository ppa:git-core/ppa</span><br><span class="line">$ sudo apt update</span><br><span class="line">$ sudo apt-get install git</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/10/21/Security/ICU那点事儿/#more" rel="contents">
+              <a class="btn" href="/2017/10/29/Tool/Git常用命令详解/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -657,7 +661,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/15/Tool/搭建代码搜索神器OpenGrok/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/22/Tool/搭建代码搜索神器OpenGrok/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -677,7 +681,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/10/15/Tool/搭建代码搜索神器OpenGrok/" class="post-title-link" itemprop="url">搭建代码搜索神器OpenGrok</a>
+                <a href="/2017/10/22/Tool/搭建代码搜索神器OpenGrok/" class="post-title-link" itemprop="url">搭建代码搜索神器OpenGrok</a>
               
             
           </h1>
@@ -702,7 +706,7 @@
                 
               
 
-              <time title="创建时间：2017-10-15 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-15T00:00:00+08:00">2017-10-15</time>
+              <time title="创建时间：2017-10-22 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-22T00:00:00+08:00">2017-10-22</time>
             
 
             
@@ -760,7 +764,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/10/15/Tool/搭建代码搜索神器OpenGrok/#more" rel="contents">
+              <a class="btn" href="/2017/10/22/Tool/搭建代码搜索神器OpenGrok/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -820,7 +824,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/10/Tool/Ubuntu创建共享目录/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/14/Tool/Ubuntu创建共享目录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -840,7 +844,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/10/10/Tool/Ubuntu创建共享目录/" class="post-title-link" itemprop="url">Ubuntu创建共享目录</a>
+                <a href="/2017/10/14/Tool/Ubuntu创建共享目录/" class="post-title-link" itemprop="url">Ubuntu创建共享目录</a>
               
             
           </h1>
@@ -865,7 +869,7 @@
                 
               
 
-              <time title="创建时间：2017-10-10 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-10T00:00:00+08:00">2017-10-10</time>
+              <time title="创建时间：2017-10-14 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-14T00:00:00+08:00">2017-10-14</time>
             
 
             
@@ -924,7 +928,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/10/10/Tool/Ubuntu创建共享目录/#more" rel="contents">
+              <a class="btn" href="/2017/10/14/Tool/Ubuntu创建共享目录/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -984,7 +988,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/02/Tool/抓取有效的Mtklog/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/07/Tool/抓取有效的Mtklog/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1004,7 +1008,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2017/10/02/Tool/抓取有效的Mtklog/" class="post-title-link" itemprop="url">抓取有效的Mtklog</a>
+                <a href="/2017/10/07/Tool/抓取有效的Mtklog/" class="post-title-link" itemprop="url">抓取有效的Mtklog</a>
               
             
           </h1>
@@ -1029,7 +1033,7 @@
                 
               
 
-              <time title="创建时间：2017-10-02 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-02T00:00:00+08:00">2017-10-02</time>
+              <time title="创建时间：2017-10-07 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-07T00:00:00+08:00">2017-10-07</time>
             
 
             
@@ -1087,7 +1091,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2017/10/02/Tool/抓取有效的Mtklog/#more" rel="contents">
+              <a class="btn" href="/2017/10/07/Tool/抓取有效的Mtklog/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
