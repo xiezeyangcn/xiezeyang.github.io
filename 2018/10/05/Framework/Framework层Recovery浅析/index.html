@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="本文主要介绍Framework层Recovery相关内容，包括Recovery服务启动，升级包验证、解密、安装，恢复出厂等流程。 1.启动RecoverySystemService1.1 SystemServer启动RecoverySystemService作为系统启动关键服务，需要在SystemServer的startBootstrapServices中通过SystemServiceManage">
+<meta name="keywords" content="Framework,Recovery">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Framework层Recovery浅析">
+<meta property="og:url" content="http://www.xiezeyang.com/2018/10/05/Framework/Framework层Recovery浅析/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="本文主要介绍Framework层Recovery相关内容，包括Recovery服务启动，升级包验证、解密、安装，恢复出厂等流程。 1.启动RecoverySystemService1.1 SystemServer启动RecoverySystemService作为系统启动关键服务，需要在SystemServer的startBootstrapServices中通过SystemServiceManage">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-23T02:37:26.837Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Framework层Recovery浅析">
+<meta name="twitter:description" content="本文主要介绍Framework层Recovery相关内容，包括Recovery服务启动，升级包验证、解密、安装，恢复出厂等流程。 1.启动RecoverySystemService1.1 SystemServer启动RecoverySystemService作为系统启动关键服务，需要在SystemServer的startBootstrapServices中通过SystemServiceManage">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2018/10/05/Framework/Framework层Recovery浅析/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Framework层Recovery浅析 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/10/05/Framework/Framework层Recovery浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Framework层Recovery浅析
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-10-05 00:00:00" itemprop="dateCreated datePublished" datetime="2018-10-05T00:00:00+08:00">2018-10-05</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文主要介绍Framework层Recovery相关内容，包括Recovery服务启动，升级包验证、解密、安装，恢复出厂等流程。</p>
+<h3 id="1-启动RecoverySystemService"><a href="#1-启动RecoverySystemService" class="headerlink" title="1.启动RecoverySystemService"></a>1.启动RecoverySystemService</h3><h4 id="1-1-SystemServer启动RecoverySystemService"><a href="#1-1-SystemServer启动RecoverySystemService" class="headerlink" title="1.1 SystemServer启动RecoverySystemService"></a>1.1 SystemServer启动RecoverySystemService</h4><p>作为系统启动关键服务，需要在SystemServer的startBootstrapServices中通过SystemServiceManager来启动RecoverySystemService。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/java/com/android/server/SystemServer.java</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startBootstrapServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        mSystemServiceManager.startService(RecoverySystemService.class);</span><br><span class="line">        ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-2-RecoverySystemService的启动"><a href="#1-2-RecoverySystemService的启动" class="headerlink" title="1.2 RecoverySystemService的启动"></a>1.2 RecoverySystemService的启动</h4><p>RecoverySystemService继承自SystemService，将通过ServiceManagerService回调进入onStart方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/RecoverySystemService.java</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RecoverySystemService</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">        mContext = context;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/RecoverySystemService.java</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        publishBinderService(Context.RECOVERY_SERVICE, <span class="keyword">new</span> BinderService());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>在onStart方法中调用publishBinderService方法来发布RecoverySystemService这一Binder服务。即将该服务加入到ServiceManager列表中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/SystemService.java</span></span><br><span class="line">    <span class="comment">// 发布服务，以便其他服务和应用程序可以访问它。</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">publishBinderService</span><span class="params">(String name, IBinder service)</span> </span>&#123;</span><br><span class="line">        publishBinderService(name, service, <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// allowIsolated：设置为true以允许隔离的沙盒进程访问此服务</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">publishBinderService</span><span class="params">(String name, IBinder service,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">boolean</span> allowIsolated)</span> </span>&#123;</span><br><span class="line">        publishBinderService(name, service, allowIsolated, DUMP_FLAG_PRIORITY_DEFAULT);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// dumpPriority：支持转储优先级作为位掩码</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">publishBinderService</span><span class="params">(String name, IBinder service,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">boolean</span> allowIsolated, <span class="keyword">int</span> dumpPriority)</span> </span>&#123;</span><br><span class="line">        ServiceManager.addService(name, service, allowIsolated, dumpPriority);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-RecoverySystem中系统升级相关API"><a href="#2-RecoverySystem中系统升级相关API" class="headerlink" title="2. RecoverySystem中系统升级相关API"></a>2. RecoverySystem中系统升级相关API</h3><h3 id="2-1-调用VerifyPackage方法验证升级包签名"><a href="#2-1-调用VerifyPackage方法验证升级包签名" class="headerlink" title="2.1 调用VerifyPackage方法验证升级包签名"></a>2.1 调用VerifyPackage方法验证升级包签名</h3><p>调用verifyPackage验证升级包签名。</p>
+<p>一旦设备重启到recovery，安装程序也会单独验证程序包。仅当包成功验证后，此函数才会返回，否则会引发异常。验证包可能需要很长时间，故不应从UI线程调用此函数。在此函数正在进行时中断线程将导致抛出SecurityException。</p>
+<p>deviceCertsZipFile：/system/etc/security/otacerts.zip</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">verifyPackage</span><span class="params">(File packageFile,</span></span></span><br><span class="line"><span class="function"><span class="params">                                     ProgressListener listener,</span></span></span><br><span class="line"><span class="function"><span class="params">                                     File deviceCertsZipFile)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, GeneralSecurityException </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> fileLen = packageFile.length();</span><br><span class="line">        <span class="keyword">final</span> RandomAccessFile raf = <span class="keyword">new</span> RandomAccessFile(packageFile, <span class="string">"r"</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> startTimeMillis = System.currentTimeMillis();</span><br><span class="line">            <span class="keyword">if</span> (listener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                listener.onProgress(<span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            raf.seek(fileLen - <span class="number">6</span>);</span><br><span class="line">            <span class="keyword">byte</span>[] footer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">6</span>];</span><br><span class="line">            raf.readFully(footer);</span><br><span class="line">            <span class="keyword">if</span> (footer[<span class="number">2</span>] != (<span class="keyword">byte</span>)<span class="number">0xff</span> || footer[<span class="number">3</span>] != (<span class="keyword">byte</span>)<span class="number">0xff</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"no signature in file (no footer)"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> commentSize = (footer[<span class="number">4</span>] &amp; <span class="number">0xff</span>) | ((footer[<span class="number">5</span>] &amp; <span class="number">0xff</span>) &lt;&lt; <span class="number">8</span>);</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> signatureStart = (footer[<span class="number">0</span>] &amp; <span class="number">0xff</span>) | ((footer[<span class="number">1</span>] &amp; <span class="number">0xff</span>) &lt;&lt; <span class="number">8</span>);</span><br><span class="line">            <span class="keyword">byte</span>[] eocd = <span class="keyword">new</span> <span class="keyword">byte</span>[commentSize + <span class="number">22</span>];</span><br><span class="line">            raf.seek(fileLen - (commentSize + <span class="number">22</span>));</span><br><span class="line">            raf.readFully(eocd);</span><br><span class="line">            <span class="comment">// 检查是否找到了end-of-central-directory记录的头。</span></span><br><span class="line">            <span class="keyword">if</span> (eocd[<span class="number">0</span>] != (<span class="keyword">byte</span>)<span class="number">0x50</span> || eocd[<span class="number">1</span>] != (<span class="keyword">byte</span>)<span class="number">0x4b</span> ||</span><br><span class="line">                eocd[<span class="number">2</span>] != (<span class="keyword">byte</span>)<span class="number">0x05</span> || eocd[<span class="number">3</span>] != (<span class="keyword">byte</span>)<span class="number">0x06</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"no signature in file (bad footer)"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">4</span>; i &lt; eocd.length-<span class="number">3</span>; ++i) &#123;</span><br><span class="line">                <span class="keyword">if</span> (eocd[i  ] == (<span class="keyword">byte</span>)<span class="number">0x50</span> &amp;&amp; eocd[i+<span class="number">1</span>] == (<span class="keyword">byte</span>)<span class="number">0x4b</span> &amp;&amp;</span><br><span class="line">                    eocd[i+<span class="number">2</span>] == (<span class="keyword">byte</span>)<span class="number">0x05</span> &amp;&amp; eocd[i+<span class="number">3</span>] == (<span class="keyword">byte</span>)<span class="number">0x06</span>) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"EOCD marker found after start of EOCD"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 解析签名。</span></span><br><span class="line">            PKCS7 block =</span><br><span class="line">                <span class="keyword">new</span> PKCS7(<span class="keyword">new</span> ByteArrayInputStream(eocd, commentSize+<span class="number">22</span>-signatureStart, signatureStart));</span><br><span class="line">            <span class="comment">// 从签名中获取第一个证书。</span></span><br><span class="line">            X509Certificate[] certificates = block.getCertificates();</span><br><span class="line">            <span class="keyword">if</span> (certificates == <span class="keyword">null</span> || certificates.length == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"signature contains no certificates"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            X509Certificate cert = certificates[<span class="number">0</span>];</span><br><span class="line">            PublicKey signatureKey = cert.getPublicKey();</span><br><span class="line">            SignerInfo[] signerInfos = block.getSignerInfos();</span><br><span class="line">            <span class="keyword">if</span> (signerInfos == <span class="keyword">null</span> || signerInfos.length == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"signature contains no signedData"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            SignerInfo signerInfo = signerInfos[<span class="number">0</span>];</span><br><span class="line">            <span class="comment">// 检查升级包中包含的证书的公钥是否与我们的可信公钥匹配。</span></span><br><span class="line">            <span class="keyword">boolean</span> verified = <span class="keyword">false</span>;</span><br><span class="line">            HashSet&lt;X509Certificate&gt; trusted = getTrustedCerts(</span><br><span class="line">                deviceCertsZipFile == <span class="keyword">null</span> ? DEFAULT_KEYSTORE : deviceCertsZipFile);</span><br><span class="line">            <span class="keyword">for</span> (X509Certificate c : trusted) &#123;</span><br><span class="line">                <span class="keyword">if</span> (c.getPublicKey().equals(signatureKey)) &#123;</span><br><span class="line">                    verified = <span class="keyword">true</span>;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!verified) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"signature doesn't match any trusted key"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 签名证书与可信密钥匹配。验证证书中的摘要是否与实际文件数据匹配。</span></span><br><span class="line">            raf.seek(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">final</span> ProgressListener listenerForInner = listener;</span><br><span class="line">            SignerInfo verifyResult = block.verify(signerInfo, <span class="keyword">new</span> InputStream() &#123;</span><br><span class="line">                <span class="comment">// 签名涵盖了除压缩包注释及其2字节长度之外的所有OTA包。</span></span><br><span class="line">                <span class="keyword">long</span> toRead = fileLen - commentSize - <span class="number">2</span>;</span><br><span class="line">                <span class="keyword">long</span> soFar = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">int</span> lastPercent = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">long</span> lastPublishTime = startTimeMillis;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">read</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">read</span><span class="params">(<span class="keyword">byte</span>[] b, <span class="keyword">int</span> off, <span class="keyword">int</span> len)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">                    <span class="keyword">if</span> (soFar &gt;= toRead) &#123;</span><br><span class="line">                        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span> (Thread.currentThread().isInterrupted()) &#123;</span><br><span class="line">                        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">int</span> size = len;</span><br><span class="line">                    <span class="keyword">if</span> (soFar + size &gt; toRead) &#123;</span><br><span class="line">                        size = (<span class="keyword">int</span>)(toRead - soFar);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">int</span> read = raf.read(b, off, size);</span><br><span class="line">                    soFar += read;</span><br><span class="line">                    <span class="keyword">if</span> (listenerForInner != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        <span class="keyword">long</span> now = System.currentTimeMillis();</span><br><span class="line">                        <span class="keyword">int</span> p = (<span class="keyword">int</span>)(soFar * <span class="number">100</span> / toRead);</span><br><span class="line">                        <span class="keyword">if</span> (p &gt; lastPercent &amp;&amp;</span><br><span class="line">                            now - lastPublishTime &gt; PUBLISH_PROGRESS_INTERVAL_MS) &#123;</span><br><span class="line">                            lastPercent = p;</span><br><span class="line">                            lastPublishTime = now;</span><br><span class="line">                            listenerForInner.onProgress(lastPercent);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">return</span> read;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">boolean</span> interrupted = Thread.interrupted();</span><br><span class="line">            <span class="keyword">if</span> (listener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                listener.onProgress(<span class="number">100</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (interrupted) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"verification was interrupted"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (verifyResult == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"signature digest verification failed"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            raf.close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 验证升级包的兼容性。</span></span><br><span class="line">        <span class="keyword">if</span> (!readAndVerifyPackageCompatibilityEntry(packageFile)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> SignatureException(<span class="string">"package compatibility verification failed"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-调用processPackage方法解密升级包"><a href="#2-2-调用processPackage方法解密升级包" class="headerlink" title="2.2 调用processPackage方法解密升级包"></a>2.2 调用processPackage方法解密升级包</h4><p>调用processPackage，使用uncrypt处理给定的升级包。如果升级包不在data分区上，则为no-op。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="meta">@SystemApi</span></span><br><span class="line">    <span class="meta">@RequiresPermission</span>(android.Manifest.permission.RECOVERY)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">processPackage</span><span class="params">(Context context,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      File packageFile,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      <span class="keyword">final</span> ProgressListener listener,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      <span class="keyword">final</span> Handler handler)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String filename = packageFile.getCanonicalPath();</span><br><span class="line">        <span class="keyword">if</span> (!filename.startsWith(<span class="string">"/data/"</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        RecoverySystem rs = (RecoverySystem) context.getSystemService(Context.RECOVERY_SERVICE);</span><br><span class="line">        IRecoverySystemProgressListener progressListener = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (listener != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> Handler progressHandler;</span><br><span class="line">            <span class="keyword">if</span> (handler != <span class="keyword">null</span>) &#123;</span><br><span class="line">                progressHandler = handler;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                progressHandler = <span class="keyword">new</span> Handler(context.getMainLooper());</span><br><span class="line">            &#125;</span><br><span class="line">            progressListener = <span class="keyword">new</span> IRecoverySystemProgressListener.Stub() &#123;</span><br><span class="line">                <span class="keyword">int</span> lastProgress = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">long</span> lastPublishTime = System.currentTimeMillis();</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onProgress</span><span class="params">(<span class="keyword">final</span> <span class="keyword">int</span> progress)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">long</span> now = System.currentTimeMillis();</span><br><span class="line">                    progressHandler.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                            <span class="keyword">if</span> (progress &gt; lastProgress &amp;&amp;</span><br><span class="line">                                    now - lastPublishTime &gt; PUBLISH_PROGRESS_INTERVAL_MS) &#123;</span><br><span class="line">                                lastProgress = progress;</span><br><span class="line">                                lastPublishTime = now;</span><br><span class="line">                                listener.onProgress(progress);</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!rs.uncrypt(filename, progressListener)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"process package failed"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>调用uncrypt，通过Binder与RecoverySystemService通信以触发解密。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="comment">//通过Binder与RecoverySystemService通信以触发uncrypt。</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">uncrypt</span><span class="params">(String packageFile, IRecoverySystemProgressListener listener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> mService.uncrypt(packageFile, listener);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException unused) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/RecoverySystemService.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BinderService</span> <span class="keyword">extends</span> <span class="title">IRecoverySystem</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">uncrypt</span><span class="params">(String filename, IRecoverySystemProgressListener listener)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (DEBUG) Slog.d(TAG, <span class="string">"uncrypt: "</span> + filename);</span><br><span class="line">            <span class="keyword">synchronized</span> (sRequestLock) &#123;</span><br><span class="line">                mContext.enforceCallingOrSelfPermission(android.Manifest.permission.RECOVERY, <span class="keyword">null</span>);</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">boolean</span> available = checkAndWaitForUncryptService();</span><br><span class="line">                <span class="keyword">if</span> (!available) &#123;</span><br><span class="line">                    Slog.e(TAG, <span class="string">"uncrypt service is unavailable."</span>);</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 删除旧的/cache/recovery/uncrypt文件</span></span><br><span class="line">                RecoverySystem.UNCRYPT_PACKAGE_FILE.delete();</span><br><span class="line">                <span class="comment">// 创建新的uncrypt文件并准备uncrypt</span></span><br><span class="line">                <span class="keyword">try</span> (FileWriter uncryptFile = <span class="keyword">new</span> FileWriter(RecoverySystem.UNCRYPT_PACKAGE_FILE)) &#123;</span><br><span class="line">                    uncryptFile.write(filename + <span class="string">"\n"</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    Slog.e(TAG, <span class="string">"IOException when writing \""</span> +</span><br><span class="line">                            RecoverySystem.UNCRYPT_PACKAGE_FILE + <span class="string">"\":"</span>, e);</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 在init中将"ctl.start"设置为"uncrypt"来触发uncrypt</span></span><br><span class="line">                SystemProperties.set(<span class="string">"ctl.start"</span>, <span class="string">"uncrypt"</span>);</span><br><span class="line">                <span class="comment">// 通过socket与uncrypt服务建立通信</span></span><br><span class="line">                LocalSocket socket = connectService();</span><br><span class="line">                <span class="keyword">if</span> (socket == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    Slog.e(TAG, <span class="string">"Failed to connect to uncrypt socket"</span>);</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 从socket中读取状态</span></span><br><span class="line">                DataInputStream dis = <span class="keyword">null</span>;</span><br><span class="line">                DataOutputStream dos = <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    dis = <span class="keyword">new</span> DataInputStream(socket.getInputStream());</span><br><span class="line">                    dos = <span class="keyword">new</span> DataOutputStream(socket.getOutputStream());</span><br><span class="line">                    <span class="keyword">int</span> lastStatus = Integer.MIN_VALUE;</span><br><span class="line">                    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">                        <span class="keyword">int</span> status = dis.readInt();</span><br><span class="line">                        <span class="comment">// 避免使用相同的消息淹没日志。</span></span><br><span class="line">                        <span class="keyword">if</span> (status == lastStatus &amp;&amp; lastStatus != Integer.MIN_VALUE) &#123;</span><br><span class="line">                            <span class="keyword">continue</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                        lastStatus = status;</span><br><span class="line">                        <span class="keyword">if</span> (status &gt;= <span class="number">0</span> &amp;&amp; status &lt;= <span class="number">100</span>) &#123;</span><br><span class="line">                            <span class="comment">// 更新状态</span></span><br><span class="line">                            Slog.i(TAG, <span class="string">"uncrypt read status: "</span> + status);</span><br><span class="line">                            <span class="keyword">if</span> (listener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                                <span class="keyword">try</span> &#123;</span><br><span class="line">                                    listener.onProgress(status);</span><br><span class="line">                                &#125; <span class="keyword">catch</span> (RemoteException ignored) &#123;</span><br><span class="line">                                    Slog.w(TAG, <span class="string">"RemoteException when posting progress"</span>);</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                            <span class="keyword">if</span> (status == <span class="number">100</span>) &#123;</span><br><span class="line">                                Slog.i(TAG, <span class="string">"uncrypt successfully finished."</span>);</span><br><span class="line">                                <span class="comment">// ack收到最终状态码。uncrypt等待ack，所以socket在接收到该码之前不会被销毁。</span></span><br><span class="line">                                dos.writeInt(<span class="number">0</span>);</span><br><span class="line">                                <span class="keyword">break</span>;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="comment">// /system/bin/uncrypt出错。</span></span><br><span class="line">                            Slog.e(TAG, <span class="string">"uncrypt failed with status: "</span> + status);</span><br><span class="line">                            <span class="comment">// ack收到最终状态码。uncrypt等待ack，所以socket在接收到该码之前不会被销毁。</span></span><br><span class="line">                            dos.writeInt(<span class="number">0</span>);</span><br><span class="line">                            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    Slog.e(TAG, <span class="string">"IOException when reading status: "</span>, e);</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    IoUtils.closeQuietly(dis);</span><br><span class="line">                    IoUtils.closeQuietly(dos);</span><br><span class="line">                    IoUtils.closeQuietly(socket);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>调用checkAndWaitForUncryptService，检查是否有init服务一直在运行。若有则不能立马启动一个uncrypt/setup-bcb/clear-bcb服务。否则它可能会造成socket通信异常，因为init正在服务启动、退出时创建、删除这些socket。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/RecoverySystemService.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BinderService</span> <span class="keyword">extends</span> <span class="title">IRecoverySystem</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkAndWaitForUncryptService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> retry = <span class="number">0</span>; retry &lt; SOCKET_CONNECTION_MAX_RETRY; retry++) &#123;</span><br><span class="line">                <span class="keyword">final</span> String uncryptService = SystemProperties.get(INIT_SERVICE_UNCRYPT);</span><br><span class="line">                <span class="keyword">final</span> String setupBcbService = SystemProperties.get(INIT_SERVICE_SETUP_BCB);</span><br><span class="line">                <span class="keyword">final</span> String clearBcbService = SystemProperties.get(INIT_SERVICE_CLEAR_BCB);</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">boolean</span> busy = <span class="string">"running"</span>.equals(uncryptService) ||</span><br><span class="line">                        <span class="string">"running"</span>.equals(setupBcbService) || <span class="string">"running"</span>.equals(clearBcbService);</span><br><span class="line">                <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">                    Slog.i(TAG, <span class="string">"retry: "</span> + retry + <span class="string">" busy: "</span> + busy +</span><br><span class="line">                            <span class="string">" uncrypt: ["</span> + uncryptService + <span class="string">"]"</span> +</span><br><span class="line">                            <span class="string">" setupBcb: ["</span> + setupBcbService + <span class="string">"]"</span> +</span><br><span class="line">                            <span class="string">" clearBcb: ["</span> + clearBcbService + <span class="string">"]"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!busy) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    Slog.w(TAG, <span class="string">"Interrupted:"</span>, e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-调用installPackage方法安装升级包"><a href="#2-3-调用installPackage方法安装升级包" class="headerlink" title="2.3 调用installPackage方法安装升级包"></a>2.3 调用installPackage方法安装升级包</h4><p>调用installPackage，重启设备以安装给定的升级包。其中升级包必须存于recovery中可以挂载的分区中，如cache、data分区。如果升级包尚未处理（即未加密），则需要设置UNCRYPT_PACKAGE_FILE并删除BLOCK_MAP_FILE以便重启期间触发解密。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="meta">@SystemApi</span></span><br><span class="line">    <span class="meta">@RequiresPermission</span>(android.Manifest.permission.RECOVERY)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">installPackage</span><span class="params">(Context context, File packageFile, <span class="keyword">boolean</span> processed)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (sRequestLock) &#123;</span><br><span class="line">            <span class="comment">// 删除/cache/recovery/log文件。</span></span><br><span class="line">            LOG_FILE.delete();</span><br><span class="line">            <span class="comment">// 删除/cache/recovery/uncrypt_file文件。</span></span><br><span class="line">            UNCRYPT_PACKAGE_FILE.delete();</span><br><span class="line">            String filename = packageFile.getCanonicalPath();</span><br><span class="line">            Log.w(TAG, <span class="string">"!!! REBOOTING TO INSTALL "</span> + filename + <span class="string">" !!!"</span>);</span><br><span class="line">            <span class="comment">// 若升级包名称中包含"_s.zip"，则该升级包是个security升级包。</span></span><br><span class="line">            <span class="keyword">boolean</span> securityUpdate = filename.endsWith(<span class="string">"_s.zip"</span>);</span><br><span class="line">            <span class="comment">// 如果升级包在data分区，则该它需要被处理（如解密）。调用者指定是否已在'processed'参数中完成。</span></span><br><span class="line">            <span class="keyword">if</span> (filename.startsWith(<span class="string">"/data/"</span>)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (processed) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (!BLOCK_MAP_FILE.exists()) &#123;</span><br><span class="line">                        Log.e(TAG, <span class="string">"Package claimed to have been processed but failed to find "</span></span><br><span class="line">                                + <span class="string">"the block map file."</span>);</span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Failed to find block map file"</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    FileWriter uncryptFile = <span class="keyword">new</span> FileWriter(UNCRYPT_PACKAGE_FILE);</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        uncryptFile.write(filename + <span class="string">"\n"</span>);</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        uncryptFile.close();</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// 设置UNCRYPT_PACKAGE_FILE读写权限：可由system server读写。</span></span><br><span class="line">                    <span class="keyword">if</span> (!UNCRYPT_PACKAGE_FILE.setReadable(<span class="keyword">true</span>, <span class="keyword">false</span>)</span><br><span class="line">                            || !UNCRYPT_PACKAGE_FILE.setWritable(<span class="keyword">true</span>, <span class="keyword">false</span>)) &#123;</span><br><span class="line">                        Log.e(TAG, <span class="string">"Error setting permission for "</span> + UNCRYPT_PACKAGE_FILE);</span><br><span class="line">                    &#125;</span><br><span class="line">                    BLOCK_MAP_FILE.delete();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 如果升级包在data分区，需要用block.map文件作为升级包名称。</span></span><br><span class="line">                filename = <span class="string">"@/cache/recovery/block.map"</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 设置升级参数</span></span><br><span class="line">            <span class="comment">// "--update_package=":设定升级包路径、名称。</span></span><br><span class="line">            <span class="comment">// "--locale="：设定当前区域、语言信息。</span></span><br><span class="line">            <span class="comment">// "--security\n"：设定为安全更新。</span></span><br><span class="line">            <span class="keyword">final</span> String filenameArg = <span class="string">"--update_package="</span> + filename + <span class="string">"\n"</span>;</span><br><span class="line">            <span class="keyword">final</span> String localeArg = <span class="string">"--locale="</span> + Locale.getDefault().toLanguageTag() + <span class="string">"\n"</span>;</span><br><span class="line">            <span class="keyword">final</span> String securityArg = <span class="string">"--security\n"</span>;</span><br><span class="line">            String command = filenameArg + localeArg;</span><br><span class="line">            <span class="keyword">if</span> (securityUpdate) &#123;</span><br><span class="line">                command += securityArg;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 设置引导程序控制块BCB(bootloader control block)</span></span><br><span class="line">            RecoverySystem rs = (RecoverySystem) context.getSystemService(</span><br><span class="line">                    Context.RECOVERY_SERVICE);</span><br><span class="line">            <span class="keyword">if</span> (!rs.setupBcb(command)) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Setup BCB failed"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 设置BCB后，继续并重启。</span></span><br><span class="line">            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);</span><br><span class="line">            String reason = PowerManager.REBOOT_RECOVERY_UPDATE;</span><br><span class="line">            <span class="comment">// 对于电视而言，如果屏幕是关的，则静静重启</span></span><br><span class="line">            <span class="keyword">if</span> (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) &#123;</span><br><span class="line">                WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);</span><br><span class="line">                <span class="keyword">if</span> (wm.getDefaultDisplay().getState() != Display.STATE_ON) &#123;</span><br><span class="line">                    reason += <span class="string">",quiescent"</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            pm.reboot(reason);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Reboot failed (no permissions?)"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>调用setupBcb，通过Binder与RecoverySystemService通信以设置BCB。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">setupBcb</span><span class="params">(String command)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> mService.setupBcb(command);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException unused) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/RecoverySystemService.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BinderService</span> <span class="keyword">extends</span> <span class="title">IRecoverySystem</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">setupBcb</span><span class="params">(String command)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (DEBUG) Slog.d(TAG, <span class="string">"setupBcb: ["</span> + command + <span class="string">"]"</span>);</span><br><span class="line">            <span class="keyword">synchronized</span> (sRequestLock) &#123;</span><br><span class="line">                <span class="keyword">return</span> setupOrClearBcb(<span class="keyword">true</span>, command);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">setupOrClearBcb</span><span class="params">(<span class="keyword">boolean</span> isSetup, String command)</span> </span>&#123;</span><br><span class="line">            mContext.enforceCallingOrSelfPermission(android.Manifest.permission.RECOVERY, <span class="keyword">null</span>);</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">boolean</span> available = checkAndWaitForUncryptService();</span><br><span class="line">            <span class="keyword">if</span> (!available) &#123;</span><br><span class="line">                Slog.e(TAG, <span class="string">"uncrypt service is unavailable."</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 根据需要将"ctl.start"设置为"setup-bcb"或"clear-bcb"。</span></span><br><span class="line">            <span class="keyword">if</span> (isSetup) &#123;</span><br><span class="line">                SystemProperties.set(<span class="string">"ctl.start"</span>, <span class="string">"setup-bcb"</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                SystemProperties.set(<span class="string">"ctl.start"</span>, <span class="string">"clear-bcb"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 通过socket与uncrypt服务建立通信</span></span><br><span class="line">            LocalSocket socket = connectService();</span><br><span class="line">            <span class="keyword">if</span> (socket == <span class="keyword">null</span>) &#123;</span><br><span class="line">                Slog.e(TAG, <span class="string">"Failed to connect to uncrypt socket"</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            DataInputStream dis = <span class="keyword">null</span>;</span><br><span class="line">            DataOutputStream dos = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                dis = <span class="keyword">new</span> DataInputStream(socket.getInputStream());</span><br><span class="line">                dos = <span class="keyword">new</span> DataOutputStream(socket.getOutputStream());</span><br><span class="line">                <span class="comment">// 发送BCB指令</span></span><br><span class="line">                <span class="keyword">if</span> (isSetup) &#123;</span><br><span class="line">                    <span class="keyword">byte</span>[] cmdUtf8 = command.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line">                    dos.writeInt(cmdUtf8.length);</span><br><span class="line">                    dos.write(cmdUtf8, <span class="number">0</span>, cmdUtf8.length);</span><br><span class="line">                    dos.flush();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 从socket中读取状态</span></span><br><span class="line">                <span class="keyword">int</span> status = dis.readInt();</span><br><span class="line">                <span class="comment">// ack确认收到状态码。uncrypt等待ack，所以在收到状态码之前socket不会被销毁。</span></span><br><span class="line">                dos.writeInt(<span class="number">0</span>);</span><br><span class="line">                <span class="keyword">if</span> (status == <span class="number">100</span>) &#123;</span><br><span class="line">                    Slog.i(TAG, <span class="string">"uncrypt "</span> + (isSetup ? <span class="string">"setup"</span> : <span class="string">"clear"</span>) +</span><br><span class="line">                            <span class="string">" bcb successfully finished."</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// /system/bin/uncrypt出错</span></span><br><span class="line">                    Slog.e(TAG, <span class="string">"uncrypt failed with status: "</span> + status);</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                Slog.e(TAG, <span class="string">"IOException when communicating with uncrypt:"</span>, e);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                IoUtils.closeQuietly(dis);</span><br><span class="line">                IoUtils.closeQuietly(dos);</span><br><span class="line">                IoUtils.closeQuietly(socket);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-4-调用cancelScheduledUpdate方法取消计划性升级"><a href="#2-4-调用cancelScheduledUpdate方法取消计划性升级" class="headerlink" title="2.4 调用cancelScheduledUpdate方法取消计划性升级"></a>2.4 调用cancelScheduledUpdate方法取消计划性升级</h4><p>调用cancelScheduledUpdate，通过清除BCB来取消任何计划性升级。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="meta">@SystemApi</span></span><br><span class="line">    <span class="meta">@RequiresPermission</span>(android.Manifest.permission.RECOVERY)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">cancelScheduledUpdate</span><span class="params">(Context context)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        RecoverySystem rs = (RecoverySystem) context.getSystemService(Context.RECOVERY_SERVICE);</span><br><span class="line">        <span class="keyword">if</span> (!rs.clearBcb()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"cancel scheduled update failed"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 通过Binder与RecoverySystemService通信以清除BCB。</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">clearBcb</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> mService.clearBcb();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException unused) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/RecoverySystemService.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BinderService</span> <span class="keyword">extends</span> <span class="title">IRecoverySystem</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">clearBcb</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (DEBUG) Slog.d(TAG, <span class="string">"clearBcb"</span>);</span><br><span class="line">            <span class="keyword">synchronized</span> (sRequestLock) &#123;</span><br><span class="line">                <span class="keyword">return</span> setupOrClearBcb(<span class="keyword">false</span>, <span class="keyword">null</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-5-调用scheduleUpdateOnBoot方法设定升级计划"><a href="#2-5-调用scheduleUpdateOnBoot方法设定升级计划" class="headerlink" title="2.5 调用scheduleUpdateOnBoot方法设定升级计划"></a>2.5 调用scheduleUpdateOnBoot方法设定升级计划</h4><p>调用scheduleUpdateOnBoot，以计划在下次启动时安装给定的升级包。调用者需确保必要时已处理（未加密）升级包。在BCB中设置命令，该命令将由bootloader和recovery image读取。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="meta">@SystemApi</span></span><br><span class="line">    <span class="meta">@RequiresPermission</span>(android.Manifest.permission.RECOVERY)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">scheduleUpdateOnBoot</span><span class="params">(Context context, File packageFile)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String filename = packageFile.getCanonicalPath();</span><br><span class="line">        <span class="keyword">boolean</span> securityUpdate = filename.endsWith(<span class="string">"_s.zip"</span>);</span><br><span class="line">        <span class="comment">// 如果升级包在data分区，用block.map文件来替代升级包包名</span></span><br><span class="line">        <span class="keyword">if</span> (filename.startsWith(<span class="string">"/data/"</span>)) &#123;</span><br><span class="line">            filename = <span class="string">"@/cache/recovery/block.map"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> String filenameArg = <span class="string">"--update_package="</span> + filename + <span class="string">"\n"</span>;</span><br><span class="line">        <span class="keyword">final</span> String localeArg = <span class="string">"--locale="</span> + Locale.getDefault().toLanguageTag() + <span class="string">"\n"</span>;</span><br><span class="line">        <span class="keyword">final</span> String securityArg = <span class="string">"--security\n"</span>;</span><br><span class="line">        String command = filenameArg + localeArg;</span><br><span class="line">        <span class="keyword">if</span> (securityUpdate) &#123;</span><br><span class="line">            command += securityArg;</span><br><span class="line">        &#125;</span><br><span class="line">        RecoverySystem rs = (RecoverySystem) context.getSystemService(Context.RECOVERY_SERVICE);</span><br><span class="line">        <span class="keyword">if</span> (!rs.setupBcb(command)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"schedule update on boot failed"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-RecoverySystem中恢复出厂相关API"><a href="#3-RecoverySystem中恢复出厂相关API" class="headerlink" title="3.RecoverySystem中恢复出厂相关API"></a>3.RecoverySystem中恢复出厂相关API</h3><h4 id="3-1-调用rebootWipeUserData方法清除用户数据"><a href="#3-1-调用rebootWipeUserData方法清除用户数据" class="headerlink" title="3.1 调用rebootWipeUserData方法清除用户数据"></a>3.1 调用rebootWipeUserData方法清除用户数据</h4><p>调用rebootWipeUserData，重启设备擦除用户数据（包括data和cache分区）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="comment">// 接收android.intent.action.MASTER_CLEAR广播。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rebootWipeUserData</span><span class="params">(Context context, <span class="keyword">boolean</span> shutdown, String reason,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">boolean</span> force, <span class="keyword">boolean</span> wipeEuicc)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);</span><br><span class="line">        <span class="keyword">if</span> (!force &amp;&amp; um.hasUserRestriction(UserManager.DISALLOW_FACTORY_RESET)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">"Wiping data is not allowed for this user."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> ConditionVariable condition = <span class="keyword">new</span> ConditionVariable();</span><br><span class="line">        Intent intent = <span class="keyword">new</span> Intent(<span class="string">"android.intent.action.MASTER_CLEAR_NOTIFICATION"</span>);</span><br><span class="line">        intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND</span><br><span class="line">                | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);</span><br><span class="line">        context.sendOrderedBroadcastAsUser(intent, UserHandle.SYSTEM,</span><br><span class="line">                android.Manifest.permission.MASTER_CLEAR,</span><br><span class="line">                <span class="keyword">new</span> BroadcastReceiver() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</span><br><span class="line">                        condition.open();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;, <span class="keyword">null</span>, <span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="comment">// block直到有序广播完成。</span></span><br><span class="line">        condition.block();</span><br><span class="line">        <span class="keyword">if</span> (wipeEuicc) &#123;</span><br><span class="line">            wipeEuiccData(context, PACKAGE_NAME_WIPING_EUICC_DATA_CALLBACK);</span><br><span class="line">        &#125;</span><br><span class="line">        String shutdownArg = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (shutdown) &#123;</span><br><span class="line">            shutdownArg = <span class="string">"--shutdown_after"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        String reasonArg = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (!TextUtils.isEmpty(reason)) &#123;</span><br><span class="line">            String timeStamp = DateFormat.format(<span class="string">"yyyy-MM-ddTHH:mm:ssZ"</span>, System.currentTimeMillis()).toString();</span><br><span class="line">            reasonArg = <span class="string">"--reason="</span> + sanitizeArg(reason + <span class="string">","</span> + timeStamp);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> String localeArg = <span class="string">"--locale="</span> + Locale.getDefault().toLanguageTag() ;</span><br><span class="line">        bootCommand(context, shutdownArg, <span class="string">"--wipe_data"</span>, reasonArg, localeArg);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>调用wipeEuiccData，擦除Euicc数据。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">wipeEuiccData</span><span class="params">(Context context, <span class="keyword">final</span> String packageName)</span> </span>&#123;</span><br><span class="line">        ContentResolver cr = context.getContentResolver();</span><br><span class="line">        <span class="keyword">if</span> (Settings.Global.getInt(cr, Settings.Global.EUICC_PROVISIONED, <span class="number">0</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 如果未配置eUICC，则无理由擦除或保留配置文件。</span></span><br><span class="line">            Log.d(TAG, <span class="string">"Skipping eUICC wipe/retain as it is not provisioned"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        EuiccManager euiccManager = (EuiccManager) context.getSystemService(</span><br><span class="line">                Context.EUICC_SERVICE);</span><br><span class="line">        <span class="keyword">if</span> (euiccManager != <span class="keyword">null</span> &amp;&amp; euiccManager.isEnabled()) &#123;</span><br><span class="line">            CountDownLatch euiccFactoryResetLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">final</span> AtomicBoolean wipingSucceeded = <span class="keyword">new</span> AtomicBoolean(<span class="keyword">false</span>);</span><br><span class="line">            BroadcastReceiver euiccWipeFinishReceiver = <span class="keyword">new</span> BroadcastReceiver() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">if</span> (ACTION_EUICC_FACTORY_RESET.equals(intent.getAction())) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (getResultCode() != EuiccManager.EMBEDDED_SUBSCRIPTION_RESULT_OK) &#123;</span><br><span class="line">                            <span class="keyword">int</span> detailedCode = intent.getIntExtra(</span><br><span class="line">                                    EuiccManager.EXTRA_EMBEDDED_SUBSCRIPTION_DETAILED_CODE, <span class="number">0</span>);</span><br><span class="line">                            Log.e(TAG, <span class="string">"Error wiping euicc data, Detailed code = "</span></span><br><span class="line">                                    + detailedCode);</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            Log.d(TAG, <span class="string">"Successfully wiped euicc data."</span>);</span><br><span class="line">                            wipingSucceeded.set(<span class="keyword">true</span> <span class="comment">/* newValue */</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                        euiccFactoryResetLatch.countDown();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            Intent intent = <span class="keyword">new</span> Intent(ACTION_EUICC_FACTORY_RESET);</span><br><span class="line">            intent.setPackage(packageName);</span><br><span class="line">            PendingIntent callbackIntent = PendingIntent.getBroadcastAsUser(</span><br><span class="line">                    context, <span class="number">0</span>, intent, PendingIntent.FLAG_UPDATE_CURRENT, UserHandle.SYSTEM);</span><br><span class="line">            IntentFilter filterConsent = <span class="keyword">new</span> IntentFilter();</span><br><span class="line">            filterConsent.addAction(ACTION_EUICC_FACTORY_RESET);</span><br><span class="line">            HandlerThread euiccHandlerThread = <span class="keyword">new</span> HandlerThread(<span class="string">"euiccWipeFinishReceiverThread"</span>);</span><br><span class="line">            euiccHandlerThread.start();</span><br><span class="line">            Handler euiccHandler = <span class="keyword">new</span> Handler(euiccHandlerThread.getLooper());</span><br><span class="line">            context.getApplicationContext()</span><br><span class="line">                    .registerReceiver(euiccWipeFinishReceiver, filterConsent, <span class="keyword">null</span>, euiccHandler);</span><br><span class="line">            euiccManager.eraseSubscriptions(callbackIntent);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">long</span> waitingTimeMillis = Settings.Global.getLong(</span><br><span class="line">                        context.getContentResolver(),</span><br><span class="line">                        Settings.Global.EUICC_FACTORY_RESET_TIMEOUT_MILLIS,</span><br><span class="line">                        DEFAULT_EUICC_FACTORY_RESET_TIMEOUT_MILLIS);</span><br><span class="line">                <span class="keyword">if</span> (waitingTimeMillis &lt; MIN_EUICC_FACTORY_RESET_TIMEOUT_MILLIS) &#123;</span><br><span class="line">                    waitingTimeMillis = MIN_EUICC_FACTORY_RESET_TIMEOUT_MILLIS;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (waitingTimeMillis &gt; MAX_EUICC_FACTORY_RESET_TIMEOUT_MILLIS) &#123;</span><br><span class="line">                    waitingTimeMillis = MAX_EUICC_FACTORY_RESET_TIMEOUT_MILLIS;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!euiccFactoryResetLatch.await(waitingTimeMillis, TimeUnit.MILLISECONDS)) &#123;</span><br><span class="line">                    Log.e(TAG, <span class="string">"Timeout wiping eUICC data."</span>);</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                Thread.currentThread().interrupt();</span><br><span class="line">                Log.e(TAG, <span class="string">"Wiping eUICC data interrupted"</span>, e);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                context.getApplicationContext().unregisterReceiver(euiccWipeFinishReceiver);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> wipingSucceeded.get();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>调用bootCommand，以便加入参数重启进入recovery完成相关操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">bootCommand</span><span class="params">(Context context, String... args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">// 删除/cache/recovery/log文件。</span></span><br><span class="line">        LOG_FILE.delete();</span><br><span class="line">        StringBuilder command = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">        <span class="keyword">for</span> (String arg : args) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!TextUtils.isEmpty(arg)) &#123;</span><br><span class="line">                command.append(arg);</span><br><span class="line">                command.append(<span class="string">"\n"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将command写入BCB并从那启动，除非失败否则不返回。</span></span><br><span class="line">        RecoverySystem rs = (RecoverySystem) context.getSystemService(Context.RECOVERY_SERVICE);</span><br><span class="line">        rs.rebootRecoveryWithCommand(command.toString());</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Reboot failed (no permissions?)"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 通过Binder与RecoverySystemService通信来设置BCB command，重启进入recovery。</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">rebootRecoveryWithCommand</span><span class="params">(String command)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            mService.rebootRecoveryWithCommand(command);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException ignored) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/RecoverySystemService.java</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BinderService</span> <span class="keyword">extends</span> <span class="title">IRecoverySystem</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">rebootRecoveryWithCommand</span><span class="params">(String command)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (DEBUG) Slog.d(TAG, <span class="string">"rebootRecoveryWithCommand: ["</span> + command + <span class="string">"]"</span>);</span><br><span class="line">            <span class="keyword">synchronized</span> (sRequestLock) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!setupOrClearBcb(<span class="keyword">true</span>, command)) &#123;</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 设置BCB，然后重启</span></span><br><span class="line">                PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);</span><br><span class="line">                pm.reboot(PowerManager.REBOOT_RECOVERY);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-调用rebootPromptAndWipeUserData方法提示、擦除用户数据"><a href="#3-2-调用rebootPromptAndWipeUserData方法提示、擦除用户数据" class="headerlink" title="3.2 调用rebootPromptAndWipeUserData方法提示、擦除用户数据"></a>3.2 调用rebootPromptAndWipeUserData方法提示、擦除用户数据</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="comment">// sys.rescue_level为4（即LEVEL_FACTORY_RESET）</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rebootPromptAndWipeUserData</span><span class="params">(Context context, String reason)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String reasonArg = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (!TextUtils.isEmpty(reason)) &#123;</span><br><span class="line">            reasonArg = <span class="string">"--reason="</span> + sanitizeArg(reason);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> String localeArg = <span class="string">"--locale="</span> + Locale.getDefault().toString();</span><br><span class="line">        bootCommand(context, <span class="keyword">null</span>, <span class="string">"--prompt_and_wipe_data"</span>, reasonArg, localeArg);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-3-调用rebootWipeCache方法擦除cache分区"><a href="#3-3-调用rebootWipeCache方法擦除cache分区" class="headerlink" title="3.3 调用rebootWipeCache方法擦除cache分区"></a>3.3 调用rebootWipeCache方法擦除cache分区</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rebootWipeCache</span><span class="params">(Context context, String reason)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String reasonArg = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (!TextUtils.isEmpty(reason)) &#123;</span><br><span class="line">            reasonArg = <span class="string">"--reason="</span> + sanitizeArg(reason);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> String localeArg = <span class="string">"--locale="</span> + Locale.getDefault().toLanguageTag() ;</span><br><span class="line">        bootCommand(context, <span class="string">"--wipe_cache"</span>, reasonArg, localeArg);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-4-调用rebootWipeAb方法擦除A-B"><a href="#3-4-调用rebootWipeAb方法擦除A-B" class="headerlink" title="3.4 调用rebootWipeAb方法擦除A/B"></a>3.4 调用rebootWipeAb方法擦除A/B</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rebootWipeAb</span><span class="params">(Context context, File packageFile, String reason)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String reasonArg = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (!TextUtils.isEmpty(reason)) &#123;</span><br><span class="line">            reasonArg = <span class="string">"--reason="</span> + sanitizeArg(reason);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> String filename = packageFile.getCanonicalPath();</span><br><span class="line">        <span class="keyword">final</span> String filenameArg = <span class="string">"--wipe_package="</span> + filename;</span><br><span class="line">        <span class="keyword">final</span> String localeArg = <span class="string">"--locale="</span> + Locale.getDefault().toLanguageTag() ;</span><br><span class="line">        bootCommand(context, <span class="string">"--wipe_ab"</span>, filenameArg, reasonArg, localeArg);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-5-调用handleAftermath清除recovery相关文件"><a href="#3-5-调用handleAftermath清除recovery相关文件" class="headerlink" title="3.5 调用handleAftermath清除recovery相关文件"></a>3.5 调用handleAftermath清除recovery相关文件</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/os/RecoverySystem.java</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">handleAftermath</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 记录/cache/recovery/log文件的尾部</span></span><br><span class="line">        String log = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            log = FileUtils.readTextFile(LOG_FILE, -LOG_FILE_MAX_LENGTH, <span class="string">"...\n"</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">            Log.i(TAG, <span class="string">"No recovery log file"</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            Log.e(TAG, <span class="string">"Error reading recovery log"</span>, e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 仅在部分处理时删除OTA包（uncrypt）</span></span><br><span class="line">        <span class="keyword">boolean</span> reservePackage = BLOCK_MAP_FILE.exists();</span><br><span class="line">        <span class="keyword">if</span> (!reservePackage &amp;&amp; UNCRYPT_PACKAGE_FILE.exists()) &#123;</span><br><span class="line">            String filename = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                filename = FileUtils.readTextFile(UNCRYPT_PACKAGE_FILE, <span class="number">0</span>, <span class="keyword">null</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                Log.e(TAG, <span class="string">"Error reading uncrypt file"</span>, e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 删除已经（可能部分）处理的data分区上的OTA包。</span></span><br><span class="line">            <span class="keyword">if</span> (filename != <span class="keyword">null</span> &amp;&amp; filename.startsWith(<span class="string">"/data"</span>)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (UNCRYPT_PACKAGE_FILE.delete()) &#123;</span><br><span class="line">                    Log.i(TAG, <span class="string">"Deleted: "</span> + filename);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    Log.e(TAG, <span class="string">"Can't delete: "</span> + filename);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 保留升级日志（以LAST_PREFIX开头），以及可选的block.map文件（BLOCK_MAP_FILE）。</span></span><br><span class="line">        <span class="comment">// BLOCK_MAP_FILE将在成功解密后创建。</span></span><br><span class="line">        <span class="comment">// 如果看到此文件，保留block.map文件和包含升级包名称的文件（UNCRYPT_PACKAGE_FILE）。</span></span><br><span class="line">        <span class="comment">//为了减少GmsCore的工作，以避免再次重新下载所有内容。</span></span><br><span class="line">        String[] names = RECOVERY_DIR.list();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; names != <span class="keyword">null</span> &amp;&amp; i &lt; names.length; i++) &#123;</span><br><span class="line">            <span class="comment">// 不要删除last_install文件，因为recovery-persist会处理它。</span></span><br><span class="line">            <span class="keyword">if</span> (names[i].startsWith(LAST_PREFIX) || names[i].equals(LAST_INSTALL_PATH)) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (reservePackage &amp;&amp; names[i].equals(BLOCK_MAP_FILE.getName())) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (reservePackage &amp;&amp; names[i].equals(UNCRYPT_PACKAGE_FILE.getName())) <span class="keyword">continue</span>;</span><br><span class="line">            recursiveDelete(<span class="keyword">new</span> File(RECOVERY_DIR, names[i]));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> log;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 在内部递归删除给定的文件或目录。</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">recursiveDelete</span><span class="params">(File name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (name.isDirectory()) &#123;</span><br><span class="line">            String[] files = name.list();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; files != <span class="keyword">null</span> &amp;&amp; i &lt; files.length; i++) &#123;</span><br><span class="line">                File f = <span class="keyword">new</span> File(name, files[i]);</span><br><span class="line">                recursiveDelete(f);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!name.delete()) &#123;</span><br><span class="line">            Log.e(TAG, <span class="string">"Can't delete: "</span> + name);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Log.i(TAG, <span class="string">"Deleted: "</span> + name);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/Recovery/" rel="tag"># Recovery</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/07/Framework/WindowsManagerService的启动过程/" rel="next" title="WindowsManagerService的启动过程">
+                <i class="fa fa-chevron-left"></i> WindowsManagerService的启动过程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/12/OTA/OTA升级之解密uncrypt/" rel="prev" title="OTA升级之解密uncrypt">
+                OTA升级之解密uncrypt <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">74</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-启动RecoverySystemService"><span class="nav-text">1.启动RecoverySystemService</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-SystemServer启动RecoverySystemService"><span class="nav-text">1.1 SystemServer启动RecoverySystemService</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-RecoverySystemService的启动"><span class="nav-text">1.2 RecoverySystemService的启动</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-RecoverySystem中系统升级相关API"><span class="nav-text">2. RecoverySystem中系统升级相关API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-调用VerifyPackage方法验证升级包签名"><span class="nav-text">2.1 调用VerifyPackage方法验证升级包签名</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-调用processPackage方法解密升级包"><span class="nav-text">2.2 调用processPackage方法解密升级包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-调用installPackage方法安装升级包"><span class="nav-text">2.3 调用installPackage方法安装升级包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-调用cancelScheduledUpdate方法取消计划性升级"><span class="nav-text">2.4 调用cancelScheduledUpdate方法取消计划性升级</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-调用scheduleUpdateOnBoot方法设定升级计划"><span class="nav-text">2.5 调用scheduleUpdateOnBoot方法设定升级计划</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-RecoverySystem中恢复出厂相关API"><span class="nav-text">3.RecoverySystem中恢复出厂相关API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-调用rebootWipeUserData方法清除用户数据"><span class="nav-text">3.1 调用rebootWipeUserData方法清除用户数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-调用rebootPromptAndWipeUserData方法提示、擦除用户数据"><span class="nav-text">3.2 调用rebootPromptAndWipeUserData方法提示、擦除用户数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-调用rebootWipeCache方法擦除cache分区"><span class="nav-text">3.3 调用rebootWipeCache方法擦除cache分区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-调用rebootWipeAb方法擦除A-B"><span class="nav-text">3.4 调用rebootWipeAb方法擦除A/B</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-调用handleAftermath清除recovery相关文件"><span class="nav-text">3.5 调用handleAftermath清除recovery相关文件</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

@@ -329,6 +329,172 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/29/Filesystem/Vold进程的启动/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/29/Filesystem/Vold进程的启动/" class="post-title-link" itemprop="url">Vold进程的启动</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-29 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-29T00:00:00+08:00">2018-12-29</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-init解析rc时启动vold进程"><a href="#1-init解析rc时启动vold进程" class="headerlink" title="1. init解析rc时启动vold进程"></a>1. init解析rc时启动vold进程</h3><p>system/core/rootdir/init.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">on post-fs-data</span><br><span class="line">    start vold</span><br></pre></td></tr></table></figure>
+<p>system/vold/vold.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">service vold /system/bin/vold \</span><br><span class="line">        --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \</span><br><span class="line">        --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0</span><br><span class="line">    class core</span><br><span class="line">    ioprio be 2</span><br><span class="line">    writepid /dev/cpuset/foreground/tasks</span><br><span class="line">    shutdown critical</span><br><span class="line">    group reserved_disk</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/29/Filesystem/Vold进程的启动/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/23/Filesystem/fs_mgr解析fstab文件/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1646,7 +1812,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/14/Framework/ActivityManagerService的启动过程/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/10/12/OTA/OTA升级之解密uncrypt/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -1666,7 +1832,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/07/14/Framework/ActivityManagerService的启动过程/" class="post-title-link" itemprop="url">ActivityManagerService的启动过程</a>
+                <a href="/2018/10/12/OTA/OTA升级之解密uncrypt/" class="post-title-link" itemprop="url">OTA升级之解密uncrypt</a>
               
             
           </h1>
@@ -1691,7 +1857,7 @@
                 
               
 
-              <time title="创建时间：2018-07-14 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-14T00:00:00+08:00">2018-07-14</time>
+              <time title="创建时间：2018-10-12 00:00:00" itemprop="dateCreated datePublished" datetime="2018-10-12T00:00:00+08:00">2018-10-12</time>
             
 
             
@@ -1709,7 +1875,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OTA/" itemprop="url" rel="index"><span itemprop="name">OTA</span></a></span>
 
                 
                 
@@ -1745,180 +1911,16 @@
 
       
         
-          <p>ActivityManagerService(简称AMS)作为最核心的Android系统服务之一，主要负责四大组件启动、调度及App的管理工作，下面简单分析下AMS的启动过程</p>
-<p><img src="/images/boot_ams.png" alt></p>
-          <!--noindex-->
           
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/07/14/Framework/ActivityManagerService的启动过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/07/08/Framework/PackageManagerService之Intent匹配Activity/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/07/08/Framework/PackageManagerService之Intent匹配Activity/" class="post-title-link" itemprop="url">PackageManagerService之Intent匹配Activity</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-07-08 00:00:00" itemprop="dateCreated datePublished" datetime="2018-07-08T00:00:00+08:00">2018-07-08</time>
-            
-
-            
-          </span>
+            <h4 id="1-1-init-rc启动uncrypt服务"><a href="#1-1-init-rc启动uncrypt服务" class="headerlink" title="1.1 init rc启动uncrypt服务"></a>1.1 init rc启动uncrypt服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//bootable/recovery/uncrypt/uncrypt.rc</span><br><span class="line">service uncrypt /system/bin/uncrypt</span><br><span class="line">    class main</span><br><span class="line">    socket uncrypt stream 600 system system</span><br><span class="line">    disabled</span><br><span class="line">    oneshot</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-uncrypt的main函数"><a href="#1-2-uncrypt的main函数" class="headerlink" title="1.2 uncrypt的main函数"></a>1.2 uncrypt的main函数</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//bootable/recovery/uncrypt/uncrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 定义三种action类型</span></span><br><span class="line">    <span class="keyword">enum</span> &#123; UNCRYPT, SETUP_BCB, CLEAR_BCB, UNCRYPT_DEBUG &#125; action;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* input_path = <span class="literal">nullptr</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* map_file = CACHE_BLOCK_MAP.c_str();</span><br><span class="line">    <span class="comment">// rc文件中参数判断</span></span><br><span class="line">    <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; <span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"--clear-bcb"</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">        action = CLEAR_BCB;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; <span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"--setup-bcb"</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">        action = SETUP_BCB;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">1</span>) &#123;</span><br><span class="line">        action = UNCRYPT;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">3</span>) &#123;</span><br><span class="line">        input_path = argv[<span class="number">1</span>];</span><br><span class="line">        map_file = argv[<span class="number">2</span>];</span><br><span class="line">        action = UNCRYPT_DEBUG;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        usage(argv[<span class="number">0</span>]);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 读取分区文件</span></span><br><span class="line">    <span class="keyword">if</span> (!ReadDefaultFstab(&amp;fstab)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"failed to read default fstab"</span>;</span><br><span class="line">        log_uncrypt_error_code(kUncryptFstabReadError);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (action == UNCRYPT_DEBUG) &#123;</span><br><span class="line">        LOG(INFO) &lt;&lt; <span class="string">"uncrypt called in debug mode, skip socket communication"</span>;</span><br><span class="line">        <span class="keyword">bool</span> success = uncrypt_wrapper(input_path, map_file, <span class="number">-1</span>);</span><br><span class="line">        <span class="keyword">if</span> (success) &#123;</span><br><span class="line">            LOG(INFO) &lt;&lt; <span class="string">"uncrypt succeeded"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">            LOG(INFO) &lt;&lt; <span class="string">"uncrypt failed"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> success ? <span class="number">0</span> : <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 当启动服务时由init创建该socket。uncrypt将通过socket与其调用者进行通信。</span></span><br><span class="line">    android::base::<span class="function">unique_fd <span class="title">service_socket</span><span class="params">(android_get_control_socket(UNCRYPT_SOCKET.c_str()))</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (service_socket == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"failed to open socket \""</span> &lt;&lt; UNCRYPT_SOCKET &lt;&lt; <span class="string">"\""</span>;</span><br><span class="line">        log_uncrypt_error_code(kUncryptSocketOpenError);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    fcntl(service_socket, F_SETFD, FD_CLOEXEC);</span><br><span class="line">    <span class="keyword">if</span> (listen(service_socket, <span class="number">1</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"failed to listen on socket "</span> &lt;&lt; service_socket.get();</span><br><span class="line">        log_uncrypt_error_code(kUncryptSocketListenError);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    android::base::<span class="function">unique_fd <span class="title">socket_fd</span><span class="params">(accept4(service_socket, <span class="literal">nullptr</span>, <span class="literal">nullptr</span>, SOCK_CLOEXEC))</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (socket_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"failed to accept on socket "</span> &lt;&lt; service_socket.get();</span><br><span class="line">        log_uncrypt_error_code(kUncryptSocketAcceptError);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">bool</span> success = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">        <span class="keyword">case</span> UNCRYPT:</span><br><span class="line">            success = uncrypt_wrapper(input_path, map_file, socket_fd);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> SETUP_BCB:</span><br><span class="line">            success = setup_bcb(socket_fd);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> CLEAR_BCB:</span><br><span class="line">            success = clear_bcb(socket_fd);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Invalid uncrypt action code: "</span> &lt;&lt; action;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 在解密退出之前，从客户端读取4字节代码。目的是为了确保客户端在socket被销毁之前接收最后的状态码。</span></span><br><span class="line">    <span class="keyword">int</span> code;</span><br><span class="line">    <span class="keyword">if</span> (android::base::ReadFully(socket_fd, &amp;code, <span class="number">4</span>)) &#123;</span><br><span class="line">        LOG(INFO) &lt;&lt; <span class="string">"  received "</span> &lt;&lt; code &lt;&lt; <span class="string">", exiting now"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"failed to read the code"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> success ? <span class="number">0</span> : <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">uncrypt_wrapper</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* input_path, <span class="keyword">const</span> <span class="keyword">char</span>* map_file, <span class="keyword">const</span> <span class="keyword">int</span> socket)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 将uncrypt错误初始化为kUncryptErrorPlaceholder</span></span><br><span class="line">    log_uncrypt_error_code(kUncryptErrorPlaceholder);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> package;</span><br><span class="line">    <span class="keyword">if</span> (input_path == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!FindUncryptPackage(UNCRYPT_PATH_FILE, &amp;package)) &#123;</span><br><span class="line">        write_status_to_socket(<span class="number">-1</span>, socket);</span><br><span class="line">        <span class="comment">// 覆盖错误消息</span></span><br><span class="line">        log_uncrypt_error_code(kUncryptPackageMissingError);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      input_path = package.c_str();</span><br><span class="line">    &#125;</span><br><span class="line">    CHECK(map_file != <span class="literal">nullptr</span>);</span><br><span class="line">    <span class="keyword">auto</span> start = <span class="built_in">std</span>::chrono::system_clock::now();</span><br><span class="line">    <span class="keyword">int</span> status = Uncrypt(input_path, map_file, socket);</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>&gt; duration = <span class="built_in">std</span>::chrono::system_clock::now() - start;</span><br><span class="line">    <span class="keyword">int</span> count = <span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(duration.count());</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> uncrypt_message = android::base::StringPrintf(<span class="string">"uncrypt_time: %d\n"</span>, count);</span><br><span class="line">    <span class="keyword">if</span> (status != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 如果uncrypt失败则记录时间成本和错误码。</span></span><br><span class="line">        uncrypt_message += android::base::StringPrintf(<span class="string">"uncrypt_error: %d\n"</span>, status);</span><br><span class="line">        <span class="keyword">if</span> (!android::base::WriteStringToFile(uncrypt_message, UNCRYPT_STATUS)) &#123;</span><br><span class="line">            PLOG(WARNING) &lt;&lt; <span class="string">"failed to write to "</span> &lt;&lt; UNCRYPT_STATUS;</span><br><span class="line">        &#125;</span><br><span class="line">        write_status_to_socket(<span class="number">-1</span>, socket);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!android::base::WriteStringToFile(uncrypt_message, UNCRYPT_STATUS)) &#123;</span><br><span class="line">        PLOG(WARNING) &lt;&lt; <span class="string">"failed to write to "</span> &lt;&lt; UNCRYPT_STATUS;</span><br><span class="line">    &#125;</span><br><span class="line">    write_status_to_socket(<span class="number">100</span>, socket);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-setup-bcb"><a href="#1-3-setup-bcb" class="headerlink" title="1.3 setup_bcb"></a>1.3 setup_bcb</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//bootable/recovery/uncrypt/uncrypt.rc</span><br><span class="line">service setup-bcb /system/bin/uncrypt --setup-bcb</span><br><span class="line">    class main</span><br><span class="line">    socket uncrypt stream 600 system system</span><br><span class="line">    disabled</span><br><span class="line">    oneshot</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//bootable/recovery/uncrypt/uncrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">setup_bcb</span><span class="params">(<span class="keyword">const</span> <span class="keyword">int</span> socket)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 接收消息长度</span></span><br><span class="line">    <span class="keyword">int</span> length;</span><br><span class="line">    <span class="keyword">if</span> (!android::base::ReadFully(socket, &amp;length, <span class="number">4</span>)) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"failed to read the length"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    length = ntohl(length);</span><br><span class="line">    <span class="comment">// 收到消息</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> content;</span><br><span class="line">    content.resize(length);</span><br><span class="line">    <span class="keyword">if</span> (!android::base::ReadFully(socket, &amp;content[<span class="number">0</span>], length)) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"failed to read the message"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    LOG(INFO) &lt;&lt; <span class="string">"  received command: ["</span> &lt;&lt; content &lt;&lt; <span class="string">"] ("</span> &lt;&lt; content.size() &lt;&lt; <span class="string">")"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; options = android::base::Split(content, <span class="string">"\n"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> wipe_package;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; option : options) &#123;</span><br><span class="line">        <span class="keyword">if</span> (android::base::StartsWith(option, <span class="string">"--wipe_package="</span>)) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> path = option.substr(<span class="built_in">strlen</span>(<span class="string">"--wipe_package="</span>));</span><br><span class="line">            <span class="keyword">if</span> (!android::base::ReadFileToString(path, &amp;wipe_package)) &#123;</span><br><span class="line">                PLOG(ERROR) &lt;&lt; <span class="string">"failed to read "</span> &lt;&lt; path;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            option = android::base::StringPrintf(<span class="string">"--wipe_package_size=%zu"</span>, wipe_package.size());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 设置bcb命令</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> err;</span><br><span class="line">    <span class="keyword">if</span> (!write_bootloader_message(options, &amp;err)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"failed to set bootloader message: "</span> &lt;&lt; err;</span><br><span class="line">        <span class="comment">// 发送错误状态码"-1"</span></span><br><span class="line">        write_status_to_socket(<span class="number">-1</span>, socket);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!wipe_package.empty() &amp;&amp; !write_wipe_package(wipe_package, &amp;err)) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"failed to set wipe package: "</span> &lt;&lt; err;</span><br><span class="line">        write_status_to_socket(<span class="number">-1</span>, socket);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 发送成功状态码"100"</span></span><br><span class="line">    write_status_to_socket(<span class="number">100</span>, socket);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-clear-bcb"><a href="#1-4-clear-bcb" class="headerlink" title="1.4 clear_bcb"></a>1.4 clear_bcb</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//bootable/recovery/uncrypt/uncrypt.rc</span><br><span class="line">service clear-bcb /system/bin/uncrypt --clear-bcb</span><br><span class="line">    class main</span><br><span class="line">    socket uncrypt stream 600 system system</span><br><span class="line">    disabled</span><br><span class="line">    oneshot</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//bootable/recovery/uncrypt/uncrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">clear_bcb</span><span class="params">(<span class="keyword">const</span> <span class="keyword">int</span> socket)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> err;</span><br><span class="line">    <span class="keyword">if</span> (!clear_bootloader_message(&amp;err)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"failed to clear bootloader message: "</span> &lt;&lt; err;</span><br><span class="line">        write_status_to_socket(<span class="number">-1</span>, socket);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    write_status_to_socket(<span class="number">100</span>, socket);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">write_status_to_socket</span><span class="params">(<span class="keyword">int</span> status, <span class="keyword">int</span> socket)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 如果socket等于-1，则uncrypt处于调试模式而没有socket通信。</span></span><br><span class="line">    <span class="comment">// 跳过写操作并返回成功。</span></span><br><span class="line">    <span class="keyword">if</span> (socket == <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> status_out = htonl(status);</span><br><span class="line">    <span class="keyword">return</span> android::base::WriteFully(socket, &amp;status_out, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-5-bootloader-message"><a href="#1-5-bootloader-message" class="headerlink" title="1.5 bootloader message"></a>1.5 bootloader message</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">bootable/recovery/bootloader_message/bootloader_message.cpp</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">write_bootloader_message</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt;&amp; options, <span class="built_in">std</span>::<span class="built_in">string</span>* err)</span> </span>&#123;</span><br><span class="line">  bootloader_message boot = &#123;&#125;;</span><br><span class="line">  update_bootloader_message_in_struct(&amp;boot, options);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> write_bootloader_message(boot, err);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">write_bootloader_message</span><span class="params">(<span class="keyword">const</span> bootloader_message&amp; boot, <span class="built_in">std</span>::<span class="built_in">string</span>* err)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">string</span> misc_blk_device = get_misc_blk_device(err);</span><br><span class="line">  <span class="keyword">if</span> (misc_blk_device.empty()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> write_bootloader_message_to(boot, misc_blk_device, err);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">write_bootloader_message_to</span><span class="params">(<span class="keyword">const</span> bootloader_message&amp; boot, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; misc_blk_device,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="built_in">std</span>::<span class="built_in">string</span>* err)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> write_misc_partition(&amp;boot, <span class="keyword">sizeof</span>(boot), misc_blk_device,</span><br><span class="line">                              BOOTLOADER_MESSAGE_OFFSET_IN_MISC, err);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">write_misc_partition</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span>* p, <span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; misc_blk_device,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="keyword">size_t</span> offset, <span class="built_in">std</span>::<span class="built_in">string</span>* err)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 打开misc设备</span></span><br><span class="line">  android::base::<span class="function">unique_fd <span class="title">fd</span><span class="params">(open(misc_blk_device.c_str(), O_WRONLY))</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (fd == <span class="number">-1</span>) &#123;</span><br><span class="line">    *err = android::base::StringPrintf(<span class="string">"failed to open %s: %s"</span>, misc_blk_device.c_str(),</span><br><span class="line">                                       strerror(errno));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 定位到offset位置</span></span><br><span class="line">  <span class="keyword">if</span> (lseek(fd, <span class="keyword">static_cast</span>&lt;<span class="keyword">off_t</span>&gt;(offset), SEEK_SET) != <span class="keyword">static_cast</span>&lt;<span class="keyword">off_t</span>&gt;(offset)) &#123;</span><br><span class="line">    *err = android::base::StringPrintf(<span class="string">"failed to lseek %s: %s"</span>, misc_blk_device.c_str(),</span><br><span class="line">                                       strerror(errno));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 写入升级信息</span></span><br><span class="line">  <span class="keyword">if</span> (!android::base::WriteFully(fd, p, size)) &#123;</span><br><span class="line">    *err = android::base::StringPrintf(<span class="string">"failed to write %s: %s"</span>, misc_blk_device.c_str(),</span><br><span class="line">                                       strerror(errno));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (fsync(fd) == <span class="number">-1</span>) &#123;</span><br><span class="line">    *err = android::base::StringPrintf(<span class="string">"failed to fsync %s: %s"</span>, misc_blk_device.c_str(),</span><br><span class="line">                                       strerror(errno));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">clear_bootloader_message</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">string</span>* err)</span> </span>&#123;</span><br><span class="line">  bootloader_message boot = &#123;&#125;;</span><br><span class="line">  <span class="keyword">return</span> write_bootloader_message(boot, err);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
           
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、Activity信息管理"><a href="#一、Activity信息管理" class="headerlink" title="一、Activity信息管理"></a>一、Activity信息管理</h3><h4 id="1-1-PackageManagerService-java-scanPackageDirtyLI方法"><a href="#1-1-PackageManagerService-java-scanPackageDirtyLI方法" class="headerlink" title="1.1 PackageManagerService.java::scanPackageDirtyLI方法"></a>1.1 PackageManagerService.java::scanPackageDirtyLI方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">N = pkg.activities.size();</span><br><span class="line">r = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;N; i++) &#123;</span><br><span class="line">    PackageParser.Activity a = pkg.activities.get(i);</span><br><span class="line">    a.info.processName = fixProcessName(pkg.applicationInfo.processName,</span><br><span class="line">            a.info.processName, pkg.applicationInfo.uid);</span><br><span class="line">    mActivities.addActivity(a, <span class="string">"activity"</span>);</span><br><span class="line">    <span class="keyword">if</span> ((policyFlags&amp;PackageParser.PARSE_CHATTY) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (r == <span class="keyword">null</span>) &#123;</span><br><span class="line">            r = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            r.append(<span class="string">' '</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        r.append(a.info.name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/07/08/Framework/PackageManagerService之Intent匹配Activity/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
         
       
     </div>
@@ -1962,7 +1964,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2006,7 +2008,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">65</span>
+                    <span class="site-state-item-count">74</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2100,7 +2102,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">19</span>
+                      
+                    
+                    <span class="site-state-item-count">20</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>

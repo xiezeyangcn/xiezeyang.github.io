@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、VNDK概述VNDK(Vendor Native Development Kit)是一组专门用于vendor实现其HAL的lib库。因为自Android 8.0以来，Google引入了Treble架构，希望对vendor和system分区进行解耦处理，期待实现：framwork进程不加载vendor共享库，vendor进程仅加载vendor共享库（和部分framework共享库），而frame">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VNDK那些事儿">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/05/25/Other/VNDK那些事儿/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、VNDK概述VNDK(Vendor Native Development Kit)是一组专门用于vendor实现其HAL的lib库。因为自Android 8.0以来，Google引入了Treble架构，希望对vendor和system分区进行解耦处理，期待实现：framwork进程不加载vendor共享库，vendor进程仅加载vendor共享库（和部分framework共享库），而frame">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/treble_vndk_build_system_libraries.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/treble_vndk_linker_namespace3.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/treble_vndk_linker_namespace1.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/vndk_snapshot_directory.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/vndk_snapshot_prebuilt.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/abi_check_sdump.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/abi_check_lsdump.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/abi_check_abidiff.png">
+<meta property="og:updated_time" content="2019-06-23T02:33:58.849Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="VNDK那些事儿">
+<meta name="twitter:description" content="一、VNDK概述VNDK(Vendor Native Development Kit)是一组专门用于vendor实现其HAL的lib库。因为自Android 8.0以来，Google引入了Treble架构，希望对vendor和system分区进行解耦处理，期待实现：framwork进程不加载vendor共享库，vendor进程仅加载vendor共享库（和部分framework共享库），而frame">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/treble_vndk_build_system_libraries.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/05/25/Other/VNDK那些事儿/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>VNDK那些事儿 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/05/25/Other/VNDK那些事儿/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">VNDK那些事儿
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-25 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-25T00:00:00+08:00">2019-05-25</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、VNDK概述"><a href="#一、VNDK概述" class="headerlink" title="一、VNDK概述"></a>一、VNDK概述</h3><p>VNDK(Vendor Native Development Kit)是一组专门用于vendor实现其HAL的lib库。因为自Android 8.0以来，Google引入了Treble架构，希望对vendor和system分区进行解耦处理，期待实现：framwork进程不加载vendor共享库，vendor进程仅加载vendor共享库（和部分framework共享库），而framework进程和vendor进程之间通过HIDL和hwbinder来通信。</p>
+<a id="more"></a>
+<h4 id="1-1-vendor进程可访问的部分framework共享库"><a href="#1-1-vendor进程可访问的部分framework共享库" class="headerlink" title="1.1 vendor进程可访问的部分framework共享库"></a>1.1 vendor进程可访问的部分framework共享库</h4><p>根据特性及使用方法的差异，可将framework共享库大致分为三类：</p>
+<p>(1)已知API/ABI稳定的framework共享库 - LL-NDK库，主要包括下面这些：<br>libEGL.so、libGLESv1_CM.so、libGLESv2.so、libGLESv3.so、libandroid_net.so、libc.so、libdl.so、liblog.so、libm.so、libnativewindow.so、libneuralnetworks.so、libsync.so、libvndksupport.so 和 libvulkan.so。</p>
+<p>对于这些库，在Android.bp都包含llndk_library模块的定义，该定义指定了模块名称和符号文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">llndk_library &#123;</span><br><span class="line">    name: &quot;libvndksupport&quot;,</span><br><span class="line">    symbol_file: &quot;libvndksupport.map.txt&quot;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译系统会根据符号文件为vendor模块生成stub共享库，需满足条件：未在以_PRIVATE或_PLATFORM结尾的部分中定义，不含#platform-only标记，并且不含#introduce*标记或者该标记与目标匹配。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#libvndksupport.map.txt</span><br><span class="line">LIBVNDKSUPPORT &#123;</span><br><span class="line">  global:</span><br><span class="line">    android_load_sphal_library; # vndk</span><br><span class="line">    android_unload_sphal_library; # vndk</span><br><span class="line">  local:</span><br><span class="line">    *;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>(2)可以安全复制两次的framework共享库 - Eligible-VNDK，需要满足以下几个条件：<br>a.不与framework之间进行IPC通信。<br>b.与ART虚拟机无关。<br>c.不读写文件格式不稳定的文件或分区。<br>d.没有特殊的软件许可。<br>e.code所有者不反对vendor使用。</p>
+<p>(3)除上述两种以外的framework共享库 - FWK-Only，通常具有以下几个特点：<br>a.被视为framework内部实现。<br>b.不得由vendor访问。<br>c.不稳定的ABI/API。<br>d.不会被复制。</p>
+<h4 id="1-2-SP-HAL-Same-Pocess-HAL"><a href="#1-2-SP-HAL-Same-Pocess-HAL" class="headerlink" title="1.2 SP-HAL(Same-Pocess HAL)"></a>1.2 SP-HAL(Same-Pocess HAL)</h4><p>SP-HAL是一组预先确定的HAL，被加载到framework进程中的vendor共享库。它由链接器命名空间进行隔离，必须仅依赖于LL-NDK和VNDK-SP（部分预定义的Eligible-VNDK库）。无论是SP-HAL还是VNDK-SP都是由Google来定义的。</p>
+<p>SP-HAL有：libGLESv1_CM_${driver}.so、libGLESv2_${driver}.so、libGLESv3_${driver}.so、libEGL_${driver}.so、vulkan.${driver}.so、<a href="mailto:android.hardware.renderscript@1.0-impl.so" target="_blank" rel="noopener">android.hardware.renderscript@1.0-impl.so</a>、<a href="mailto:android.hardware.graphics.mapper@2.0-impl.so" target="_blank" rel="noopener">android.hardware.graphics.mapper@2.0-impl.so</a>。</p>
+<p>SP-HAL可以访问的VNDK-SP有：<a href="mailto:android.hardware.graphics.common@1.0.so" target="_blank" rel="noopener">android.hardware.graphics.common@1.0.so</a>、<a href="mailto:android.hardware.graphics.mapper@2.0.so" target="_blank" rel="noopener">android.hardware.graphics.mapper@2.0.so</a>、<a href="mailto:android.hardware.renderscript@1.0.so" target="_blank" rel="noopener">android.hardware.renderscript@1.0.so</a> (Renderscript)、libRS_internal.so (Renderscript)、libbase.so、libc++.so、libcutils.so、libhardware.so、libhidlbase.so、libhidltransport.so、libhwbinder.so、libion.so、libutils.so、libz.so。</p>
+<p>SP-HAL不可见的VNDK-SP有：libRSCpuRef.so (RS)、libRSDriver.so (RS)、libbacktrace.so、libblas.so (RS)、libbcinfo.so (RS)、liblzma.so、libunwind.so。</p>
+<p>包含渲染脚本(Rendor script)的FWK-ONLY库：libft2.so、libmediandk.so。</p>
+<h4 id="1-3-VNDK安全策略"><a href="#1-3-VNDK安全策略" class="headerlink" title="1.3 VNDK安全策略"></a>1.3 VNDK安全策略</h4><p>framework进程对应于sepolicy中的coremain，而vendor进程对应于non-coredomain。现将共享库权限整理如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">类别</th>
+<th style="text-align:center">　coredomain访问</th>
+<th style="text-align:center">非coredomain访问</th>
+<th style="text-align:center">分区位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">LL-NDK</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">system/lib[64]</td>
+</tr>
+<tr>
+<td style="text-align:center">LL-NDK-Private</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">system/lib[64]</td>
+</tr>
+<tr>
+<td style="text-align:center">VNDK-SP/VNDK-SP-Private</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">system/lib[64]</td>
+</tr>
+<tr>
+<td style="text-align:center">VNDK-SP-Ext</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">vendor/lib[64]/vndk-sp</td>
+</tr>
+<tr>
+<td style="text-align:center">VNDK</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">system/lib[64]</td>
+</tr>
+<tr>
+<td style="text-align:center">VNDK-Ext</td>
+<td style="text-align:center">N</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">vendor/lib[64]</td>
+</tr>
+<tr>
+<td style="text-align:center">FWK-ONLY</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">N</td>
+<td style="text-align:center">system/lib[64]</td>
+</tr>
+<tr>
+<td style="text-align:center">FWK-ONLY-RS</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">N</td>
+<td style="text-align:center">system/lib[64]</td>
+</tr>
+<tr>
+<td style="text-align:center">SP-HAL</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">vendor/lib[64]或vendor/lib[64]/hw</td>
+</tr>
+<tr>
+<td style="text-align:center">SP-HAL-Dep</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">vendor/lib[64]vendor/lib[64]/hw</td>
+</tr>
+<tr>
+<td style="text-align:center">VND-ONLY</td>
+<td style="text-align:center">N</td>
+<td style="text-align:center">Y</td>
+<td style="text-align:center">vendor/lib[64]</td>
+</tr>
+</tbody>
+</table>
+<p>为了确保vendor分区中VNDK-SP-Ext、SP-HAL、SP-HAL-Dep库既可以从coredomain访问，也可以从非coredomain访问，需要用same_process_hal_file标签来标记，如file_contexts中所定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/vendor/lib(64)?/hw/libMySpHal\.so        u:object_r:same_process_hal_file:s0</span><br><span class="line">/vendor/lib(64)?/vndk-sp/libBase\.so      u:object_r:same_process_hal_file:s0</span><br><span class="line">/vendor/lib(64)?/libBaseInternal\.so      u:object_r:same_process_hal_file:s0</span><br></pre></td></tr></table></figure>
+<h3 id="二、VNDK编译"><a href="#二、VNDK编译" class="headerlink" title="二、VNDK编译"></a>二、VNDK编译</h3><h4 id="2-1-VNDK使能"><a href="#2-1-VNDK使能" class="headerlink" title="2.1 VNDK使能"></a>2.1 VNDK使能</h4><p>针对Android 9.0新设备，会强制ro.vndk.version属性非空。该值用于说明VNDK共享库版本号，存在/vendor/default.prop中。若在makefile中定义的BOARD_VNDK_VERSION不等于current，则将BOARD_VNDK_VERSION定义的值赋给ro.vndk.version。若不相等，则需要先看makefile中PLATFORM_VERSION_CODENAME是否为REL，如果是则采用PLATFORM_SDK_VERSION的值，否则使用PLATFORM_VERSION_CODENAME对应的内容。</p>
+<p>若想从Android 8.0之前版本通过OTA升级至Android 9.0，需要在BoardConfig.mk中加入以下内容：<br>PRODUCT_TREBLE_LINKER_NAMESPACES_OVERRIDE := false</p>
+<p>若想从禁用了VNDK运行时增强功能的Android 8.0以后版本通过OTA升级至Android 9.0，需将PRODUCT_USE_VNDK_OVERRIDE := false添加至BoardConfig.mk中，在编译时ro.vndk.lite属性会被设为tru，并会自动添加被添加到/vendor/default.prop文件中。动态链接器将加载/system/etc/ld.config.vndk_lite.txt中的链接器命名空间配置，以隔离SP-HAL和VNDK。</p>
+<p>对于first_pai_product属性大于27的版本，不能定义ro.vndk.lite属性，比如Android 9.0的VTS测试结果中将会出现VtsTreblePlatformVersionTest Fail项。</p>
+<p>VNDK共享库将安装到/system/lib[64]/vndk-${ro.vndk.version}中。<br>VNDK-SP共享库将安装到/system/lib[64]/vndk-sp-${ro.vndk.version}中。<br>动态链接器配置文件将安装到/system/etc/ld.config.${ro.vndk.version}.txt中。</p>
+<h4 id="2-2-VNDK编译配置"><a href="#2-2-VNDK编译配置" class="headerlink" title="2.2 VNDK编译配置"></a>2.2 VNDK编译配置</h4><p>编译系统包含多种类型的对象，其中包括库（共享、静态或标头）和二进制文件：</p>
+<p><img src="/images/treble_vndk_build_system_libraries.png" alt></p>
+<p>core：位于system.img中，由system使用。vendor、vendor_available、vndk或vndk-sp库不能使用此类库。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;libexample&quot;,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>vendor-only(proprietary)：位于vendor.img中，由vendor使用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;libexample&quot;,</span><br><span class="line">    proprietary: true,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>vendor_available：位于vendor.img中，由vendor使用（可能包含core的重复项）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;libexample&quot;,</span><br><span class="line">    vendor_available: true,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>vndk：位于system.img中，由vendor使用（vendor_available的子集）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;libexample&quot;,</span><br><span class="line">    vendor_available: true,</span><br><span class="line">    vndk: &#123;</span><br><span class="line">        enabled: true,</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>vndk-sp：位于system.img中，由system间接使用（core的子集）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;libexample&quot;,</span><br><span class="line">    vendor_available: true,</span><br><span class="line">    vndk: &#123;</span><br><span class="line">        enabled: true,</span><br><span class="line">        support_system_process: true,</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>llndk：同时由system和vendor使用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;libexample&quot;,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>库的vendor版本在bp文件中用-D__ANDROID_VNDK__来标记编译。对于vendor模块，在Android.bp中必须将vendor或proprietary设为true，而在Android.mk中需将LOCAL_VENDOR_MODULE或LOCAL_PROPRIETARY_MODULE设为true。将当被标记为vendor_available:true时，该库将编译2次，1次为平台编译，被安装到/system/lib[64]中；1次为vendor编译，被安装到/vendor/lib[64]、/system/lib[64]/vndk或/system/lib[64]/vndk-sp中）。vendor模块可以设置vendor_available，但不得设置 vndk.enabled和vndk.support_system_proces，因为它们由Google定义，即GSI中不包含这些vendor模块。现将三种属性整理如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">vendor_available</th>
+<th style="text-align:center">vndk enabled</th>
+<th style="text-align:center">vndk support_same_process</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">true</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">供应商变体为VND-ONLY。共享库将安装到/vendor/lib[64]中。</td>
+</tr>
+<tr>
+<td style="text-align:center">true</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">无效（编译错误）</td>
+</tr>
+<tr>
+<td style="text-align:center">true</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">供应商变体为VNDK。共享库将安装到/system/lib[64]/vndk-${VER}中。</td>
+</tr>
+<tr>
+<td style="text-align:center">true</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">供应商变体为VNDK-SP。共享库将安装到/system/lib[64]/vndk-sp-${VER}中。</td>
+</tr>
+<tr>
+<td style="text-align:center">false</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">没有供应商变体。此模块为FWK-ONLY。</td>
+</tr>
+<tr>
+<td style="text-align:center">false</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">无效（编译错误）</td>
+</tr>
+<tr>
+<td style="text-align:center">fasle</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">供应商变体为VNDK-Private。共享库将安装到/system/lib[64]/vndk-${VER}中。供应商模块不得直接使用这些变体。</td>
+</tr>
+<tr>
+<td style="text-align:center">false</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">供应商变体为VNDK-SP-Private。共享库将安装到/system/lib[64]/vndk-sp-${VER}中。供应商模块不得直接使用这些变体。</td>
+</tr>
+</tbody>
+</table>
+<p>如果启用BOARD_VNDK_VERSION，系统会移除多个默认的全局头文件搜索路径，主要有以下几个目录：frameworks/av/include、frameworks/native/include、frameworks/native/opengl/include、hardware/libhardware/include、hardware/libhardware_legacy/include、hardware/ril/include、libnativehelper/include、libnativehelper/include_deprecated、system/core/include、system/media/audio/include。<br>若某个模块依赖于以上目录中的headers，则必须在Android.bp中指定与header_libs、static_libs和shared_libs的依赖关系。或在Android.mk中的中指定LOCAL_HEADER_LIBRARIES、LOCAL_STATIC_LIBRARIES和LOCAL_SHARED_LIBRARIES，否则编译检查时会报错。</p>
+<h4 id="2-3-VNDK-Definition工具"><a href="#2-3-VNDK-Definition工具" class="headerlink" title="2.3 VNDK Definition工具"></a>2.3 VNDK Definition工具</h4><p>VNDK Definition tool可以帮助vendor将源码树移植到Android 8.0环境。该工具会先扫描system.img和vendor.img中二进制文件，然后解析依赖项。还可以指定system.img与GSI进行对比，以确定扩展后的lib库。该工具代码路径为：$AOSP/development/vndk/tools/definition-tool/vndk_definition_tool.py。该脚本支持以下参数：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ python3 ./vndk_definition_tool.py vndk \</span><br><span class="line">    --system "$&#123;PRODUCT_OUT&#125;/system.img" \</span><br><span class="line">    --vendor "$&#123;PRODUCT_OUT&#125;/vendor.img" \</span><br><span class="line">    --aosp-system "gsi_system_image" \</span><br><span class="line">    --load-extra-deps "dlopen.dep" \</span><br><span class="line">    --output-<span class="built_in">format</span>=make</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ python3 ./vndk_definition_tool.py check-dep \</span><br><span class="line">    --system "$&#123;PRODUCT_OUT&#125;/system.img" \</span><br><span class="line">    --vendor "$&#123;PRODUCT_OUT&#125;/vendor.img" \</span><br><span class="line">    --aosp-system "gsi_system_image" \</span><br><span class="line">    --tag-file "eligible-list-v3.<span class="number">0</span>.csv" \</span><br><span class="line">    --module-info $&#123;PRODUCT_OUT&#125;/module-info.json \</span><br><span class="line">        <span class="number">1</span>&gt; check_dep.txt \</span><br><span class="line">        <span class="number">2</span>&gt; check_dep_err.txt</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ python3 ./vndk_definition_tool.py deps \</span><br><span class="line">    --system "$&#123;PRODUCT_OUT&#125;/system/" \</span><br><span class="line">    --vendor "$&#123;PRODUCT_OUT&#125;/vendor/" \</span><br><span class="line">    &gt; deps.txt</span><br></pre></td></tr></table></figure>
+<p>现将脚本支持的参数说明整理如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">第1个参数</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vndk</td>
+<td style="text-align:center">计算VNDK库集</td>
+</tr>
+<tr>
+<td style="text-align:center">deps</td>
+<td style="text-align:center">输出二进制文件依赖信息用于debug</td>
+</tr>
+<tr>
+<td style="text-align:center">check-dep</td>
+<td style="text-align:center">检查eligible共享库依赖</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">第2个参数</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">–system</td>
+<td style="text-align:center">开发项目编译生成的system.img路径。</td>
+</tr>
+<tr>
+<td style="text-align:center">–vendor</td>
+<td style="text-align:center">开发项目编译生成的vendor.img路径。</td>
+</tr>
+<tr>
+<td style="text-align:center">–aosp-system</td>
+<td style="text-align:center">AOSP的system.img，即由Google释放的用于VTS测试的GSI文件。</td>
+</tr>
+<tr>
+<td style="text-align:center">–tag-file</td>
+<td style="text-align:center">由Google释放的对framework共享库进行了分类的表格</td>
+</tr>
+<tr>
+<td style="text-align:center">–output-format</td>
+<td style="text-align:center">　自动生成Android.mk（适用于<code>vndk</code>）</td>
+</tr>
+<tr>
+<td style="text-align:center">–load-extra-deps</td>
+<td style="text-align:center">加载外部模块依赖文件（<code>vndk</code>不适用）</td>
+</tr>
+<tr>
+<td style="text-align:center">–revert</td>
+<td style="text-align:center">输出依赖详细情况（适用于<code>deps</code>）</td>
+</tr>
+<tr>
+<td style="text-align:center">–module-info</td>
+<td style="text-align:center">开发项目编译生成的module-info.json。（适用于<code>check-dep</code>）</td>
+</tr>
+</tbody>
+</table>
+<p>dlopen.dep的内容范例如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#libart.so依赖于libart-compier.so</span><br><span class="line">/system/lib64/libart.so: /system/lib64/libart-compiler.so</span><br></pre></td></tr></table></figure>
+<p>check_dep_err.txt的内容范例如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#libRS_internal.so对libmediandk.so的违规依赖</span><br><span class="line">/system/lib/libRS_internal.so</span><br><span class="line">        MODULE_PATH: frameworks/rs</span><br><span class="line">        /system/lib/libmediandk.so</span><br><span class="line">                AImageReader_acquireNextImage</span><br><span class="line">                AImageReader_delete</span><br><span class="line">                AImageReader_getWindow</span><br><span class="line">                AImageReader_new</span><br><span class="line">                AImageReader_setImageListener</span><br></pre></td></tr></table></figure>
+<p>deps.txt的内容范例如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#ld-android.so没有依赖</span><br><span class="line">/system/lib/ld-android.so</span><br><span class="line">#libc.so依赖libdl.so</span><br><span class="line">/system/lib/libc.so</span><br><span class="line">        /system/lib/libdl.so</span><br></pre></td></tr></table></figure>
+<p>各类库对应目录：<br>vndk-sp – /system/lib[64]/vndk-sp。<br>vndk-sp-ext – /vendor/lib[64]/vndk-sp。<br>extra-vendor-libs – /vendor/lib[64]</p>
+<p>在device/$(VENDOR)/$(DEVICE_NAME)目录下创建vndk文件夹，用于存放配置vndk库的Android.mk，其范例如下：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifneq</span> (<span class="variable">$(<span class="built_in">filter</span> <span class="variable">$(DEVICE_NAME)</span>,<span class="variable">$(TARGET_DEVICE)</span>)</span>,)</span><br><span class="line"><span class="comment">##_VNDK_SP_##</span></span><br><span class="line">VNDK_SP_LIBRARIES := \</span><br><span class="line"><span class="comment">##_VNDK_SP_EXT_##</span></span><br><span class="line">VNDK_SP_EXT_LIBRARIES := \</span><br><span class="line">    libpng</span><br><span class="line"><span class="comment">##_EXTRA_VENDOR_LIBS_##</span></span><br><span class="line">EXTRA_VENDOR_LIBRARIES := \</span><br><span class="line">    android.hidl.base@1.0 \</span><br><span class="line">    com.qualcomm.qti.ant@1.0 \</span><br><span class="line">    com.qualcomm.qti.wifidisplayhal@1.0</span><br><span class="line"></span><br><span class="line"><span class="comment">#-------------------------------------------------------------------------------</span></span><br><span class="line"><span class="comment"># VNDK Modules</span></span><br><span class="line"><span class="comment">#-------------------------------------------------------------------------------</span></span><br><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">define</span> define-vndk-lib</span><br><span class="line"><span class="keyword">include</span> $<span class="variable">$(CLEAR_VARS)</span></span><br><span class="line">LOCAL_MODULE := $1.$2</span><br><span class="line">LOCAL_MODULE_CLASS := SHARED_LIBRARIES</span><br><span class="line">LOCAL_PREBUILT_MODULE_FILE := $<span class="variable">$(TARGET_OUT_INTERMEDIATE_LIBRARIES)</span>/$1.so</span><br><span class="line">LOCAL_STRIP_MODULE := false</span><br><span class="line">LOCAL_MULTILIB := first</span><br><span class="line">LOCAL_MODULE_TAGS := optional</span><br><span class="line">LOCAL_INSTALLED_MODULE_STEM := $1.so</span><br><span class="line">LOCAL_MODULE_SUFFIX := .so</span><br><span class="line">LOCAL_MODULE_RELATIVE_PATH := $3</span><br><span class="line">LOCAL_VENDOR_MODULE := $4</span><br><span class="line"><span class="keyword">include</span> $<span class="variable">$(BUILD_PREBUILT)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ifneq</span> ($<span class="variable">$(TARGET_2ND_ARCH)</span>,)</span><br><span class="line"><span class="keyword">ifneq</span> ($<span class="variable">$(TARGET_TRANSLATE_2ND_ARCH)</span>,true)</span><br><span class="line"><span class="keyword">include</span> $<span class="variable">$(CLEAR_VARS)</span></span><br><span class="line">LOCAL_MODULE := $1.$2</span><br><span class="line">LOCAL_MODULE_CLASS := SHARED_LIBRARIES</span><br><span class="line">LOCAL_PREBUILT_MODULE_FILE := $$($<span class="variable">$(TARGET_2ND_ARCH_VAR_PREFIX)</span>TARGET_OUT_INTERMEDIATE_LIBRARIES)/$1.so</span><br><span class="line">LOCAL_STRIP_MODULE := false</span><br><span class="line">LOCAL_MULTILIB := 32</span><br><span class="line">LOCAL_MODULE_TAGS := optional</span><br><span class="line">LOCAL_INSTALLED_MODULE_STEM := $1.so</span><br><span class="line">LOCAL_MODULE_SUFFIX := .so</span><br><span class="line">LOCAL_MODULE_RELATIVE_PATH := $3</span><br><span class="line">LOCAL_VENDOR_MODULE := $4</span><br><span class="line"><span class="keyword">include</span> $<span class="variable">$(BUILD_PREBUILT)</span></span><br><span class="line"><span class="keyword">endif</span>  <span class="comment"># TARGET_TRANSLATE_2ND_ARCH is not true</span></span><br><span class="line"><span class="keyword">endif</span>  <span class="comment"># TARGET_2ND_ARCH is not empty</span></span><br><span class="line"><span class="keyword">endef</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(<span class="built_in">foreach</span> lib,<span class="variable">$(VNDK_SP_LIBRARIES)</span>,\</span></span><br><span class="line"><span class="variable">    $(<span class="built_in">eval</span> $(<span class="built_in">call</span> define-vndk-lib,<span class="variable">$(lib)</span>,vndk-sp-gen,vndk-sp,)</span>))</span><br><span class="line"><span class="variable">$(<span class="built_in">foreach</span> lib,<span class="variable">$(VNDK_SP_EXT_LIBRARIES)</span>,\</span></span><br><span class="line"><span class="variable">    $(<span class="built_in">eval</span> $(<span class="built_in">call</span> define-vndk-lib,<span class="variable">$(lib)</span>,vndk-sp-ext-gen,vndk-sp,true)</span>))</span><br><span class="line"><span class="variable">$(<span class="built_in">foreach</span> lib,<span class="variable">$(EXTRA_VENDOR_LIBRARIES)</span>,\</span></span><br><span class="line"><span class="variable">    $(<span class="built_in">eval</span> $(<span class="built_in">call</span> define-vndk-lib,<span class="variable">$(lib)</span>,vndk-ext-gen,,true)</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">#-------------------------------------------------------------------------------</span></span><br><span class="line"><span class="comment"># Phony Package</span></span><br><span class="line"><span class="comment">#-------------------------------------------------------------------------------</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line">LOCAL_MODULE := <span class="variable">$(DEVICE_NAME)</span>-vndk</span><br><span class="line">LOCAL_MODULE_TAGS := optional</span><br><span class="line">LOCAL_REQUIRED_MODULES := \</span><br><span class="line">    <span class="variable">$(<span class="built_in">addsuffix</span> .vndk-sp-gen,<span class="variable">$(VNDK_SP_LIBRARIES)</span>)</span> \</span><br><span class="line">    <span class="variable">$(<span class="built_in">addsuffix</span> .vndk-sp-ext-gen,<span class="variable">$(VNDK_SP_EXT_LIBRARIES)</span>)</span> \</span><br><span class="line">    <span class="variable">$(<span class="built_in">addsuffix</span> .vndk-ext-gen,<span class="variable">$(EXTRA_VENDOR_LIBRARIES)</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_PHONY_PACKAGE)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endif</span>  <span class="comment"># ifneq ($(filter $(DEVICE_NAME),$(TARGET_DEVICE)),)</span></span><br></pre></td></tr></table></figure>
+<p>然后在项目的makefile中添加下面一条内容，使得vndk/Android.mk参与编译：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_PACKAGES += <span class="variable">$(DEVICE_NAME)</span>-vndk</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#查看image类型</span><br><span class="line">file system.img</span><br><span class="line">#将ext4转换为raw类型</span><br><span class="line">out/host/linux-x86/bin/simg2img system.img system.raw.img</span><br><span class="line"><span class="built_in">mkdir</span> system</span><br><span class="line">#手动挂载system分区</span><br><span class="line">sudo mount -o loop,ro system.raw.img system</span><br></pre></td></tr></table></figure>
+<h3 id="三、VNDK延伸"><a href="#三、VNDK延伸" class="headerlink" title="三、VNDK延伸"></a>三、VNDK延伸</h3><h3 id="3-1-VNDK扩展"><a href="#3-1-VNDK扩展" class="headerlink" title="3.1 VNDK扩展"></a>3.1 VNDK扩展</h3><p>根据模块中定义的功能，可将模块分为DA模块和DX模块：<br>(1)Defining-only-AOSP模块（DA 模块）不会定义AOSP副本中未包含的新功能。<br>a.一个未经修改的AOSP库就是一个DA模块。<br>b.如果vendor使用SIMD指令重写libexample.so中的函数（不添加新函数），那么修改后的libexample.so将是一个DA模块。<br>(2)Defining-Extension模块（DX模块）要么会定义新功能，要么没有AOSP副本。<br>a.如果vendor向 libexample.so 添加一个test函数以访问某些内部数据，那么修改后的libexample.so将是一个DX库，而这个新增函数将是该库的扩展部分。<br>b.如果vendor定义了一个名为libexample.so的非AOSP库，那么libexmple.so将是一个DX库。</p>
+<p>根据模块所使用的功能，可将模块分为UA模块和UX模块。<br>(1)Using-only-AOSP（UA模块）仅会在其实现过程中使用AOSP功能。它们不依赖任何非AOSP扩展功能。<br>a.一个未经修改且完整无缺的AOSP库即是一个UA模块。<br>b.如果修改后的共享库libexample.so仅依赖于其他AOSP API，那么它将是一个UA模块。<br>(2)Using-Extension 模块（UX模块）会在其实现过程中依赖某些非 AOSP 功能。<br>a.如果修改后的libexample.so依赖另一个名为libexample2.so的非AOSP库，那么修改后的libexample.so将是一个UX模块。<br>b.如果vendor修改后的libexample.so1添加了一个新函数，并且其修改后的libexample2.so使用libexample1.so中的这个新增函数，那么修改后的libexample2.so将是一个UX模块。</p>
+<h4 id="3-2-链接器命名空间"><a href="#3-2-链接器命名空间" class="headerlink" title="3.2 链接器命名空间"></a>3.2 链接器命名空间</h4><p>链接器命名空间机制由动态链接器提供，可以隔离不同链接器命名空间中的共享库，以确保具有相同库名称和不同符号的库不会发生冲突。链接器命名空间机制可提供相应的灵活性，从而将由一个链接器命名空间导出的某些共享库用于另一个链接器命名空间。这些导出的共享库可能会成为对其他程序公开的应用编程接口，同时在其链接器命名空间中隐藏实现细节。</p>
+<p>动态链接器负责加载DT_NEEDED条目中指定的共享库，由dlopen()或android_dlopen_ext()的参数指定的共享库。在这两种情况下，动态链接器都会找出调用程序所在的链接器命名空间，并尝试将相关依赖项加载到同一个链接器命名空间中。如果动态链接器无法将共享库加载到指定的链接器命名空间中，它会向关联的链接器命名空间索取导出的共享库。</p>
+<p>ini配置文件范例如下：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">dir.system</span> = /system/bin</span><br><span class="line"><span class="attr">dir.system</span> = /system/xbin</span><br><span class="line"><span class="attr">dir.vendor</span> = /vendor/bin</span><br><span class="line"><span class="section">[system]</span></span><br><span class="line"><span class="attr">additional.namespaces</span> = sphal,vndk</span><br><span class="line"><span class="attr">namespace.default.isolated</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">namespace.default.search.paths</span> = /system/<span class="variable">$&#123;LIB&#125;</span></span><br><span class="line"><span class="attr">namespace.default.permitted.paths</span> = /system/<span class="variable">$&#123;LIB&#125;</span>/hw</span><br><span class="line"><span class="attr">namespace.default.asan.search.paths</span> = /data/asan/system/<span class="variable">$&#123;LIB&#125;</span>:/system/<span class="variable">$&#123;LIB&#125;</span></span><br><span class="line"><span class="attr">namespace.default.asan.permitted.paths</span> = /data/asan/system/<span class="variable">$&#123;LIB&#125;</span>/hw:/system/<span class="variable">$&#123;LIB&#125;</span>/hw</span><br><span class="line"><span class="attr">namespace.sphal.isolated</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">namespace.sphal.visible</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">namespace.sphal.search.paths</span> = /odm/<span class="variable">$&#123;LIB&#125;</span>:/vendor/<span class="variable">$&#123;LIB&#125;</span></span><br><span class="line"><span class="attr">namespace.sphal.permitted.paths</span> = /odm/<span class="variable">$&#123;LIB&#125;</span>:/vendor/<span class="variable">$&#123;LIB&#125;</span></span><br><span class="line"><span class="attr">namespace.sphal.asan.search.paths</span>  = /data/asan/odm/<span class="variable">$&#123;LIB&#125;</span>:/odm/<span class="variable">$&#123;LIB&#125;</span></span><br><span class="line">namespace.sphal.asan.search.paths += /data/asan/vendor/$&#123;LIB&#125;:/vendor/$&#123;LIB&#125;</span><br><span class="line"><span class="attr">namespace.sphal.asan.permitted.paths</span>  = /data/asan/odm/<span class="variable">$&#123;LIB&#125;</span>:/odm/<span class="variable">$&#123;LIB&#125;</span></span><br><span class="line">namespace.sphal.asan.permitted.paths += /data/asan/vendor/$&#123;LIB&#125;:/vendor/$&#123;LIB&#125;</span><br><span class="line"><span class="attr">namespace.sphal.links</span> = default,vndk</span><br><span class="line"><span class="attr">namespace.sphal.link.default.shared_libs</span> = libc.so:libm.so</span><br><span class="line"><span class="attr">namespace.sphal.link.vndk.shared_libs</span> = libbase.so:libcutils.so</span><br><span class="line"><span class="attr">namespace.vndk.isolated</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">namespace.vndk.search.paths</span> = /system/<span class="variable">$&#123;LIB&#125;</span>/vndk-sp-<span class="number">29</span></span><br><span class="line"><span class="attr">namespace.vndk.permitted.paths</span> = /system/<span class="variable">$&#123;LIB&#125;</span>/vndk-sp-<span class="number">29</span></span><br><span class="line"><span class="attr">namespace.vndk.links</span> = default</span><br><span class="line"><span class="attr">namespace.vndk.link.default.shared_libs</span> = libc.so:libm.so</span><br><span class="line"><span class="section">[vendor]</span></span><br><span class="line"><span class="attr">namespace.default.isolated</span> = <span class="literal">false</span></span><br><span class="line"><span class="attr">namespace.default.search.paths</span> = /vendor/<span class="variable">$&#123;LIB&#125;</span>:/system/<span class="variable">$&#123;LIB&#125;</span></span><br></pre></td></tr></table></figure>
+<p>各字段含义整理如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">说明</th>
+<th style="text-align:left">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">dir.name</td>
+<td style="text-align:left">指向[name]区段所应用到的目录的路径。每个属性都会将目录下的可执行文件映射到链接器命名空间配置区段。可能会有2个（或多个）属性具有相同的name，却指向不同的目录。</td>
+<td style="text-align:left">dir.system=/system/bin, dir.system=/system/xbin, dir.vendor=/vendor/bin这表示在[system]区段中指定的配置适用于从/system/bin或/system/xbin加载的可执行文件。在[vendor]区段中指定的配置适用于从/vendor/bin加载的可执行文件。</td>
+</tr>
+<tr>
+<td style="text-align:left">additional.namespaces</td>
+<td style="text-align:left">相应区段的其他命名空间的逗号分隔列表（default命名空间除外）。</td>
+<td style="text-align:left">additional.namespaces= sphal,vndk这表示[system]配置中有3个命名空间（default、sphal和vndk）。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.links</td>
+<td style="text-align:left">回退命名空间的逗号分隔列表。如果在当前命名空间中找不到共享库，则动态链接器会尝试从回退命名空间加载共享库。在列表开头指定的命名空间优先级较高。</td>
+<td style="text-align:left">namespace.sphal.links=default,vndk 如果某个共享库或可执行文件请求另一个共享库，而后者无法加载到sphal命名空间，则动态链接器会尝试从default命名空间加载此共享库。然后，如果此共享库也无法从default 命名空间加载，则动态链接器会尝试从vndk命名空间加载此共享库。最后，如果所有尝试都失败，则动态链接器会返回一个错误。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.link.other.shared_libs</td>
+<td style="text-align:left">用冒号分隔的共享库列表（如果在name命名空间中找不到这些共享库，则可以在other命名空间中搜索）。此属性无法与namespace.name.link.other.allow_all_shared_libs一起使用。</td>
+<td style="text-align:left">namespace.sphal.link.default.shared_libs=libc.so:libm.so这表示回退链接仅接受libc.so或libm.so作为请求的库名称。如果请求的库名称不是libc.so，也不是libm.so，则动态链接器会忽略从sphal到default命名空间的回退链接。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.link.other.allow_all_shared_libs</td>
+<td style="text-align:left">一个布尔值，用于指示在 name 命名空间中找不到共享库时，是否所有共享库都可以在other命名空间中搜索。此属性无法与namespace.name.link.other.shared_libs一起使用。</td>
+<td style="text-align:left">namespace.vndk.link.sphal.allow_all_shared_libs=true这表示所有库名称都可以遍历从vndk到sphal命名空间的回退链接。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.isolated</td>
+<td style="text-align:left">一个布尔值，用于指示动态链接器是否应该检查共享库在什么位置。如果isolated为true，则只有某个 search.paths目录（不包含子目录）中或permitted.paths目录（包含子目录）下的共享库才能加载。如果isolated为false，则动态链接器不会检查共享库的路径。</td>
+<td style="text-align:left">namespace.sphal.isolated=true这表示只有search.paths中或permitted.paths下的共享库才能加载到sphal命名空间。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.search.paths</td>
+<td style="text-align:left">以冒号分隔的目录列表，用于搜索共享库。如果函数调用dlopen()或DT_NEEDED条目时未指定完整路径，则在search.paths中指定的目录将附加到请求的库名称前面。在列表开头指定的目录优先级较高。如果isolated为true，则任一search.paths目录（不包含子目录）中的共享库都可以加载，无论permitted.paths属性如何设置。</td>
+<td style="text-align:left">namespace.default.search.paths=/system/${LIB}这表示动态链接器会在/system/${LIB}中搜索共享库。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.asan.search.paths</td>
+<td style="text-align:left">以冒号分隔的目录列表，用于在启用Address Sanitizer后搜索共享库。在启用 Address Sanitizer后，系统会忽略namespace.name.search.paths。</td>
+<td style="text-align:left">namespace.default.asan.search.paths=/data/asan/system/${LIB}:/system/${LIB}这表示在启用Address Sanitizer后，动态链接器会先搜索/data/asan/system/${LIB}，然后再搜索 /system/${LIB}。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.permitted.paths</td>
+<td style="text-align:left">以冒号分隔的目录列表（包含子目录），当isolated为true时，动态链接器可在其中加载共享库（除了search.paths以外）。permitted.paths的子目录下的共享库也可以加载。如果isolated为false，则系统会忽略 permitted.paths 并发出相应警告。</td>
+<td style="text-align:left">namespace.default.permitted.paths=/system/${LIB}/hw这表示/system/${LIB}/hw下的共享库可以加载到隔离的default命名空间。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.asan.permitted.paths</td>
+<td style="text-align:left">以冒号分隔的目录列表，在启用Address Sanitizer后，动态链接器可在其中加载共享库。在启用Address Sanitizer后，系统会忽略namespace.name.permitted.paths。</td>
+<td style="text-align:left">namespace.default.asan.permitted.paths=/data/asan/system/${LIB}/hw:/system/${LIB}/hw这表示在启用Address Sanitizer后，/data/asan/system/${LIB}/hw或/system/${LIB}/hw下的共享库可以加载到隔离的 default命名空间。</td>
+</tr>
+<tr>
+<td style="text-align:left">namespace.name.visible</td>
+<td style="text-align:left">一个布尔值，用于指示程序（不包括libc）是否可以包含带有android_get_exported_namespace()的链接器命名空间句柄，以及通过将此句柄传递到android_dlopen_ext()打开链接器命名空间中的共享库。如果visible为true，则android_get_exported_namespace()在命名空间存在时始终返回此句柄。如果visible为false（默认值），则无论命名空间是否存在，android_get_exported_namespace()始终返回NULL。仅当符合以下条件时，共享库才能加载到此命名空间：(1)具有指向此命名空间的回退链接的其他链接器命名空间请求这些共享库；(2)此命名空间中的其他共享库或可执行文件请求这些共享库。</td>
+<td style="text-align:left">namespace.sphal.visible = true这表示android_get_exported_namespace(“sphal”)可以返回有效的链接器命名空间句柄。</td>
+</tr>
+</tbody>
+</table>
+<p>${android-src}/system/core/rootdir/etc中有3个配置文件。系统会根据BoardConfig.mk中 PRODUCT_TREBLE_LINKER_NAMESPACES、BOARD_VNDK_VERSION和BOARD_VNDK_RUNTIME_DISABLE的值选择不同的配置：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">PRODUCT_TREBLE_LINKER_NAMESPACES</th>
+<th style="text-align:left">BOARD_VNDK_VERSION</th>
+<th style="text-align:left">BOARD_VNDK_RUNTIME_DISABLE</th>
+<th style="text-align:left">选择的配置</th>
+<th style="text-align:left">VTS要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">true</td>
+<td style="text-align:left">current</td>
+<td style="text-align:left">empty</td>
+<td style="text-align:left">ld.config.txt</td>
+<td style="text-align:left">搭载Android P的设备的必要配置。</td>
+</tr>
+<tr>
+<td style="text-align:left">true</td>
+<td style="text-align:left">current</td>
+<td style="text-align:left">true</td>
+<td style="text-align:left">ld.config.vndk_lite.txt</td>
+<td style="text-align:left">搭载Android8.x的设备的必要配置。</td>
+</tr>
+<tr>
+<td style="text-align:left">true</td>
+<td style="text-align:left">empty</td>
+<td style="text-align:left">any</td>
+<td style="text-align:left">ld.config.vndk_lite.txt</td>
+<td style="text-align:left">搭载Android 8.x的设备的必要配置。</td>
+</tr>
+<tr>
+<td style="text-align:left">false</td>
+<td style="text-align:left">any</td>
+<td style="text-align:left">any</td>
+<td style="text-align:left">ld.config.legacy.txt</td>
+<td style="text-align:left">适用于不支持Treble的设备</td>
+</tr>
+</tbody>
+</table>
+<p>${AOSP}/system/core/rootdir/etc/ld.config.vndk_lite.txt会隔离SP-HAL和VNDK-SP共享库。在Android 8.0及更高版本中，当PRODUCT_TREBLE_LINKER_NAMESPACES为true时，该配置必须是动态链接器的配置文件。</p>
+<p>${AOSP}/system/core/rootdir/etc/ld.config.txt也会隔离SP-HAL和VNDK-SP共享库。此外，ld.config.txt还会提供全面的动态链接器隔离。它可确保系统分区中的模块不依赖于供应商分区中的共享库，反之亦然。</p>
+<p>在Android8.1中，ld.config.txt是默认配置文件，强烈建议您启用全面的动态链接器隔离。但是，如果在Android 8.1中需要清理的依赖项太多，您可以将BOARD_VNDK_RUNTIME_DISABLE添加到BoardConfig.mk中。如果BOARD_VNDK_RUNTIME_DISABLE为true，则会安装 ${AOSP}/system/core/rootdir/etc/ld.config.vndk_lite.txt。</p>
+<p>ld.config.txt会隔离系统分区和供应商分区之间的共享库依赖项。下文概述了该配置文件与上一小节中提到的ld.config.txt相比有哪些不同：</p>
+<p>framework进程:<br>a.创建了四个命名空间（default、vndk、sphal和rs）。<br>b.系统会隔离所有命名空间。<br>c.将系统共享库加载到default命名空间中。<br>d.将SP-HAL加载到sphal命名空间中。<br>e.将VNDK-SP共享库加载到vndk命名空间中。</p>
+<p>vendor进程<br>a.创建了三个命名空间（default、vndk和system）。<br>b.系统会隔离default命名空间。<br>c.将供应商共享库加载到default命名空间中。<br>d.将VNDK和VNDK-SP共享库加载到vndk命名空间中。<br>e.将LL-NDK及其依赖项加载到system命名空间中。</p>
+<p>链接器命名空间之间的关系如下图所示：</p>
+<p><img src="/images/treble_vndk_linker_namespace3.png" alt></p>
+<p>在上图中，LL-NDK 和 VNDK-SP 代表以下共享库：</p>
+<p>LL-NDK：<br>libEGL.so, libGLESv1_CM.so, libGLESv2.so, libGLESv3.so, libandroid_net.so, libc.so, libdl.so, liblog.so, libm.so, libnativewindow.so, libneuralnetworks.so, libsync.so, libvndksupport.so, libvulkan.so</p>
+<p>VNDK-SP：<br><a href="mailto:android.hardware.graphics.common@1.0.so" target="_blank" rel="noopener">android.hardware.graphics.common@1.0.so</a>, <a href="mailto:android.hardware.graphics.mapper@2.0.so" target="_blank" rel="noopener">android.hardware.graphics.mapper@2.0.so</a>, <a href="mailto:android.hardware.renderscript@1.0.so" target="_blank" rel="noopener">android.hardware.renderscript@1.0.so</a>, <a href="mailto:android.hidl.memory@1.0.so" target="_blank" rel="noopener">android.hidl.memory@1.0.so</a>, libRSCpuRef.so, libRSDriver.so, libRS_internal.so, libbase.so, libbcinfo.so, libc++.so, libcutils.so, libhardware.so, libhidlbase.so, libhidlmemory.so, libhidltransport.so, libhwbinder.so, libion.so, libutils.so, libz.so</p>
+<p>下表列出了框架进程的命名空间配置（摘自ld.config.txt中的[system]部分）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">命名空间</th>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/system/${LIB}, /product/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/system/${LIB}/drm, system/${LIB}/extractors, /system/${LIB}/hw, /product/${LIB}, /system/framework, /system/app, /system/priv-app, /vendor/app, /vendor/priv-app, /oem/app, /odm/priv-app, /oem/app, /product/framework, /product/app, /product/priv-app, /data, /mnt/expand</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}, /vendor/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/odm/${LIB}, /vendor/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">visible</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">links</td>
+<td style="text-align:left">default,vndk,rs</td>
+</tr>
+<tr>
+<td style="text-align:left">links</td>
+<td style="text-align:left">link.default.shared_libs</td>
+<td style="text-align:left">LL-NDK</td>
+</tr>
+<tr>
+<td style="text-align:left">links</td>
+<td style="text-align:left">link.vndk.shared_libs</td>
+<td style="text-align:left">VNDK-SP</td>
+</tr>
+<tr>
+<td style="text-align:left">links</td>
+<td style="text-align:left">link.rs.shared_libs</td>
+<td style="text-align:left">libRS_internal.so</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}/vndk-sp, /vendor/${LIB}/vndk-sp, /system/${LIB}/vndk-sp-${VER}</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/odm/${LIB}/hw, /odm/${LIB}/egl, /vendor/${LIB}/hw, /vendor/${LIB}/egl, /system/${LIB}/vndk-sp-${VER}/hw</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">visible</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">links</td>
+<td style="text-align:left">default、sphal</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">link.default.shared_libs</td>
+<td style="text-align:left">LL-NDK</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">link.default.allow_all_shared_libs</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}/vndk-sp, /vendor/${LIB}/vndk-sp, /system/${LIB}/vndk-sp-${VER}, /odm/${LIB}, /vendor/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/odm/${LIB}, /vendor/${LIB}, /data（适用于已编译的 RS 内核）</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">visible</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">links</td>
+<td style="text-align:left">default,vndk</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">link.default.shared_libs</td>
+<td style="text-align:left">LL-NDK, libmediandk.so, libft2.so</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">link.vndk.shared_libs</td>
+<td style="text-align:left">VNDK-SP</td>
+</tr>
+</tbody>
+</table>
+<p>下表列出了供应商进程的命名空间配置（摘自ld.config.txt中的[vendor]部分）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">命名空间</th>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}, /vendor/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/odm, /vendor</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">visible</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">links</td>
+<td style="text-align:left">system、vndk</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">link.system.shared_libs</td>
+<td style="text-align:left">LL-NDK</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">link.vndk.shared_libs</td>
+<td style="text-align:left">VNDK、VNDK-SP（供应商可用）</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}/vndk, /odm/${LIB}/vndk-sp, /vendor/${LIB}/vndk, /vendor/${LIB}/vndk-sp, /system/${LIB}/vndk-${VER}, /system/${LIB}/vndk-sp-${VER}</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk</td>
+<td style="text-align:left">links</td>
+<td style="text-align:left">system、default</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk</td>
+<td style="text-align:left">link.system.shared_libs</td>
+<td style="text-align:left">LL-NDK</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk</td>
+<td style="text-align:left">link.default.allow_all_shared_libs</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">system</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/system/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">system</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">false</td>
+</tr>
+</tbody>
+</table>
+<p>从 Android 8.0 开始，动态链接器将配置为隔离 SP-HAL 和 VNDK-SP 共享库，以使其符号不会与其他框架共享库发生冲突。链接器命名空间之间的关系如下所示：</p>
+<p><img src="/images/treble_vndk_linker_namespace1.png" alt></p>
+<p>LL-NDK和VNDK-SP代表以下共享库：</p>
+<p>LL-NDK：<br>libEGL.so, libGLESv1_CM.so, libGLESv2.so, libc.so, libdl.so, liblog.so, libm.so, libnativewindow.so, libstdc++.so（不在ld.config.txt 中）, libsync.so, libvndksupport.so, libz.so（已移到 ld.config.txt中的VNDK-SP）</p>
+<p>VNDK-SP：<br><a href="mailto:android.hardware.graphics.common@1.0.so" target="_blank" rel="noopener">android.hardware.graphics.common@1.0.so</a>, <a href="mailto:android.hardware.graphics.mapper@2.0.so" target="_blank" rel="noopener">android.hardware.graphics.mapper@2.0.so</a>, <a href="mailto:android.hardware.renderscript@1.0.so" target="_blank" rel="noopener">android.hardware.renderscript@1.0.so</a>, <a href="mailto:android.hidl.memory@1.0.so" target="_blank" rel="noopener">android.hidl.memory@1.0.so</a>, libbase.so, libc++.so, libcutils.so, libhardware.so, libhidlbase.so, libhidlmemory.so, libhidltransport.so, libhwbinder.so, libion.so, libutils.so</p>
+<p>下表列出了框架进程的命名空间配置（摘自ld.config.vndk_lite.txt中的[system]部分）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">命名空间</th>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/system/${LIB}, /odm/${LIB}, /vendor/${LIB}, /product/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">false</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}, /vendor/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/odm/${LIB}, /vendor/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">visible</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">links</td>
+<td style="text-align:left">default,vndk,rs</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">link.default.shared_libs</td>
+<td style="text-align:left">LL-NDK</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">link.vndk.shared_libs</td>
+<td style="text-align:left">VNDK-SP</td>
+</tr>
+<tr>
+<td style="text-align:left">sphal</td>
+<td style="text-align:left">link.rs.shared_libs</td>
+<td style="text-align:left">libRS_internal.so</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}/vndk-sp, /vendor/${LIB}/vndk-sp, /system/${LIB}/vndk-sp-${VER}</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/odm/${LIB}/hw, /odm/${LIB}/egl, /vendor/${LIB}/hw, /vendor/${LIB}/egl, /system/${LIB}/vndk-sp-${VER}/hw</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">solated</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">visible</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">links</td>
+<td style="text-align:left">default</td>
+</tr>
+<tr>
+<td style="text-align:left">vndk（适用于 VNDK-SP）</td>
+<td style="text-align:left">link.default.shared_libs</td>
+<td style="text-align:left">LL-NDK</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}/vndk-sp, /vendor/${LIB}/vndk-sp, /system/${LIB}/vndk-sp-${VER}, /odm/${LIB}, /vendor/${LIB}</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">permitted.paths</td>
+<td style="text-align:left">/odm/${LIB}, /vendor/${LIB}, /data（适用于已编译的 RS 内核）</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">isolated,</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">visible</td>
+<td style="text-align:left">true</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">links</td>
+<td style="text-align:left">default,vndk</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">link.default.shared_libs</td>
+<td style="text-align:left">LL-NDK, libmediandk.so, libft2.so</td>
+</tr>
+<tr>
+<td style="text-align:left">rs（适用于 Renderscript）</td>
+<td style="text-align:left">link.vndk.shared_libs</td>
+<td style="text-align:left">VNDK-SP</td>
+</tr>
+</tbody>
+</table>
+<p>下表列出了vendor进程的命名空间配置（摘自ld.config.vndk_lite.txt中的[vendor]部分）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">命名空间</th>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">search.paths</td>
+<td style="text-align:left">/odm/${LIB}, /odm/${LIB}/vndk, /odm/${LIB}/vndk-sp, /vendor/${LIB}, /vendor/${LIB}/vndk, /vendor/${LIB}/vndk-sp, /system/${LIB}/vndk-${VER}, /system/${LIB}/vndk-sp-${VER}, /system/${LIB}（已弃用）, /product/${LIB}（已弃用）</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">isolated</td>
+<td style="text-align:left">false</td>
+</tr>
+</tbody>
+</table>
+<h4 id="3-3-VNDK快照"><a href="#3-3-VNDK快照" class="headerlink" title="3.3 VNDK快照"></a>3.3 VNDK快照</h4><p>VNDK快照是一组适用于Android版本的VNDK-core和VNDK-SP库。如果system.img包含vendor.img所需的相应VNDK快照，那么只能升级system分区。VNDK快照设计包括两项操作：(1)从当前系统映像生成预编译的VNDK快照；(2)将这些预编译的库安装到更高Android版本的system分区。</p>
+<p>正式的VNDK快照是在Android编译服务器上自动编译而成，并包含在${AOSP}/prebuilts/vndk中。此外，也支持本地编译VNDK快照。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#编译特定project</span><br><span class="line">lunch aosp_arm64_ab-user</span><br><span class="line">make -j vndk dist [BOARD_VNDK_VERSION=current]</span><br><span class="line">#编译所有project</span><br><span class="line"><span class="built_in">cd</span> $AOSP</span><br><span class="line">DIST_DIR=<span class="variable">%dist_dir%</span> development/vndk/snapshot/build.sh</span><br></pre></td></tr></table></figure>
+<p>VNDK快照包含以下文件：<br>a.VNDK-core和VNDK-SP共享库的vendor变体。<br> i.无需LL-NDK 共享库，因为这类库是向后兼容的。<br> ii.对于64位目标，TARGET_ARCH和TARGET_2ND_ARCH库都将被编译并包含在内。<br>b.VNDK-core、VNDK-SP、LL-NDK和VNDK-private库的列表位于[vndkcore|vndksp|llndk|vndkprivate].libraries.txt。<br>c.链接器配置文件为ld.config.txt。<br>d.许可文件。<br>e.module_paths.txt。记录所有VNDK库的模块路径；检查GPL项目是否已在指定Android源代码树中发布源代码时，需要用到这种文件。</p>
+<p>对于指定VNDK快照ZIP文件android-vndk-{TARGET_ARCH}.zip，系统会根据ABI位数将VNDK预编译库分组到名为arch-{TARGET_ARCH}-{TARGET_ARCH_VARIANT} 的单独目录中。</p>
+<p>VNDK 快照目录结构：<br><img src="/images/vndk_snapshot_directory.png" alt></p>
+<p>development/vndk/snapshot/update.py脚本可自动将预编译的VNDK快照添加到源代码树中。此脚本将执行以下任务：<br>a.在/prebuilts/vndk/v<ver>中，使用repo start创建新的git分支。<br>b.获取VNDK快照编译软件工件并将其解压缩。<br>c.运行gen_buildfiles.py以自动生成编译文件（Android.mk、Android.bp）。<br>d.运行check_gpl_license.py以验证根据通用公共许可证(GPL)获得许可的预编译库是否在当前源代码树中发布了源代码。<br>e.使用git commit提交新的更改。</ver></p>
+<p>在指定–local选项的情况下，update.py会从本地$DIST_DIR（而非Android编译服务器中）提取VNDK快照编译工件。但由于本地模式仅用于测试，因此该脚本将跳过 GPL 许可检查和 git commit 步骤。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python update.py &lt;<span class="built_in">VER</span>&gt; --local</span><br></pre></td></tr></table></figure>
+<p>prebuilts/vndk 的目录结构：<br><img src="/images/vndk_snapshot_prebuilt.png" alt></p>
+<p>system.img在编译时使用BOARD_VNDK_VERSION、PRODUCT_EXTRA_VNDK_VERSIONS和ro.vndk.version中的信息安装VNDK快照库。可以使用以下选项之一控制从/prebuilts/vndk/v<ver>中安装哪些VNDK快照：<br>a.BOARD_VNDK_VERSION。使用快照模块编译当前vendor模块，并仅安装vendor模块所需的快照模块。<br>b.PRODUCT_EXTRA_VNDK_VERSIONS。无论当前vendor模块有哪些，都安装VNDK快照模块。这将安装PRODUCT_EXTRA_VNDK_VERSIONS中列出的预编译VNDK快照，而不会在编译时将其与任何其他模块相关联。</ver></p>
+<p>BOARD_VNDK_VERSION显示的是当前vendor模块需要编译的VNDK版本。如果BOARD_VNDK_VERSION在/prebuilts/vndk目录中有可用的 VNDK快照版本，则系统会安装BOARD_VNDK_VERSION中指明的VNDK快照。如果目录中的VNDK快照不可用，则会出现编译错误。定义 BOARD_VNDK_VERSION也会启用要安装的VNDK模块。vendor模块会在编译时与BOARD_VNDK_VERSION中定义的VNDK快照版本相关联（此操作不会在system源代码中编译当前的VNDK模块）。从代码库中下载完整的源代码树时，system源代码和vendor源代码均基于相同的Android版本。</p>
+<p>PRODUCT_EXTRA_VNDK_VERSIONS列出了要安装的其他VNDK版本。正常情况下，当前的vendor分区只需一个VNDK快照就足够了。不过，在某些情况下，您可能需要在一个system.img中提供多个快照。例如，常规系统映像(GSI)具有多个快照，以通过一个system.img支持多个vendor版本。设置PRODUCT_EXTRA_VNDK_VERSIONS后，除了BOARD_VNDK_VERSION中的VNDK版本之外，您还可以安装VNDK快照模块。如果 PRODUCT_EXTRA_VNDK_VERSIONS具有特定的版本列表，则编译系统会在prebuilts/vndk目录中查找版本列表的预编译快照。如果编译系统找到所有列出的快照，便会将这些快照文件安装到每个out/target/product/<board>/system/lib[64]/vndk[-sp]-${VER}中。缺少某些版本会导致出现编译错误。</board></p>
+<p>VNDK模块将不会在编译时与vendor模块相关联，但在运行时可能会使用该模块（如果vendor分区中的vendor模块需要某个已安装的VNDK版本）。PRODUCT_EXTRA_VNDK_VERSIONS仅在指定了BOARD_VNDK_VERSION的情况下才有效。例如，若要将O MR1 VNDK快照安装到system.img中，需要运行以下命令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">m -j PRODUCT_EXTRA_VNDK_VERSIONS=<span class="number">27</span></span><br></pre></td></tr></table></figure>
+<p>PLATFORM_VNDK_VERSION在系统源代码中指定了当前VNDK模块的VNDK版本。系统会通过以下方式自动设置该值：<br>a.在版本发布之前，将PLATFORM_VNDK_VERSION设置为PLATFORM_VERSION_CODENAME。<br>b.在发布时，将PLATFORM_SDK_VERSION复制到PLATFORM_VNDK_VERSION中。<br>c.发布Android版本后，当前的VNDK库会被安装到/system/lib[64]/vndk-$SDK_VER和/system/lib[64]/vndk-sp-$SDK_VER，其中$SDK_VER是存储在PLATFORM_VNDK_VERSION中的版本。</p>
+<p>vendor模块使用/etc/ld.config.${VER}.txt（其中${VER}是从ro.vndk.version属性中获得的）中的命名空间配置来搜索所需的共享库。命名空间配置中包含带有版本编号的VNDK目录，该目录使用以下语法：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#<span class="variable">%VNDK_VER%</span> 在编译时会被替换为PLATFORM_VNDK_VERSION，这样一来，system.img便能够为每个VNDK版本提供多个快照。</span><br><span class="line">/system/$&#123;LIB&#125;/vndk-<span class="variable">%VNDK_VER%</span></span><br><span class="line">/system/$&#123;LIB&#125;/vndk-sp-<span class="variable">%VNDK_VER%</span></span><br></pre></td></tr></table></figure>
+<p>如果将BOARD_VNDK_VERSION设置为current，则PLATFORM_VNDK_VERSION将存储在ro.vndk.version中；否则BOARD_VNDK_VERSION将存储在ro.vndk.version中。PLATFORM_VNDK_VERSION在Android版本发布时会被设置为SDK版本；在发布之前，由字母和数字组成的Android代码名称会用于PLATFORM_VNDK_VERSION。</p>
+<p>下表总结了VNDK版本设置。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">供应商版本</th>
+<th style="text-align:left">开发板版本</th>
+<th style="text-align:left">SDK版本</th>
+<th style="text-align:left">平台版本</th>
+<th style="text-align:left">版本属性</th>
+<th style="text-align:left">安装目录</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">当前的VNDK模块</td>
+<td style="text-align:left">current</td>
+<td style="text-align:left">之前&lt;CODE_NAME&gt;</td>
+<td style="text-align:left">&lt;CODE_NAME&gt;</td>
+<td style="text-align:left">/system/lib[64]/vndk[-sp]-&lt;CODE_NAME&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">当前的VNDK模块</td>
+<td style="text-align:left">current</td>
+<td style="text-align:left">之后    &lt;SDK_ver&gt;</td>
+<td style="text-align:left">&lt;SDK_ver&gt;</td>
+<td style="text-align:left">/system/lib[64]/vndk[-sp]-&lt;SDK_ver&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">预编译的快照模块</td>
+<td style="text-align:left">&lt;VNDK_ver&gt;（用于快照）</td>
+<td style="text-align:left">之前或之后</td>
+<td style="text-align:left">&lt;CODE_NAME&gt;或 &lt;SDK_ver&gt;</td>
+<td style="text-align:left">&lt;VNDK_ver&gt;</td>
+<td style="text-align:left">/system/lib[64]/vndk[-sp]-&lt;VNDK_ver&gt;</td>
+</tr>
+</tbody>
+</table>
+<p>a.开发板版本(BOARD_VNDK_VERSION)：vendor模块需要编译的VNDK版本。如果vendor模块可与当前系统模块相关联，则将其设置为 current。<br>b.平台版本(PLATFORM_VNDK_VERSION)：当前系统模块正在编译的VNDK版本（仅在BOARD_VNDK_VERSION为当前版本时编译）。<br>c.版本属性(ro.vndk.version)：一种属性，用于指定vendor.img 中的二进制文件和库需要运行的VNDK版本。该属性存储在/vendor/default.prop下的vendor.img中。</p>
+<h4 id="3-4-ABI稳定"><a href="#3-4-ABI稳定" class="headerlink" title="3.4 ABI稳定"></a>3.4 ABI稳定</h4><p>vendor模块可能依赖于system分区中的VNDK共享库。新编译的VNDK共享库必须与之前发布的VNDK共享库保持ABI兼容性，以便vendor模块可以与这些库协同工作，而无需重新编译，也不会出现运行时错误。为了确保实现ABI兼容性，Android 9.0中添加了一个ABI header检查工具，接下来会对该工具进行简单介绍。</p>
+<p>导出的符号（全局符号）是指满足以下所有条件的符号：<br>a.通过共享库的公开标头导出。<br>b.显示在与共享库对应的.so文件的.dynsym表中。<br>c.具有WEAK或GLOBAL绑定。<br>d.可见性为DEFAULT或PROTECTED。<br>e.区块索引不是UNDEFINED。<br>f.类型为FUNC或OBJECT。<br>g.共享库的公开头文件是指通过以下属性提供给其他库/二进制文件使用的头文件：export_include_dirs、export_header_lib_headers、export_static_lib_headers、export_shared_lib_headers和 export_generated_headers属性（位于与共享库对应的模块的 Android.bp 定义中）。</p>
+<p>可到达类型是指可通过导出的符号直接或间接到达并且是通过公开header导出的任何C/C++内置类型或用户定义的类型。如libfoo.so具有函数Foo，该函数是一个导出的符合，可在.dynsym表中找到。libfoo.so库包含以下内容：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//foo_exported.h</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">foo_private</span> <span class="title">foo_private_t</span>;</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">foo</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> m1;</span><br><span class="line">  <span class="keyword">int</span> *m2;</span><br><span class="line">  <span class="keyword">foo_private_t</span> *mPfoo;</span><br><span class="line">&#125; <span class="keyword">foo_t</span>;</span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">bar</span> &#123;</span></span><br><span class="line">  <span class="keyword">foo_t</span> mfoo;</span><br><span class="line">&#125; <span class="keyword">bar_t</span>;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">Foo</span><span class="params">(<span class="keyword">int</span> id, <span class="keyword">bar_t</span> *bar_ptr)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//foo.private.h</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">foo_private</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> m1;</span><br><span class="line">  <span class="keyword">float</span> mbar;</span><br><span class="line">&#125; <span class="keyword">foo_private_t</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#android.bp</span><br><span class="line">cc_library &#123;</span><br><span class="line">  name : libfoo,</span><br><span class="line">  vendor_available: true,</span><br><span class="line">  vndk &#123;</span><br><span class="line">    enabled : true,</span><br><span class="line">  &#125;</span><br><span class="line">  srcs : [&quot;src/*.cpp&quot;],</span><br><span class="line">  export_include_dirs : [</span><br><span class="line">    &quot;include&quot;</span><br><span class="line">  ],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>.dynsym表：<br>Num | Value | Size | Type | Bind | Vis | Ndx | Name<br>:-: | :-: | :-: | :-: | :-: | :-: | :-: | :-:<br>1 | 0 | 0 | FUNC | GLOB | DEF | UND | dlerror@libc<br>2 | 1ce0 | 20 | FUNC | GLOB | DEF | 12 | Foo</p>
+<p>以Foo为例，直接/间接可到达类型包括：<br>类型 | 说明<br>:- | :-<br>bool | Foo的返回值类型。<br>int | 第一个Foo参数的类型。<br>ar_t <em> | 第二个Foo参数的类型。bar_t是经由bar_t </em>通过foo_exported.h导出的。bar_t包含类型foo_t（通过foo_exported.h导出）的一个成员mfoo，这会导致导出更多类型：int: 是m1的类型。int <em>: 是m2的类型。foo_private_t </em>: 是mPfoo的类型。不过，foo_private_t不是可到达类型，因为它不是通过foo_exported.h导出的。（foot_private_t *不透明，因此系统允许对foo_private_t进行更改）。</p>
+<p>对于在对应的Android.bp文件中标有vendor_available: true和vndk.enabled: true的库，必须确保其ABI合规性。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#android.bp</span><br><span class="line">cc_library &#123;</span><br><span class="line">    name: &quot;libvndk_example&quot;,</span><br><span class="line">    vendor_available: true,</span><br><span class="line">    vndk: &#123;</span><br><span class="line">        enabled: true,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于可通过导出的函数直接或间接到达的数据类型，对库进行以下更改会破坏ABI合规性：<br>数据类型 | 说明<br>:- | :-<br>结构和类 | 移除非静态数据成员；会导致类/结构体大小发生变化的更改；会导致虚表布局发生变化的更改；添加/移除基类；更改基类的顺序；更改模板参数；会导致数据成员的内存偏移发生变化的更改；更改成员的const-volatile-restricted限定符；对数据成员的访问权限指定符进行降级。<br>联合 | 添加/移除字段；会导致大小发生变化的更改；更改字段顺序；更改字段类型。<br>枚举 | 更改成员的值；更改成员的名称；更改基础类型。<br>全局符号 | 移除通过公开标头导出的符号。对于类型FUNC的全局符号，添加/移除参数；以任何方式更改任何参数的类型；以任何方式更改返回值类型。对访问权限指定符进行降级<em>，对于类型OBJECT的全局符号任何方式更改相应的C/C++类型；对访问权限指定符进行降级</em>。</p>
+<p>编译VNDK库时，系统会将其ABI与所编译VNDK的版本对应的ABI参考进行比较。参考ABI位于：${AOSP}/prebuilts/abi-dumps/(v)ndk/&lt;${PLATFORM_VNDK_VERSION}&gt;/&lt;BINDER_BITNESS&gt;/&lt;ARCH_ARCH-VARIANT&gt;/source-based。</p>
+<p>当ABI损坏时，编译日志会显示警告，其中包含警告类型以及abi-diff报告所在的路径。如果libbinder的ABI有不兼容的更改，则编译系统会抛出错误，并显示类似以下的消息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">*****************************************************</span><br><span class="line">error: VNDK library: libbinder.so&apos;s ABI has INCOMPATIBLE CHANGES</span><br><span class="line">Please check compatibility report at:</span><br><span class="line">out/soong/.intermediates/frameworks/native/libs/binder/libbinder/android_arm64_armv8-a_cortex-a73_vendor_shared/libbinder.so.abidiff</span><br><span class="line">******************************************************</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">platform/development/vndk/tools/header-checker/utils/create_reference_dumps.py -l libbinder</span><br></pre></td></tr></table></figure>
+<p>编译VNDK库时：header-abi-dumper会处理为了编译VNDK库（库本身的源文件以及通过静态传递依赖项沿用的源文件）而编译的源文件，以生成与各个源文件对应的.sdump文件。</p>
+<p><img src="/images/abi_check_sdump.png" alt></p>
+<p>然后header-abi-linker会处理.sdump文件（使用提供给它的版本脚本或与共享库对应的.so 文件），以生成.lsdump文件，该文件用于记录与共享库对应的所有ABI信息。</p>
+<p><img src="/images/abi_check_lsdump.png" alt></p>
+<p>header-abi-diff会将.lsdump文件与参考.lsdump文件进行比较，以生成差异报告，该报告中会简要说明两个库的ABI之间存在的差异。</p>
+<p><img src="/images/abi_check_abidiff.png" alt></p>
+<p>header-abi-dumper工具会解析C/C++源文件，并将从该源文件推断出的ABI转储到一个中间文件。编译系统会对所有已编译的源文件运行header-abi-dumper，同时还会建立一个库，其中包含来自传递依赖项的源文件。目前.sdump 文件采用Protobuf TextFormatted格式，无法保证该格式在未来版本中仍保持稳定。因此，.sdump文件格式化应被视为编译系统的实现细节。</p>
+<p>例如，libfoo.so具有以下源文件foo.cpp：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;foo_exported.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">Foo</span><span class="params">(<span class="keyword">int</span> id, <span class="keyword">bar_t</span> *bar_ptr)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (id &gt; <span class="number">0</span> &amp;&amp; bar_ptr-&gt;mfoo.m1 &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以使用header-abi-dumper生成中间.sdump文件，该文件代表源文件使用以下命令提供的ABI：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ header-abi-dumper foo.cpp -I exported -o foo.sdump -- -x c++</span><br></pre></td></tr></table></figure>
+<p>该命令指示header-abi-dumper解析foo.cpp并发出ABI信息。下面是 header-abi-dumper生成的foo.sdump中的一部分：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line">record_types &#123;</span><br><span class="line">  type_info &#123;</span><br><span class="line">    name: &quot;foo&quot;</span><br><span class="line">    size: 12</span><br><span class="line">    alignment: 4</span><br><span class="line">    referenced_type: &quot;type-1&quot;</span><br><span class="line">    source_file: &quot;foo/include/foo_exported.h&quot;</span><br><span class="line">    linker_set_key: &quot;foo&quot;</span><br><span class="line">    self_type: &quot;type-1&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  fields &#123;</span><br><span class="line">    referenced_type: &quot;type-2&quot;</span><br><span class="line">    field_offset: 0</span><br><span class="line">    field_name: &quot;m1&quot;</span><br><span class="line">    access: public_access</span><br><span class="line">  &#125;</span><br><span class="line">  fields &#123;</span><br><span class="line">    referenced_type: &quot;type-3&quot;</span><br><span class="line">    field_offset: 32</span><br><span class="line">    field_name: &quot;m2&quot;</span><br><span class="line">    access: public_access</span><br><span class="line">  &#125;</span><br><span class="line">  fields &#123;</span><br><span class="line">    referenced_type: &quot;type-5&quot;</span><br><span class="line">    field_offset: 64</span><br><span class="line">    field_name: &quot;mPfoo&quot;</span><br><span class="line">    access: public_access</span><br><span class="line">  &#125;</span><br><span class="line">  access: public_access</span><br><span class="line">  record_kind: struct_kind</span><br><span class="line">  tag_info &#123;</span><br><span class="line">    unique_id: &quot;_ZTS3foo&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">record_types &#123;</span><br><span class="line">  type_info &#123;</span><br><span class="line">    name: &quot;bar&quot;</span><br><span class="line">    size: 12</span><br><span class="line">    alignment: 4</span><br><span class="line">    referenced_type: &quot;type-6&quot;</span><br><span class="line">...</span><br><span class="line">pointer_types &#123;</span><br><span class="line">  type_info &#123;</span><br><span class="line">    name: &quot;bar *&quot;</span><br><span class="line">    size: 4</span><br><span class="line">    alignment: 4</span><br><span class="line">    referenced_type: &quot;type-6&quot;</span><br><span class="line">    source_file: &quot;foo/include/foo_exported.h&quot;</span><br><span class="line">    linker_set_key: &quot;bar *&quot;</span><br><span class="line">    self_type: &quot;type-8&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">builtin_types &#123;</span><br><span class="line">  type_info &#123;</span><br><span class="line">    name: &quot;int&quot;</span><br><span class="line">    size: 4</span><br><span class="line">    alignment: 4</span><br><span class="line">    referenced_type: &quot;type-2&quot;</span><br><span class="line">    source_file: &quot;&quot;</span><br><span class="line">    linker_set_key: &quot;int&quot;</span><br><span class="line">    self_type: &quot;type-2&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  is_unsigned: false</span><br><span class="line">  is_integral: true</span><br><span class="line">&#125;</span><br><span class="line">functions &#123;</span><br><span class="line">  return_type: &quot;type-7&quot;</span><br><span class="line">  function_name: &quot;Foo&quot;</span><br><span class="line">  source_file: &quot;foo/include/foo_exported.h&quot;</span><br><span class="line">  parameters &#123;</span><br><span class="line">    referenced_type: &quot;type-2&quot;</span><br><span class="line">    default_arg: false</span><br><span class="line">  &#125;</span><br><span class="line">  parameters &#123;</span><br><span class="line">    referenced_type: &quot;type-8&quot;</span><br><span class="line">    default_arg: false</span><br><span class="line">  &#125;</span><br><span class="line">  linker_set_key: &quot;_Z3FooiP3bar&quot;</span><br><span class="line">  access: public_access</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>foo.sdump包含源文件foo.cpp提供的ABI信息，如：<br>a.record_types：指通过公开header提供的结构、联合或类。每个记录类型都包含其字段、大小、访问权限指定符、所在header文件等相关信息。<br>b.pointer_types：指通过公开header提供的记录/函数直接/间接引用的指针类型，以及指针指向的类型（通过type_info中的 referenced_type字段）。对于限定类型、内置C/C++类型、数组类型以及左值和右值参考类型，系统会在.sdump文件中记录类似信息。<br>c.functions：表示通过公开标头提供的函数。它们还包含函数的重整名称、返回值类型、参数类型、访问权限指定符等相关信息。</p>
+<p>header-abi-linker工具会将header-abi-dumper生成的中间文件作为输入，然后关联以下文件：</p>
+<p>输入：a.header-abi-dumper生成的中间文件。b.版本脚本/映射文件（可选）。c.共享库的.so文件。<br>输出：用于记录共享库ABI的文件。</p>
+<p>该工具会将收到的所有中间文件中的类型图合并在一起，并会将不同转换单元之间的单一定义差异考虑在内。然后，该工具会解析版本脚本或解析共享库的.dynsym表（.so 文件），以创建导出符号列表。</p>
+<p>例如，当libfoo将bar.cpp文件添加到其编译时，系统可能会调用header-abi-linker，以创建libfoo的完整关联ABI转储，如下所示：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">header-abi-linker -I exported foo.sdump bar.sdump \</span><br><span class="line">                  -o libfoo.so.lsdump \</span><br><span class="line">                  -so libfoo.so \</span><br><span class="line">                  -arch arm64 -api current</span><br></pre></td></tr></table></figure>
+<p>libfoo.so.lsdump中的命令输出示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">record_types &#123;</span><br><span class="line">  type_info &#123;</span><br><span class="line">    name: &quot;foo&quot;</span><br><span class="line">    size: 24</span><br><span class="line">    alignment: 8</span><br><span class="line">    referenced_type: &quot;type-1&quot;</span><br><span class="line">    source_file: &quot;foo/include/foo_exported.h&quot;</span><br><span class="line">    linker_set_key: &quot;foo&quot;</span><br><span class="line">    self_type: &quot;type-1&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  fields &#123;</span><br><span class="line">    referenced_type: &quot;type-2&quot;</span><br><span class="line">    field_offset: 0</span><br><span class="line">    field_name: &quot;m1&quot;</span><br><span class="line">    access: public_access</span><br><span class="line">  &#125;</span><br><span class="line">  fields &#123;</span><br><span class="line">    referenced_type: &quot;type-3&quot;</span><br><span class="line">    field_offset: 64</span><br><span class="line">    field_name: &quot;m2&quot;</span><br><span class="line">    access: public_access</span><br><span class="line">  &#125;</span><br><span class="line">  fields &#123;</span><br><span class="line">    referenced_type: &quot;type-4&quot;</span><br><span class="line">    field_offset: 128</span><br><span class="line">    field_name: &quot;mPfoo&quot;</span><br><span class="line">    access: public_access</span><br><span class="line">  &#125;</span><br><span class="line">  access: public_access</span><br><span class="line">  record_kind: struct_kind</span><br><span class="line">  tag_info &#123;</span><br><span class="line">    unique_id: &quot;_ZTS3foo&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">record_types &#123;</span><br><span class="line">  type_info &#123;</span><br><span class="line">    name: &quot;bar&quot;</span><br><span class="line">    size: 24</span><br><span class="line">    alignment: 8</span><br><span class="line">...</span><br><span class="line">builtin_types &#123;</span><br><span class="line">  type_info &#123;</span><br><span class="line">    name: &quot;void&quot;</span><br><span class="line">    size: 0</span><br><span class="line">    alignment: 0</span><br><span class="line">    referenced_type: &quot;type-6&quot;</span><br><span class="line">    source_file: &quot;&quot;</span><br><span class="line">    linker_set_key: &quot;void&quot;</span><br><span class="line">    self_type: &quot;type-6&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  is_unsigned: false</span><br><span class="line">  is_integral: false</span><br><span class="line">&#125;</span><br><span class="line">functions &#123;</span><br><span class="line">  return_type: &quot;type-19&quot;</span><br><span class="line">  function_name: &quot;Foo&quot;</span><br><span class="line">  source_file: &quot;foo/include/foo_exported.h&quot;</span><br><span class="line">  parameters &#123;</span><br><span class="line">    referenced_type: &quot;type-2&quot;</span><br><span class="line">    default_arg: false</span><br><span class="line">  &#125;</span><br><span class="line">  parameters &#123;</span><br><span class="line">    referenced_type: &quot;type-20&quot;</span><br><span class="line">    default_arg: false</span><br><span class="line">  &#125;</span><br><span class="line">  linker_set_key: &quot;_Z3FooiP3bar&quot;</span><br><span class="line">  access: public_access</span><br><span class="line">&#125;</span><br><span class="line">functions &#123;</span><br><span class="line">  return_type: &quot;type-6&quot;</span><br><span class="line">  function_name: &quot;FooBad&quot;</span><br><span class="line">  source_file: &quot;foo/include/foo_exported_bad.h&quot;</span><br><span class="line">  parameters &#123;</span><br><span class="line">    referenced_type: &quot;type-2&quot;</span><br><span class="line">    default_arg: false</span><br><span class="line">  &#125;</span><br><span class="line">parameters &#123;</span><br><span class="line">    referenced_type: &quot;type-7&quot;</span><br><span class="line">    default_arg: false</span><br><span class="line">  &#125;</span><br><span class="line">  linker_set_key: &quot;_Z6FooBadiP3foo&quot;</span><br><span class="line">  access: public_access</span><br><span class="line">&#125;</span><br><span class="line">elf_functions &#123;</span><br><span class="line">  name: &quot;_Z3FooiP3bar&quot;</span><br><span class="line">&#125;</span><br><span class="line">elf_functions &#123;</span><br><span class="line">  name: &quot;_Z6FooBadiP3foo&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>header-abi-linker工具将执行以下操作：<br>a.关联收到的.sdump文件（foo.sdump和bar.sdump），滤除位于exported目录的header中不存在的ABI信息。<br>b.解析libfoo.so，然后通过其.dynsym表收集通过库导出的符号的相关信息。<br>c.添加_Z3FooiP3bar和Bar。<br>d.libfoo.so.lsdump是最终生成的 libfoo.so ABI转储。</p>
+<p>header-abi-diff工具会将代表两个库的ABI的两个.lsdump文件进行比较，并生成差异报告，其中会说明这两个ABI之间存在的差异。</p>
+<p>输入：a.表示旧共享库的ABI的.lsdump文件。b.表示新共享库的ABI的.lsdump文件。<br>输出：差异报告，其中会说明在比较两个共享库提供的ABI之后发现的差异。</p>
+<p>ABI差异文件会尽可能详细且便于读懂。格式在未来版本中可能会发生变化。如有两个版本的libfoo：libfoo_old.so和 libfoo_new.so。在libfoo_new.so中的bar_t内，将mfoo的类型从foo_t更改为foo_t *。由于bar_t是直接可到达类型，因此这应该由header-abi-diff标记为会破坏ABI的更改。</p>
+<p>运行header-abi-diff的命令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">header-abi-diff -old libfoo_old.so.lsdump \</span><br><span class="line">                -new libfoo_new.so.lsdump \</span><br><span class="line">                -arch arm64 \</span><br><span class="line">                -o libfoo.so.abidiff \</span><br><span class="line">                -lib libfoo</span><br></pre></td></tr></table></figure>
+<p>libfoo.so.abidiff中的命令输出示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">lib_name: &quot;libfoo&quot;</span><br><span class="line">arch: &quot;arm64&quot;</span><br><span class="line">record_type_diffs &#123;</span><br><span class="line">  name: &quot;bar&quot;</span><br><span class="line">  type_stack: &quot;Foo-&gt; bar *-&gt;bar &quot;</span><br><span class="line">  type_info_diff &#123;</span><br><span class="line">    old_type_info &#123;</span><br><span class="line">      size: 24</span><br><span class="line">      alignment: 8</span><br><span class="line">    &#125;</span><br><span class="line">    new_type_info &#123;</span><br><span class="line">      size: 8</span><br><span class="line">      alignment: 8</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  fields_diff &#123;</span><br><span class="line">    old_field &#123;</span><br><span class="line">      referenced_type: &quot;foo&quot;</span><br><span class="line">      field_offset: 0</span><br><span class="line">      field_name: &quot;mfoo&quot;</span><br><span class="line">      access: public_access</span><br><span class="line">    &#125;</span><br><span class="line">    new_field &#123;</span><br><span class="line">      referenced_type: &quot;foo *&quot;</span><br><span class="line">      field_offset: 0</span><br><span class="line">      field_name: &quot;mfoo&quot;</span><br><span class="line">      access: public_access</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>libfoo.so.abidiff包含一个报告，其中会注明libfoo中所有会破坏ABI的更改。record_type_diffs消息表示记录发生了更改，并会列出不兼容的更改，其中包括：<br>a.记录大小从24个字节更改为8个字节。<br>b.mfoo的字段类型从foo更改为foo <em>（去除了所有类型定义符）。<br>c.type_stack字段用于指示header-abi-diff如何到达已更改的类型 (bar)。该字段可作如下解释：Foo是一个导出的函数，接受bar </em> 作为参数，该参数指向已导出且发生变化的bar。</p>
+<p>要强制执行VNDK和LLNDK共享库的ABI/API，必须将ABI参考添入到${AOSP}/prebuilts/abi-dumps/(v)ndk/ 中。要创建这些参考，需命令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;AOSP&#125;/development/vndk/tools/header-checker/utils/create_reference_dumps.py</span><br></pre></td></tr></table></figure>
+<p>创建参考后，如果对源代码所做的任何更改导致VNDK或LLNDK库中出现不兼容的ABI/API更改，则这些更改现在会导致编译错误。要更新特定VNDK核心库的ABI参考，运行命令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;AOSP&#125;/development/vndk/tools/header-checker/utils/create_reference_dumps.py -l &lt;lib1&gt; -l &lt;lib2&gt;</span><br></pre></td></tr></table></figure>
+<p>要更新特定LLNDK库的ABI参考，运行命令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;AOSP&#125;/development/vndk/tools/header-checker/utils/create_reference_dumps.py -l &lt;lib1&gt; -l &lt;lib2&gt; --llndk</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/19/Boot/SystemServer启动流程/" rel="next" title="SystemServer的启动流程">
+                <i class="fa fa-chevron-left"></i> SystemServer的启动流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/06/02/Boot/开机时间优化总结/" rel="prev" title="开机时间优化总结">
+                开机时间优化总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">74</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、VNDK概述"><span class="nav-text">一、VNDK概述</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-vendor进程可访问的部分framework共享库"><span class="nav-text">1.1 vendor进程可访问的部分framework共享库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-SP-HAL-Same-Pocess-HAL"><span class="nav-text">1.2 SP-HAL(Same-Pocess HAL)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-VNDK安全策略"><span class="nav-text">1.3 VNDK安全策略</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、VNDK编译"><span class="nav-text">二、VNDK编译</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-VNDK使能"><span class="nav-text">2.1 VNDK使能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-VNDK编译配置"><span class="nav-text">2.2 VNDK编译配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-VNDK-Definition工具"><span class="nav-text">2.3 VNDK Definition工具</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、VNDK延伸"><span class="nav-text">三、VNDK延伸</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-VNDK扩展"><span class="nav-text">3.1 VNDK扩展</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-链接器命名空间"><span class="nav-text">3.2 链接器命名空间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-VNDK快照"><span class="nav-text">3.3 VNDK快照</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-ABI稳定"><span class="nav-text">3.4 ABI稳定</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
