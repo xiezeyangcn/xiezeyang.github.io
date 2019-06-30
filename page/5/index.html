@@ -754,13 +754,8 @@
 
       
         
-          <h3 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h3><pre><code>PackageManagerService是Android系统中最常用的服务之一，它负责系统中Package的管理，应用程序的安装、卸载、信息查询等，为简化描述，将其成为PKMS。
-IPackageManager接口类中定义了服务端和客户端通信的业务函数，还定义了内部类Stub，该类从Binder派生并实现了IPackageManager接口。
-PackageManagerService继承自IPackageManager.Stub类，由于Stub类从Binder派生，因此PackageManagerService将作为服务端参与Binder通信。
-Stub类中定义了一个内部类Proxy，该类有一个IBinder类型的成员变量mRemote，用于和服务端PackageManagerService通信。
-IPackageManager接口类中定义的业务函数作为一个子集，被封装在抽象类PackageManager中。客户端一般通过Context的getPackageManager函数返回一个类型为PackageManager的对象，该对象的实际类型时PackageManager的子类ApplicationPackageManager。
-ApplicationPackageManager类继承自PackageManager类。它通过mPM成员变量指向一个IPackageManager.Stub.Proxy类型的对象。
-</code></pre><h4 id="1-1-ApplicationPackageManager构造函数"><a href="#1-1-ApplicationPackageManager构造函数" class="headerlink" title="1.1 ApplicationPackageManager构造函数"></a>1.1 ApplicationPackageManager构造函数</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ApplicationPackageManager(ContextImpl context,</span><br><span class="line">        IPackageManager pm) &#123;</span><br><span class="line">    mContext = context;</span><br><span class="line">    mPM = pm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>PackageManagerService是Android系统中核心服务之一，它负责系统中Package的管理，应用程序的安装、卸载、信息查询等。下面一起来分析一下它的启动过程：</p>
+<p><img src="/images/boot_packagemanagerservice.png" alt></p>
           <!--noindex-->
           
             <div class="post-button text-center">
