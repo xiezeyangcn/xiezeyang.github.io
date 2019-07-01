@@ -329,7 +329,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/24/Framework/PackageManagerService之Apk安装/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/06/16/Framework/不同应用安装场景流程剖析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -349,7 +349,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/06/24/Framework/PackageManagerService之Apk安装/" class="post-title-link" itemprop="url">PackageManagerService之Apk安装</a>
+                <a href="/2018/06/16/Framework/不同应用安装场景流程剖析/" class="post-title-link" itemprop="url">不同应用安装场景流程剖析</a>
               
             
           </h1>
@@ -374,7 +374,7 @@
                 
               
 
-              <time title="创建时间：2018-06-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-24T00:00:00+08:00">2018-06-24</time>
+              <time title="创建时间：2018-06-16 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-16T00:00:00+08:00">2018-06-16</time>
             
 
             
@@ -428,11 +428,16 @@
 
       
         
-          <h3 id="一、adb-command"><a href="#一、adb-command" class="headerlink" title="一、adb command"></a>一、adb command</h3><h4 id="1-1-cmmandline-cpp-adb-commandline"><a href="#1-1-cmmandline-cpp-adb-commandline" class="headerlink" title="1.1 cmmandline.cpp::adb_commandline()"></a>1.1 cmmandline.cpp::adb_commandline()</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">adb_commandline</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"devices"</span>)) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span> *listopt;</span><br><span class="line">        <span class="keyword">if</span> (argc &lt; <span class="number">2</span>) &#123;</span><br><span class="line">            listopt = <span class="string">""</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; !<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"-l"</span>)) &#123;</span><br><span class="line">            listopt = argv[<span class="number">1</span>];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Usage: adb devices [-l]\n"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> query = android::base::StringPrintf(<span class="string">"host:%s%s"</span>, argv[<span class="number">0</span>], listopt);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"List of devices attached\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> adb_query_command(query);</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"install"</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (argc &lt; <span class="number">2</span>) <span class="keyword">return</span> usage();</span><br><span class="line">        <span class="keyword">if</span> (_use_legacy_install()) &#123;</span><br><span class="line">            <span class="comment">// 不支持CanUseFeature时调用 install_app_legacy</span></span><br><span class="line">            <span class="keyword">return</span> install_app_legacy(transport_type, serial, argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 否则调用install_app</span></span><br><span class="line">        <span class="keyword">return</span> install_app(transport_type, serial, argc, argv);</span><br><span class="line">    &#125;</span><br><span class="line">    …...</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(argv[<span class="number">0</span>], <span class="string">"reconnect"</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (argc == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> adb_query_command(<span class="string">"host:reconnect"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (argc == <span class="number">2</span> &amp;&amp; !<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"device"</span>)) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> err;</span><br><span class="line">            adb_connect(<span class="string">"reconnect"</span>, &amp;err);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    usage();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>应用安装主要分为以下四类场景：</p>
+<p>(1)安装器安装：调用PackageInstallActivity的startInstall方法，点击OK按钮后进入PackageManagerService完成拷贝解析安装工作；</p>
+<p>(2)adb命令安装：通过pm参数，调用PM的runInstall方法，进入PackageManagerService安装安装工作；</p>
+<p>(3)应用市场静默安装：下载完应用后通过AccrssibilityService监控界面，自动点击安装；</p>
+<p>(4)系统预置应用安装：系统启动时，通过SystemServer进入PackageManagerService完成目录扫描解析安装工作。</p>
+<p>其中系统预置应用安装，主要分两个部分，前一阶段可参阅之前的PackageManagerService启动过程中介绍，后一阶段同其它三种场景中最后的安装过程大同小异，将在后续博文中详细介绍。本文将重点介绍前三种安装场景。</p>
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/06/24/Framework/PackageManagerService之Apk安装/#more" rel="contents">
+              <a class="btn" href="/2018/06/16/Framework/不同应用安装场景流程剖析/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
