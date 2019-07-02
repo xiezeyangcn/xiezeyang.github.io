@@ -329,6 +329,170 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/15/Power/PowerManagerService之WakeLock使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/04/15/Power/PowerManagerService之WakeLock使用/" class="post-title-link" itemprop="url">PowerManagerService之WakeLock使用</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-15 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-15T00:00:00+08:00">2018-04-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>&emsp;我们都知道Android系统中有一套机制用于控制空闲休眠忙时唤醒。而这套机制就是由PowerMS管理的WakeLock，接下来我们看看它是如何工作的。</p>
+<h3 id="一、创建WakeLock"><a href="#一、创建WakeLock" class="headerlink" title="一、创建WakeLock"></a>一、创建WakeLock</h3><h4 id="1-1-以RIL为例"><a href="#1-1-以RIL为例" class="headerlink" title="1.1 以RIL为例"></a>1.1 以RIL为例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  RIL.java的构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">RIL</span><span class="params">(Context context, <span class="keyword">int</span> preferredNetworkType,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">int</span> cdmaSubscription, Integer instanceId)</span> </span>&#123;</span><br><span class="line">  ......</span><br><span class="line">  PowerManager pm =</span><br><span class="line">  (PowerManager)context.getSystemService(Context.POWER_SERVICE);</span><br><span class="line">  <span class="comment">// 获取WakeLock，第一个参数决定等级和Flag。</span></span><br><span class="line">  mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,</span><br><span class="line">RILJ_LOG_TAG);</span><br><span class="line">  mWakeLock.setReferenceCounted(<span class="keyword">false</span>);</span><br><span class="line">  mAckWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,</span><br><span class="line">      RILJ_ACK_WAKELOCK_NAME);</span><br><span class="line">  <span class="comment">// 一次申请对应一次释放，设为false后，一次释放可对应所有的申请。</span></span><br><span class="line">  mAckWakeLock.setReferenceCounted(<span class="keyword">false</span>);</span><br><span class="line">  mWakeLockTimeout =</span><br><span class="line">      SystemProperties.getInt(TelephonyProperties.PROPERTY_WAKE_LOCK_TIMEOUT,</span><br><span class="line">      DEFAULT_WAKE_LOCK_TIMEOUT_MS);</span><br><span class="line">  mAckWakeLockTimeout = SystemProperties.getInt(</span><br><span class="line">      TelephonyProperties.PROPERTY_WAKE_LOCK_TIMEOUT, DEFAULT_ACK_WAKE_LOCK_TIMEOUT_MS);</span><br><span class="line">  mWakeLockCount = <span class="number">0</span>;</span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/04/15/Power/PowerManagerService之WakeLock使用/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/07/Power/PowerManagerService之Power按键过程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1796,171 +1960,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/20/Other/Parcelable接口用法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/01/20/Other/Parcelable接口用法/" class="post-title-link" itemprop="url">Parcelable接口用法</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-01-20 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-20T00:00:00+08:00">2018-01-20</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-Parcelable接口"><a href="#1-Parcelable接口" class="headerlink" title="1. Parcelable接口"></a>1. Parcelable接口</h3><p>Interface for classes whose instances can be written to and restored from a Parcel。 Classes implementing the Parcelable interface must also have a static field called CREATOR， which is an object implementing the Parcelable.Creator interface。</p>
-<h3 id="2-实现Parcelable就是为了进行序列化，那么为什么要序列化？"><a href="#2-实现Parcelable就是为了进行序列化，那么为什么要序列化？" class="headerlink" title="2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？"></a>2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？</h3><p>1）永久性保存对象，保存对象的字节序列到本地文件中；<br>2）通过序列化对象在网络中传递对象；<br>3）通过序列化在进程间传递对象。</p>
-<h3 id="3-实现序列化的方法"><a href="#3-实现序列化的方法" class="headerlink" title="3. 实现序列化的方法"></a>3. 实现序列化的方法</h3><p>Android中实现序列化有两个选择：一是实现Serializable接口（是JavaSE本身就支持的），一是实现Parcelable接口（是Android特有功能，效率比实现Serializable接口高效，可用于Intent数据传递，也可以用于进程间通信（IPC））。实现Serializable接口非常简单，声明一下就可以了，而实现Parcelable接口稍微复杂一些，但效率更高，推荐用这种方法提高性能。<br>注：Android中Intent传递对象有两种方法：一是Bundle.putSerializable(Key，Object)，另一种是Bundle.putParcelable(Key，Object)。当然这些Object是有一定的条件的，前者是实现了Serializable接口，而后者是实现了Parcelable接口。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/01/20/Other/Parcelable接口用法/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2009,7 +2008,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">73</span>
+                    <span class="site-state-item-count">74</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
