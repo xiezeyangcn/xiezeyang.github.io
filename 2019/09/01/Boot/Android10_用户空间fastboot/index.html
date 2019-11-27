@@ -98,18 +98,18 @@
 
 
 
-  <meta name="description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。 二、统一fastboot和recovery由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整">
+  <meta name="description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。">
 <meta name="keywords" content="Boot,Android10">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android10 用户空间fastboot">
 <meta property="og:url" content="http://www.xiezeyang.com/2019/09/01/Boot/Android10_用户空间fastboot/index.html">
 <meta property="og:site_name" content="Young&#39;s Blog">
-<meta property="og:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。 二、统一fastboot和recovery由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整">
+<meta property="og:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-27T14:51:27.100Z">
+<meta property="og:updated_time" content="2019-11-27T15:01:43.649Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android10 用户空间fastboot">
-<meta name="twitter:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。 二、统一fastboot和recovery由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整">
+<meta name="twitter:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。">
 
 
 
@@ -426,6 +426,7 @@
 
       
         <h3 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h3><p>Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。</p>
+<a id="more"></a>
 <h3 id="二、统一fastboot和recovery"><a href="#二、统一fastboot和recovery" class="headerlink" title="二、统一fastboot和recovery"></a>二、统一fastboot和recovery</h3><p>由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整体分区更少，以及fastboot和recovery共享kernel和lib的能力。</p>
 <p>要支持fastbootd，bootloader必须实现boot-fastboot的新引导控制块（BCB）命令。要进入fastbootd模式，</p>
 <p>bootloader应将boot-fastboot写入BCB消息的命令字段，并保持BCB的恢复字段不变（以启用中断恢复任务的重启）。状态，阶段和保留字段也保持不变。在BCB命令中看到boot-fastboot后，预计bootloader将加载并引导到 recovery映像中。然后recovery会解析BCB消息并切换到fastbootd模式。</p>

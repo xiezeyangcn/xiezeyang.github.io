@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="一、概述Android 10引入了UDC（user data checkpoint）功能，该功能允许Android在OTA升级失败时回滚到之前的状态。虽然A/B updater能解决早期启动失败回滚问题，但在userdata分区（/data）发生变化的情况下，仍无法支持回滚。有了UDC，即使userdata分区发生了变化，设备仍能将其还原。UDC功能通过文件系统的checkpoint功能来实现这一">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-27T14:56:34.148Z">
+<meta property="og:updated_time" content="2019-11-27T15:02:19.524Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android10 用户数据检查点">
 <meta name="twitter:description" content="一、概述Android 10引入了UDC（user data checkpoint）功能，该功能允许Android在OTA升级失败时回滚到之前的状态。虽然A/B updater能解决早期启动失败回滚问题，但在userdata分区（/data）发生变化的情况下，仍无法支持回滚。有了UDC，即使userdata分区发生了变化，设备仍能将其还原。UDC功能通过文件系统的checkpoint功能来实现这一">
@@ -427,6 +427,7 @@
       
         <h3 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h3><p>Android 10引入了UDC（user data checkpoint）功能，该功能允许Android在OTA升级失败时回滚到之前的状态。虽然A/B updater能解决早期启动失败回滚问题，但在userdata分区（/data）发生变化的情况下，仍无法支持回滚。有了UDC，即使userdata分区发生了变化，设备仍能将其还原。UDC功能通过文件系统的checkpoint功能来实现这一点。当文件系统不支持checkpoint时，UDC可作为替代实现方式，与bootloader的A/B机制集成，同时还支持Non-A/B升级以及key版本绑定和密钥防回滚。</p>
 <p>UDC功能还可以提升用户的OTA升级体验，因为当OTA升级失败时，丢失数据的用户数量减少了。这可以减少用户因升级过程遇到问题而拨打售后支持电话的次数。但是，当OTA升级失败时，用户可能会注意到设备会重启多次。</p>
+<a id="more"></a>
 <h3 id="二、工作方式"><a href="#二、工作方式" class="headerlink" title="二、工作方式"></a>二、工作方式</h3><p>1.不同文件系统中的checkpoint功能：</p>
 <p>对于F2FS文件系统，UDC会将checkpoint功能添加到上游4.20 Linux kernel中，并将其向后移植到搭载Android 10的设备支持的所有通用kernel中。</p>
 <p>对于其他文件系统，UDC使用名为dm_bow的设备映射器虚拟设备来实现checkpoint功能。dm_bow位于设备和文件系统之间。挂载分区后，系统会发出剪裁命令，从而引发文件系统对所有可用块发出剪裁命令。dm_bow会截获这些剪裁命令并使用它们来设置一个可用块列表。然后，系统会将未经修改的读写操作发送到设备，不过，在允许执行写入操作之前，会先将恢复操作所需的数据备份到可用块。</p>

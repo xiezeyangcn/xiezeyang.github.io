@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-27T14:50:54.256Z">
+<meta property="og:updated_time" content="2019-11-27T15:01:59.855Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android10 动态分区">
 <meta name="twitter:description" content="动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于">
@@ -426,6 +426,7 @@
 
       
         <p>动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于所有动态分区。</p>
+<a id="more"></a>
 <h3 id="一、实现动态分区"><a href="#一、实现动态分区" class="headerlink" title="一、实现动态分区"></a>一、实现动态分区</h3><p>动态分区是使用Linux内核中的dm-linear device-mapper模块实现的。super分区包含元数据（metadata），该元数据列出了super分区内部每个动态分区的名称和block范围。在第一阶段init期间，将解析和验证此元数据，并创建虚拟块设备来表示每个动态分区。应用OTA时，会根据需要自动创建、调整大小或删除动态分区。对于A/B系统，有两个元数据副本，并且更改仅应用于代表目标插槽（slot）的副本。由于动态分区是在用户空间中实现的，因此引导加载程序（bootloader）所需的分区无法设置为动态。如bootloader读取boot，dtbo和vbmeta，因此它们必须保留为物理分区。每个动态分区可以属于一个更新（update）组。这些组限制了该组中的分区可以消耗的最大空间。如system和vendor可以属于限制system和vendor总规模的组。</p>
 <h4 id="1-1-在新设备上实现动态分区"><a href="#1-1-在新设备上实现动态分区" class="headerlink" title="1.1 在新设备上实现动态分区"></a>1.1 在新设备上实现动态分区</h4><h5 id="1-1-1-分区配置"><a href="#1-1-1-分区配置" class="headerlink" title="1.1.1 分区配置"></a>1.1.1 分区配置</h5><p>对于使用Android 10启动的设备，会创建一个名为super的分区。超级分区在内部处理A/B slot，因此A/B设备不需要单独的super_a和super_b分区。bootloader未使用的所有只读AOSP分区必须是动态的，并且必须从GUID分区表（GPT）中删除。vendor特定的分区不必动态，可以继续放在GPT中。要估算super分区的大小，需要添加从GPT中删除的分区的大小。对于A/B设备，这应该包括两个slot的大小。下图显示了转换为动态分区之前和之后的示例分区表。</p>
 <p>注：避免将userdata或任何其他永久读写分区放在super中。</p>
