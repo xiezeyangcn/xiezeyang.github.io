@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、img文件解包1.1 boot image解包1.1.1 准备boot解包工具单编system/core/mkbootimg模块，在out/host/linux-x86/bin/目录会生成mkbootimg和unpack_bootimg可执行文件。其中mkbootimg可将kernel/dtb/ramdisk打包成boot.img，unpack_bootimg可以将boot.img解包。 12">
+<meta name="keywords" content="Tool">
+<meta property="og:type" content="article">
+<meta property="og:title" content="img文件解包及类型转换方法">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/11/23/Tool/img文件解包及类型转换方法/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、img文件解包1.1 boot image解包1.1.1 准备boot解包工具单编system/core/mkbootimg模块，在out/host/linux-x86/bin/目录会生成mkbootimg和unpack_bootimg可执行文件。其中mkbootimg可将kernel/dtb/ramdisk打包成boot.img，unpack_bootimg可以将boot.img解包。 12">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-11-27T15:21:22.623Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="img文件解包及类型转换方法">
+<meta name="twitter:description" content="一、img文件解包1.1 boot image解包1.1.1 准备boot解包工具单编system/core/mkbootimg模块，在out/host/linux-x86/bin/目录会生成mkbootimg和unpack_bootimg可执行文件。其中mkbootimg可将kernel/dtb/ramdisk打包成boot.img，unpack_bootimg可以将boot.img解包。 12">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/11/23/Tool/img文件解包及类型转换方法/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>img文件解包及类型转换方法 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/23/Tool/img文件解包及类型转换方法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">img文件解包及类型转换方法
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-23T00:00:00+08:00">2019-11-23</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、img文件解包"><a href="#一、img文件解包" class="headerlink" title="一、img文件解包"></a>一、img文件解包</h3><h4 id="1-1-boot-image解包"><a href="#1-1-boot-image解包" class="headerlink" title="1.1 boot image解包"></a>1.1 boot image解包</h4><h5 id="1-1-1-准备boot解包工具"><a href="#1-1-1-准备boot解包工具" class="headerlink" title="1.1.1 准备boot解包工具"></a>1.1.1 准备boot解包工具</h5><p>单编system/core/mkbootimg模块，在out/host/linux-x86/bin/目录会生成mkbootimg和unpack_bootimg可执行文件。<br>其中mkbootimg可将kernel/dtb/ramdisk打包成boot.img，unpack_bootimg可以将boot.img解包。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 单编生成mkbootimg和unpack_bootimg</span><br><span class="line">$ mmm system/core/mkbootimg</span><br></pre></td></tr></table></figure>
+<p>也可以直接使用system/core/mkbootimg目录的mkbootimg.py和unpack_bootimg.py脚本来完成打包、解包工作。</p>
+<a id="more"></a>
+<h5 id="1-1-2-使用boot解包工具"><a href="#1-1-2-使用boot解包工具" class="headerlink" title="1.1.2 使用boot解包工具"></a>1.1.2 使用boot解包工具</h5><p>1.使用mkbootimg.py脚本创建boot.img</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">#mkbootimg.py [-h] --kernel KERNEL [--ramdisk RAMDISK] [--second SECOND]</span><br><span class="line">#                    [--dtb DTB]</span><br><span class="line">#                    [--recovery_dtbo RECOVERY_DTBO | --recovery_acpio RECOVERY_ACPIO]</span><br><span class="line">#                    [--cmdline CMDLINE] [--base BASE]</span><br><span class="line">#                    [--kernel_offset KERNEL_OFFSET]</span><br><span class="line">#                    [--ramdisk_offset RAMDISK_OFFSET]</span><br><span class="line">#                    [--second_offset SECOND_OFFSET] [--dtb_offset DTB_OFFSET]</span><br><span class="line">#                    [--os_version OS_VERSION]</span><br><span class="line">#                    [--os_patch_level OS_PATCH_LEVEL]</span><br><span class="line">#                    [--tags_offset TAGS_OFFSET] [--board BOARD]</span><br><span class="line">#                    [--pagesize &#123;2048,4096,8192,16384&#125;] [--id]</span><br><span class="line">#                    [--header_version HEADER_VERSION] -o OUTPUT</span><br><span class="line">#-h, --help：显示帮助信息；</span><br><span class="line">#--kernel KERNEL：kernel文件路径；</span><br><span class="line">#--ramdisk RAMDISK：ramdisk文件路径；</span><br><span class="line">#--second SECOND：sbl文件路径；</span><br><span class="line">#--dtb DTB：dtb文件路径；</span><br><span class="line">#--recovery_dtbo RECOVERY_DTBO：recovery dtb文件路径；</span><br><span class="line">#--recovery_acpio RECOVERY_ACPIO：recovery acpio文件路径；</span><br><span class="line">#--cmdline CMDLINE：传入kernel command line的参数；</span><br><span class="line">#--base BASE：基地址；</span><br><span class="line">#--kernel_offset KERNEL_OFFSET：kernel偏移量；</span><br><span class="line">#--ramdisk_offset RAMDISK_OFFSET：ramdisk偏移量；</span><br><span class="line">#--second_offset SECOND_OFFSET：sbl偏移量；</span><br><span class="line">#--dtb_offset DTB_OFFSET：dtb偏移量；</span><br><span class="line">#--os_version OS_VERSION：系统版本；</span><br><span class="line">#--os_patch_level OS_PATCH_LEVEL：系统安全patch版本；</span><br><span class="line">#--tags_offset TAGS_OFFSET：tags偏移量；</span><br><span class="line">#--board BOARD：board名称；</span><br><span class="line">#--pagesize &#123;2048,4096,8192,16384&#125;：页大小；</span><br><span class="line">#--id：标准输出image id；</span><br><span class="line">#--header_version HEADER_VERSION：boot img header版本；</span><br><span class="line">#-o OUTPUT, --output OUTPUT：输出文件路径；</span><br></pre></td></tr></table></figure>
+<p>2.使用unpack_bootimg.py脚本解压boot.img</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#unpack_bootimg.py [-h] --boot_img BOOT_IMG [--out OUT]</span><br><span class="line">#-h, --help：显示帮助信息；</span><br><span class="line">#--boot_img BOOT_IMG：boot image文件路径；</span><br><span class="line">#--out OUT：输出文件路径；</span><br><span class="line">$ python system/core/mkbootimg/unpack_bootimg.py --boot_img boot.img --out unpack_boot_image/</span><br><span class="line">boot_magic: ANDROID!</span><br><span class="line">kernel_size: 9056943</span><br><span class="line">kernel load address: 0x40008000</span><br><span class="line">ramdisk size: 6878286</span><br><span class="line">ramdisk load address: 0x51b00000</span><br><span class="line">second bootloader size: 0</span><br><span class="line">second bootloader load address: 0x40f00000</span><br><span class="line">kernel tags load address: 0x47880000</span><br><span class="line">page size: 2048</span><br><span class="line">boot image header version: 2</span><br><span class="line">os version and patch level: 335544634</span><br><span class="line">product name:</span><br><span class="line">command line args: bootopt=64S3,32S1,32S1 buildvariant=userdebug</span><br><span class="line">additional command line args:</span><br><span class="line">recovery dtbo size: 38684</span><br><span class="line">recovery dtbo offset: 0xf33800</span><br><span class="line">boot header size: 1660</span><br><span class="line">dtb size: 88855</span><br><span class="line">dtb address: 0x47880000</span><br><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── dtb</span><br><span class="line">├── kernel</span><br><span class="line">├── ramdisk</span><br><span class="line">└── recovery_dtbo</span><br><span class="line">0 directories, 4 files</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ file unpack_boot_image/*</span><br><span class="line">dtb:           data</span><br><span class="line">kernel:        Linux kernel ARM boot executable zImage (little-endian)</span><br><span class="line">ramdisk:       gzip compressed data, from Unix</span><br><span class="line">recovery_dtbo: data</span><br></pre></td></tr></table></figure>
+<p>可参考<code>dtbo image解包</code>可以将boot.dtb和boot_recovery.dtb解包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">unpack_boot_image/dtb_unpack$ out/host/linux-x86/bin/mkdtimg dump dtb --out boot_dtb.dump --dtb boot_dtb.dtb</span><br><span class="line">unpack_boot_image/dtb_unpack$ file *</span><br><span class="line">boot_dtb.dtb:  Device Tree Blob version 17, size=88791, boot CPU=0, string block size=10439, DT structure block size=78296</span><br><span class="line">boot_dtb.dump: ASCII text</span><br><span class="line">dtb:           data</span><br><span class="line">$ out/host/linux-x86/bin/dtc -I dtb -O dts -o boot_dtb.dts boot_dtb.dtb</span><br><span class="line">$ file boot_dtb.dts</span><br><span class="line">boot_dtb.dts: ASCII text, with very long lines</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ out/host/linux-x86/bin/mkdtimg dump recovery_dtbo --out boot_recovery_dtbo.dump --dtb boot_recovery_dtbo.dtb</span><br><span class="line">$ file *</span><br><span class="line">boot_recovery_dtbo.dtb:  Device Tree Blob version 17, size=38620, boot CPU=0, string block size=4392, DT structure block size=34172</span><br><span class="line">boot_recovery_dtbo.dump: ASCII text</span><br><span class="line">recovery_dtbo:           data</span><br><span class="line">$ out/host/linux-x86/bin/dtc -I dtb -O dts -o boot_recovery_dtbo.dts boot_recovery_dtbo.dtb</span><br><span class="line">$ file boot_dtb.dts</span><br><span class="line">boot_recovery_dtbo.dts: ASCII text, with very long lines</span><br></pre></td></tr></table></figure>
+<p>可参考<code>ramdisk image解包</code>可以将ramdisk解包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 解压gz格式ramdisk</span><br><span class="line">mv ramdisk ramdisk.gz</span><br><span class="line">gunzip ramdisk.gz</span><br><span class="line"># 挂载cpio格式ramdisk</span><br><span class="line">$ file ramdisk</span><br><span class="line">ramdisk: ASCII cpio archive (SVR4 with no CRC)</span><br><span class="line">mv ramdisk ramdisk_cpio/ramdisk.cpio</span><br><span class="line">sudo cpio -idv &lt; ramdisk_cpio/ramdisk.cpio</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-dtbo-image解包"><a href="#1-2-dtbo-image解包" class="headerlink" title="1.2 dtbo image解包"></a>1.2 dtbo image解包</h4><h4 id="1-2-1-准备dtbo解包工具"><a href="#1-2-1-准备dtbo解包工具" class="headerlink" title="1.2.1 准备dtbo解包工具"></a>1.2.1 准备dtbo解包工具</h4><p>1.编译dtb工具</p>
+<p>单编system/libufdt/utils/src木块，在out/host/linux-x86/bin/目录能找到mkdtimg（新系统采用mkdtboimg.py来替代）。<br>也可以直接使用system/libufdt/utils/src/mkdtboimg.py脚本。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 单编生成mkdtimg和mkdtboimg.py</span><br><span class="line">$ mmm system/libufdt/util/src</span><br></pre></td></tr></table></figure>
+<p>2.编译dtc工具</p>
+<p>可以单编kernel/scripts/dtc目录，会在out/host/linux-x86/bin/目录生成dtc可执行文件。dtc可以将dtb转换为dts文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#单编生成dtc</span><br><span class="line">$ mmm kernel-4.9/scripts/dtc</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-2-使用dtbo解包工具"><a href="#1-2-2-使用dtbo解包工具" class="headerlink" title="1.2.2 使用dtbo解包工具"></a>1.2.2 使用dtbo解包工具</h4><p>1.使用新的创建dtbo.img脚本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#mkdtboimg.py [-h] &#123;create,cfg_create,dump,help&#125; ...</span><br><span class="line">#-h, --help：显示帮助信息；</span><br><span class="line">#create：创建dtb或dtbo image文件；扩展指令：[--id ID] [--rev REV] [--flags FLAGS] [--custom0 CUSTOM0] [--custom1 CUSTOM1] [--custom2 CUSTOM2] [dt_file]；</span><br><span class="line">#cfg_create：创建一个cfg格式配置文件；扩展指令：[--dtb-dir [DTBDIR]] [conf_file]；</span><br><span class="line">#dump：dump dtb信息；加上&apos;--dtb&apos;可以指定dtb文件；加上&apos;--out&apos;可以将dump信息输出到文件中；</span><br></pre></td></tr></table></figure>
+<p>2.使用旧的创建dtb文件工具</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">#./out/host/linux-x86/bin/mkdtimg dump &lt;image_file&gt; (&lt;option&gt;...)</span><br><span class="line">#options:</span><br><span class="line"># -o, --output &lt;filename&gt;：输出文件文件名；</span><br><span class="line"># -b, --dtb &lt;filename&gt;：需要dump的dtb文件名；</span><br><span class="line">#./out/host/linux-x86/bin/mkdtimg create &lt;image_file&gt; (&lt;global_option&gt;...) (&lt;dtb_file&gt; (&lt;entry_option&gt;...) ...)</span><br><span class="line">#global_options:</span><br><span class="line"># --dt_type=&lt;type&gt;：设备树的类型（dtb/acpi格式,默认dtb）；</span><br><span class="line"># --page_size=&lt;number&gt;：页大小（默认2048）;</span><br><span class="line"># --version=&lt;version&gt;:设备叠加树的版本（默认为0）；</span><br><span class="line"># --id=&lt;number|path&gt;：dt_table_entry中的id属性（默认为0）；</span><br><span class="line">#./out/host/linux-x86/bin/mkdtimg cfg_create &lt;image_file&gt; &lt;config_file&gt; (&lt;option&gt;...)</span><br><span class="line">#options:</span><br><span class="line"># -d, --dtb-dir：加载的dtb文件路径；</span><br><span class="line"># dump dtbo文件，将其由data类型转换为device tree block类型，并将结构信息输出到dump文件中</span><br><span class="line">$ out/host/linux-x86/bin/mkdtimg dump dtbo.img --out unpack_dtbo_image/dtbo.dump --dtb unpack_dtbo_image/dtbo_dump.dtb</span><br><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── dtbo_dump.dtb</span><br><span class="line">└── dtbo.dump</span><br><span class="line">0 directories, 2 files</span><br><span class="line"># 查看dtb文件类型</span><br><span class="line">$ file *</span><br><span class="line">dtbo.dump:     ASCII text</span><br><span class="line">dtbo_dump.dtb: Device Tree Blob version 17, size=38620, boot CPU=0, string block size=4392, DT structure block size=34172</span><br><span class="line"># 查看dtb的dump信息</span><br><span class="line">$ cat dtbo.dump</span><br><span class="line">dt_table_header:</span><br><span class="line">               magic = d7b7ab1e</span><br><span class="line">          total_size = 38684</span><br><span class="line">         header_size = 32</span><br><span class="line">       dt_entry_size = 32</span><br><span class="line">      dt_entry_count = 1</span><br><span class="line">   dt_entries_offset = 32</span><br><span class="line">           page_size = 2048</span><br><span class="line">             version = 0</span><br><span class="line">dt_table_entry[0]:</span><br><span class="line">             dt_size = 38620</span><br><span class="line">           dt_offset = 64</span><br><span class="line">                  id = 00000000</span><br><span class="line">                 rev = 00000000</span><br><span class="line">           custom[0] = 00000000</span><br><span class="line">           custom[1] = 00000000</span><br><span class="line">           custom[2] = 00000000</span><br><span class="line">           custom[3] = 00000000</span><br><span class="line">           (FDT)size = 38620</span><br><span class="line">     (FDT)compatible = (unknown)</span><br></pre></td></tr></table></figure>
+<p>3.将dtb转换为dts文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#Usage: dtc [options] &lt;input file&gt;</span><br><span class="line"># -I, --in-format &lt;arg&gt;：dtb、dts文件或device-tree目录；</span><br><span class="line"># -o, --out &lt;arg&gt;：dts、dtb或asm格式的目标文件；</span><br><span class="line"># -O, --out-format &lt;arg&gt;：dts、dtb或asm格式的目标文件；</span><br><span class="line"># -s, --sort：按节点属性排序后输出；</span><br><span class="line"># -h, --help：帮助信息。</span><br><span class="line"># 将dtb转换为dts文件</span><br><span class="line">$ out/host/linux-x86/bin/dtc -I dtb -O dts -o dtbo_dump.dts dtbo_dump.dtb</span><br><span class="line"># 查看dts文件格式</span><br><span class="line">$ file dtbo_dump.dts</span><br><span class="line">dtbo_dump.dts: ASCII text, with very long lines</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-ramdisk-image文件解包"><a href="#1-3-ramdisk-image文件解包" class="headerlink" title="1.3 ramdisk image文件解包"></a>1.3 ramdisk image文件解包</h4><h5 id="1-3-1-准备ramdisk解包工具"><a href="#1-3-1-准备ramdisk解包工具" class="headerlink" title="1.3.1 准备ramdisk解包工具"></a>1.3.1 准备ramdisk解包工具</h5><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 安装gunzip和cpio</span><br><span class="line">sudo apt-get install gzip gunzip cpio</span><br></pre></td></tr></table></figure>
+<h5 id="1-3-2-使用ramdisk解包工具"><a href="#1-3-2-使用ramdisk解包工具" class="headerlink" title="1.3.2 使用ramdisk解包工具"></a>1.3.2 使用ramdisk解包工具</h5><p>用file指令可以获知ramdisk.img是zip格式的压缩文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ file ramdisk.img</span><br><span class="line">ramdisk:       gzip compressed data, from Unix</span><br></pre></td></tr></table></figure>
+<p>将ramdisk.img文件重命名为ramdisk.gz，用gunzip命令解压它。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp ramdisk ramdisk.gz</span><br><span class="line">gunzip ramdisk.gz</span><br></pre></td></tr></table></figure>
+<p>用file指令可以获知解压后的ramdisk文件是cpio格式的文件，然后将其重命名为ramdisk.cpio文件。<br>接着使用cpio指令可将其挂载。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ file ramdisk</span><br><span class="line">ramdisk: ASCII cpio archive (SVR4 with no CRC)</span><br><span class="line">cp ramdisk ramdisk_cpio/ramdisk.cpio</span><br><span class="line">sudo cpio -idv &lt; ramdisk_cpio/ramdisk.cpio</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-super-image文件解包"><a href="#1-4-super-image文件解包" class="headerlink" title="1.4 super image文件解包"></a>1.4 super image文件解包</h4><h5 id="1-4-1-准备super解包工具"><a href="#1-4-1-准备super解包工具" class="headerlink" title="1.4.1 准备super解包工具"></a>1.4.1 准备super解包工具</h5><p>可以单编system/extras/partition_tools模块，在out/host/linux-x86/bin目录生成lpdump、lpmake、lpunpack文件。<br>其中lpdump可以dump super image信息；lpmake可以打包super image文件；lpunpack可以解包super image文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mmm system/extras/partition_tools/</span><br></pre></td></tr></table></figure>
+<h5 id="1-4-2-使用super解包工具"><a href="#1-4-2-使用super解包工具" class="headerlink" title="1.4.2 使用super解包工具"></a>1.4.2 使用super解包工具</h5><p>1.使用lpmake创建super.img</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#./out/host/linux-x86/bin/lpmake [options]</span><br><span class="line">#Required options:</span><br><span class="line"># -d,--device-size=SIZE：逻辑分区的块设备的大小；</span><br><span class="line"># -m,--metadata-size=SIZE：分区元数据保留的最大大小；</span><br><span class="line"># -s,--metadata-slots=COUNT：存储元数据副本的slot数；</span><br><span class="line"># -p,--partition=DATA：根据给定的数据信息添加分区；</span><br><span class="line"># -o,--output=FILE：输出的文件；</span><br><span class="line">#Optional:</span><br><span class="line">  -b,--block-size=SIZE：物理块大小，默认是4096；</span><br><span class="line">  -a,--alignment=N：指定单位字节的分区对齐；</span><br><span class="line">  -O,--alignment-offset=N：分区对齐偏移量；</span><br><span class="line">  -S,--sparse：输出可供fastboot烧录的sparse格式image文件；</span><br><span class="line">  -i,--image=PARTITION=FILE：如果为fastboot编译sparse image，则将给定文件（或sparse文件）作为命名分区的初始数据；</span><br><span class="line">  -g,--group=GROUP:SIZE：给定分区组最大大小；</span><br><span class="line">  -D,--device=DATA：添加super分区块设备。如果指定，则不得指定-d /-device-size和aligns；</span><br><span class="line">  -n,--super-name=NAME：指定将容纳super分区的块设备的名称；</span><br><span class="line">  -x,--auto-slot-suffixing：在使用之前，标记需要slot后缀的块设备和分区名称；</span><br><span class="line">#分区数据格式:&lt;name&gt;:&lt;attributes&gt;:&lt;size&gt;[:group]，Attrs必须是&apos;none&apos;或&apos;readonly&apos;；</span><br><span class="line">#设备数据格式:&lt;partition_name&gt;:&lt;size&gt;[:&lt;alignment&gt;:&lt;alignment_offset&gt;]</span><br><span class="line"># 分区名称是块设备的/dev/block/by-name/路径的名称。大小是设备大小（以字节为单位）。对齐和对齐偏移参数与-a /-alignment和-O /-alignment-offset相同。</span><br></pre></td></tr></table></figure>
+<p>2.使用lpdump获取super.img结构信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 查看super.img类型</span><br><span class="line">$ file super.img</span><br><span class="line">super.img: Android sparse image, version: 1.0, Total of 2097152 4096-byte output blocks in 1667 input chunks.</span><br><span class="line"># 将sparse格式转换为ext4格式</span><br><span class="line">$ out/host/linux-x86/bin/simg2img super.img super_ext4.img</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">#./out/host/linux-x86/bin/lpdump [-s &lt;SLOT#&gt;|--slot=&lt;SLOT#&gt;] [-j|--json] [FILE|DEVICE]</span><br><span class="line">#Options:</span><br><span class="line"># -s, --slot=N：slot信息；</span><br><span class="line"># -j, --json：以json格式输出dump信息；</span><br><span class="line"># dump ext4格式的super image</span><br><span class="line">$ out/host/linux-x86/bin/lpdump super_ext4.img</span><br><span class="line">Metadata version: 10.0</span><br><span class="line">Metadata size: 720 bytes</span><br><span class="line">Metadata max size: 65536 bytes</span><br><span class="line">Metadata slot count: 3</span><br><span class="line">Partition table:</span><br><span class="line">------------------------</span><br><span class="line">  Name: product_a</span><br><span class="line">  Group: main_a</span><br><span class="line">  Attributes: readonly</span><br><span class="line">  Extents:</span><br><span class="line">    0 .. 488391 linear super 2048</span><br><span class="line">------------------------</span><br><span class="line">  Name: product_b</span><br><span class="line">  Group: main_b</span><br><span class="line">  Attributes: readonly</span><br><span class="line">  Extents:</span><br><span class="line">------------------------</span><br><span class="line">  Name: system_a</span><br><span class="line">  Group: main_a</span><br><span class="line">  Attributes: readonly</span><br><span class="line">  Extents:</span><br><span class="line">    0 .. 1316607 linear super 491520</span><br><span class="line">------------------------</span><br><span class="line">  Name: system_b</span><br><span class="line">  Group: main_b</span><br><span class="line">  Attributes: readonly</span><br><span class="line">  Extents:</span><br><span class="line">------------------------</span><br><span class="line">  Name: vendor_a</span><br><span class="line">  Group: main_a</span><br><span class="line">  Attributes: readonly</span><br><span class="line">  Extents:</span><br><span class="line">    0 .. 377143 linear super 1808384</span><br><span class="line">------------------------</span><br><span class="line">  Name: vendor_b</span><br><span class="line">  Group: main_b</span><br><span class="line">  Attributes: readonly</span><br><span class="line">  Extents:</span><br><span class="line">------------------------</span><br><span class="line">Block device table:</span><br><span class="line">------------------------</span><br><span class="line">  Partition name: super</span><br><span class="line">  First sector: 2048</span><br><span class="line">  Size: 8589934592 bytes</span><br><span class="line">  Flags: none</span><br><span class="line">------------------------</span><br><span class="line">Group table:</span><br><span class="line">------------------------</span><br><span class="line">  Name: default</span><br><span class="line">  Maximum size: 0 bytes</span><br><span class="line">  Flags: none</span><br><span class="line">------------------------</span><br><span class="line">  Name: main_a</span><br><span class="line">  Maximum size: 4110417920 bytes</span><br><span class="line">  Flags: none</span><br><span class="line">------------------------</span><br><span class="line">  Name: main_b</span><br><span class="line">  Maximum size: 4110417920 bytes</span><br><span class="line">  Flags: none</span><br><span class="line">------------------------</span><br></pre></td></tr></table></figure>
+<p>3.使用lpunpack解包super.img</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">#./out/host/linux-x86/bin/lpunpack [options...] SUPER_IMAGE [OUTPUT_DIR]</span><br><span class="line">#Options:</span><br><span class="line"># -p, --partition=NAME：需要解包的image分区名称；</span><br><span class="line"># -S, --slot=NUM：解包的image对应的slot信息（默认为0）。</span><br><span class="line"># 解包ext4格式的super image</span><br><span class="line">$ out/host/linux-x86/bin/lpunpack super_ext4.img</span><br><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── product_a.img</span><br><span class="line">├── product_b.img</span><br><span class="line">├── super_ext4.img</span><br><span class="line">├── super.img</span><br><span class="line">├── system_a.img</span><br><span class="line">├── system_b.img</span><br><span class="line">├── vendor_a.img</span><br><span class="line">└── vendor_b.img</span><br><span class="line">0 directories, 8 files</span><br><span class="line">$ file *</span><br><span class="line">product_a.img:  Linux rev 1.0 ext2 filesystem data, UUID=453968ff-b43c-54b7-a506-a6a88682c128, volume name &quot;product&quot; (extents) (large files) (huge files)</span><br><span class="line">product_b.img:  empty</span><br><span class="line">super_ext4.img: data</span><br><span class="line">super.img:      Android sparse image, version: 1.0, Total of 2097152 4096-byte output blocks in 1667 input chunks.</span><br><span class="line">system_a.img:   Linux rev 1.0 ext2 filesystem data, UUID=4729639d-b5f2-5cc1-a120-9ac5f788683c (extents) (large files) (huge files)</span><br><span class="line">system_b.img:   empty</span><br><span class="line">vendor_a.img:   Linux rev 1.0 ext2 filesystem data, UUID=2b96c597-1e2f-5ee1-9851-c4a9fa9de36e, volume name &quot;vendor&quot; (extents) (large files) (huge files)</span><br><span class="line">vendor_b.img:   empty</span><br><span class="line"># 从super.img中解包单个logical image</span><br><span class="line">$ out/host/linux-x86/bin/lpunpack --partition=system_a super_ext4.img</span><br></pre></td></tr></table></figure>
+<h3 id="二、sparse和ext4格式img文件转换"><a href="#二、sparse和ext4格式img文件转换" class="headerlink" title="二、sparse和ext4格式img文件转换"></a>二、sparse和ext4格式img文件转换</h3><h4 id="2-1-用file指令查看img类型"><a href="#2-1-用file指令查看img类型" class="headerlink" title="2.1 用file指令查看img类型"></a>2.1 用file指令查看img类型</h4><p>在Android中，为了压缩image文件大小，ext4类型image文件通常会被转为sparse格式存储。可以linux环境下可以用<code>file $image</code>来查看image文件类型，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># sparse类型</span><br><span class="line">$ file cache_sparse.img</span><br><span class="line">cache_sparse.img: Android sparse image, version: 1.0, Total of 110592 4096-byte output blocks in 14 input chunks.</span><br><span class="line"># ext4类型</span><br><span class="line">$ file cache_ext4.img</span><br><span class="line">cache_ext4.img: Linux rev 1.0 ext4 filesystem data, UUID=6de9da9d-98ae-4c4d-a307-69f11426b7c8, volume name &quot;cache&quot; (extents) (large files) (huge files)</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-准备sparse-ext4格式转换工具"><a href="#2-2-准备sparse-ext4格式转换工具" class="headerlink" title="2.2 准备sparse/ext4格式转换工具"></a>2.2 准备sparse/ext4格式转换工具</h4><p>可以单编system/core/libsparse模块，将会在out/host/linux-x86/bin目录生成img2simg和simg2img可执行文件。<br>其中<code>img2simg ext4.img sparse.img</code>可将ext4格式image转换为sparse格式；<code>simg2img sparse.img ext4.img</code>可将sparse格式image转换为ext4格式。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 单编libsparse</span><br><span class="line">$ mmm system/core/libsparse/</span><br><span class="line"># sparse -&gt; ext4</span><br><span class="line">$ out/host/linux-x86/bin/simg2img cache_sparse.img cache_ext4.img</span><br><span class="line"># ext4 -&gt; sparse</span><br><span class="line">$ out/host/linux-x86/bin/img2simg cache_ext4.img cache_sparse.img</span><br></pre></td></tr></table></figure>
+<p>可以使用system/core/libsparse目录的simg_dump.py脚本dump sparse类型文件的结构信息，也可以单编该模块后用out/host/linux-x86/bin/simg_dump可执行文件。</p>
+<h4 id="2-3-使用sparse-ext4格式转换工具"><a href="#2-3-使用sparse-ext4格式转换工具" class="headerlink" title="2.3 使用sparse/ext4格式转换工具"></a>2.3 使用sparse/ext4格式转换工具</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">#simg_dump.py [-v] [-s] [-c &lt;filename&gt;] sparse_image_file ...</span><br><span class="line">#-v：输出数据块基本信息；</span><br><span class="line">#-s：显示数据块的sha1sum值；</span><br><span class="line">#-c &lt;filename&gt;：以csv格式文件保存数据块信息；</span><br><span class="line">$ python system/core/libsparse/simg_dump.py -sv cache_sparse.img</span><br><span class="line">Total of 110592 4096-byte output blocks in 14 input chunks.</span><br><span class="line">            input_bytes      output_blocks</span><br><span class="line">chunk    offset     number  offset  number</span><br><span class="line">   1         40     126976       0      31 Raw data           590d1e3a0f0a82598e06caea4f33fa770c3fa8cb</span><br><span class="line">   2     127028          4      31    1727 Fill with 0x00000000 f35b915ea1311e8c1423ed7ea5a5a01520f4b7a2</span><br><span class="line">   3     127044      24576    1758       6 Raw data           79888fd640b9265732a9c6fc607f8ca3cbabbf20</span><br><span class="line">   4     151632          4    1764   31004 Fill with 0x00000000 1988a9ceacf3216a0b174ac41a8f072a20c548fc</span><br><span class="line">   5     151648       8192   32768       2 Raw data           e03859b1bcae78b6ff142717d44842b95af44560</span><br><span class="line">   6     159852          4   32770   32766 Fill with 0x00000000 51ce802696dc544eab99e2349309ed47c4824c6d</span><br><span class="line">   7     159868       4096   65536       1 Raw data           79aca04c21627551edb385f17c9a67312ac740ee</span><br><span class="line">   8     163976          4   65537    1729 Fill with 0x00000000 982ec9043e6fd6d2d0a0c7827da821e337b2c16b</span><br><span class="line">   9     163992       4096   67266       1 Raw data           ea0624d61e7137c60b7c3525e25c59f9cf9f3a94</span><br><span class="line">  10     168100          4   67267   31037 Fill with 0x00000000 94bd394a29a98f6cc19030c1652dceae6d0792e5</span><br><span class="line">  11     168116       8192   98304       2 Raw data           c12e84b15c6f54395762f873b6bb8f84787890f1</span><br><span class="line">  12     176320          4   98306      26 Fill with 0x00000000 f447cb15945d8630cc88ed3b7bee049b6f5e4c7d</span><br><span class="line">  13     176336       4096   98332       1 Raw data           18eada3b66c94412d5e818031aaff6508050fb46</span><br><span class="line">  14     180444          4   98333   12259 Fill with 0x00000000 eeb4e814e300598d4530296fe08003fba4435763</span><br><span class="line">         180448             110592         End</span><br></pre></td></tr></table></figure>
+<p>可以用十六进制工具（如hexdump）打开sparse格式image文件，你会发现header包含0xed26ff3a的magic和major_version，minor_version等信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ hexdump cache_sparse.img</span><br><span class="line">0000000 ff3a ed26 0001 0000 001c 000c 1000 0000</span><br><span class="line">0000010 b000 0001 000e 0000 0000 0000 cac1 0000</span><br><span class="line">0000020 001f 0000 f00c 0001 0000 0000 0000 0000</span><br><span class="line">0000030 0000 0000 0000 0000 0000 0000 0000 0000</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">type</th>
+<th style="text-align:center">length(bytes)</th>
+<th style="text-align:center">example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">magic</td>
+<td style="text-align:center">16</td>
+<td style="text-align:center">0xed26ff3a</td>
+</tr>
+<tr>
+<td style="text-align:center">major_version</td>
+<td style="text-align:center">16</td>
+<td style="text-align:center">0x0001</td>
+</tr>
+<tr>
+<td style="text-align:center">minor_version</td>
+<td style="text-align:center">16</td>
+<td style="text-align:center">0x0000</td>
+</tr>
+<tr>
+<td style="text-align:center">file_hdr_sz</td>
+<td style="text-align:center">16</td>
+<td style="text-align:center">0x001c</td>
+</tr>
+<tr>
+<td style="text-align:center">chunk_hdr_sz</td>
+<td style="text-align:center">16</td>
+<td style="text-align:center">0x000c</td>
+</tr>
+<tr>
+<td style="text-align:center">blk_sz</td>
+<td style="text-align:center">32</td>
+<td style="text-align:center">0x1000</td>
+</tr>
+<tr>
+<td style="text-align:center">total_blks</td>
+<td style="text-align:center">32</td>
+<td style="text-align:center">0x0001b000</td>
+</tr>
+<tr>
+<td style="text-align:center">total_chunks</td>
+<td style="text-align:center">32</td>
+<td style="text-align:center">0x0000000e</td>
+</tr>
+<tr>
+<td style="text-align:center">image_checksum</td>
+<td style="text-align:center">32</td>
+<td style="text-align:center">0x00000000</td>
+</tr>
+<tr>
+<td style="text-align:center">chunk_type_raw</td>
+<td style="text-align:center">16</td>
+<td style="text-align:center">0xcac1</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Tool/" rel="tag"># Tool</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/15/Security/Android10_用户数据检查点/" rel="next" title="Android10 用户数据检查点">
+                <i class="fa fa-chevron-left"></i> Android10 用户数据检查点
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、img文件解包"><span class="nav-text">一、img文件解包</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-boot-image解包"><span class="nav-text">1.1 boot image解包</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-1-准备boot解包工具"><span class="nav-text">1.1.1 准备boot解包工具</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-2-使用boot解包工具"><span class="nav-text">1.1.2 使用boot解包工具</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-dtbo-image解包"><span class="nav-text">1.2 dtbo image解包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-1-准备dtbo解包工具"><span class="nav-text">1.2.1 准备dtbo解包工具</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-2-使用dtbo解包工具"><span class="nav-text">1.2.2 使用dtbo解包工具</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-ramdisk-image文件解包"><span class="nav-text">1.3 ramdisk image文件解包</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-1-准备ramdisk解包工具"><span class="nav-text">1.3.1 准备ramdisk解包工具</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-2-使用ramdisk解包工具"><span class="nav-text">1.3.2 使用ramdisk解包工具</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-super-image文件解包"><span class="nav-text">1.4 super image文件解包</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-4-1-准备super解包工具"><span class="nav-text">1.4.1 准备super解包工具</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-4-2-使用super解包工具"><span class="nav-text">1.4.2 使用super解包工具</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、sparse和ext4格式img文件转换"><span class="nav-text">二、sparse和ext4格式img文件转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-用file指令查看img类型"><span class="nav-text">2.1 用file指令查看img类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-准备sparse-ext4格式转换工具"><span class="nav-text">2.2 准备sparse/ext4格式转换工具</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-使用sparse-ext4格式转换工具"><span class="nav-text">2.3 使用sparse/ext4格式转换工具</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
