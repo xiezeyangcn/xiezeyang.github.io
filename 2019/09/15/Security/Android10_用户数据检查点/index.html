@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、概述Android 10引入了UDC（user data checkpoint）功能，该功能允许Android在OTA升级失败时回滚到之前的状态。虽然A/B updater能解决早期启动失败回滚问题，但在userdata分区（/data）发生变化的情况下，仍无法支持回滚。有了UDC，即使userdata分区发生了变化，设备仍能将其还原。UDC功能通过文件系统的checkpoint功能来实现这一">
+<meta name="keywords" content="Security,Android10">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android10 用户数据检查点">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/09/15/Security/Android10_用户数据检查点/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、概述Android 10引入了UDC（user data checkpoint）功能，该功能允许Android在OTA升级失败时回滚到之前的状态。虽然A/B updater能解决早期启动失败回滚问题，但在userdata分区（/data）发生变化的情况下，仍无法支持回滚。有了UDC，即使userdata分区发生了变化，设备仍能将其还原。UDC功能通过文件系统的checkpoint功能来实现这一">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-11-27T14:56:34.148Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android10 用户数据检查点">
+<meta name="twitter:description" content="一、概述Android 10引入了UDC（user data checkpoint）功能，该功能允许Android在OTA升级失败时回滚到之前的状态。虽然A/B updater能解决早期启动失败回滚问题，但在userdata分区（/data）发生变化的情况下，仍无法支持回滚。有了UDC，即使userdata分区发生了变化，设备仍能将其还原。UDC功能通过文件系统的checkpoint功能来实现这一">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/09/15/Security/Android10_用户数据检查点/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android10 用户数据检查点 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/09/15/Security/Android10_用户数据检查点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android10 用户数据检查点
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-15 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-15T00:00:00+08:00">2019-09-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Android10/" itemprop="url" rel="index"><span itemprop="name">Android10</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h3><p>Android 10引入了UDC（user data checkpoint）功能，该功能允许Android在OTA升级失败时回滚到之前的状态。虽然A/B updater能解决早期启动失败回滚问题，但在userdata分区（/data）发生变化的情况下，仍无法支持回滚。有了UDC，即使userdata分区发生了变化，设备仍能将其还原。UDC功能通过文件系统的checkpoint功能来实现这一点。当文件系统不支持checkpoint时，UDC可作为替代实现方式，与bootloader的A/B机制集成，同时还支持Non-A/B升级以及key版本绑定和密钥防回滚。</p>
+<p>UDC功能还可以提升用户的OTA升级体验，因为当OTA升级失败时，丢失数据的用户数量减少了。这可以减少用户因升级过程遇到问题而拨打售后支持电话的次数。但是，当OTA升级失败时，用户可能会注意到设备会重启多次。</p>
+<h3 id="二、工作方式"><a href="#二、工作方式" class="headerlink" title="二、工作方式"></a>二、工作方式</h3><p>1.不同文件系统中的checkpoint功能：</p>
+<p>对于F2FS文件系统，UDC会将checkpoint功能添加到上游4.20 Linux kernel中，并将其向后移植到搭载Android 10的设备支持的所有通用kernel中。</p>
+<p>对于其他文件系统，UDC使用名为dm_bow的设备映射器虚拟设备来实现checkpoint功能。dm_bow位于设备和文件系统之间。挂载分区后，系统会发出剪裁命令，从而引发文件系统对所有可用块发出剪裁命令。dm_bow会截获这些剪裁命令并使用它们来设置一个可用块列表。然后，系统会将未经修改的读写操作发送到设备，不过，在允许执行写入操作之前，会先将恢复操作所需的数据备份到可用块。</p>
+<p>2.checkpoint功能执行过程：</p>
+<p>挂载具有checkpoint=fs/block标记的分区时，Android在磁盘上调用restoreCheckpoint，以允许设备恢复所有当前的checkpoint。然后，init调用needsCheckpoint函数来确定设备是处于bootloader A/B升级状态，还是已设置升级retry count值。无论处于哪一种状态，Android都会调用createCheckpoint来添加挂载标记或构建dm_bow设备。</p>
+<p>挂载分区后，系统将调用checkpoint代码来发出剪裁命令。然后，启动过程会继续正常进行。在LOCKED_BOOT_COMPLETE时，Android调用commitCheckpoint来提交当前checkpoint，升级会继续正常进行。</p>
+<p>3.管理keymaster密钥：</p>
+<p>Keymaster密钥用于设备加密或其他目的。为管理这些密钥，Android特地推迟到提交checkpoint之后才调用密钥删除命令。</p>
+<p>注：UDC不会造成任何其他安全或隐私问题。借助UDC，Android会将数据写入userdata分区上其他位置。</p>
+<p>4.监控运行状况：</p>
+<p>运行状况守护进程会检查是否有足够的磁盘空间来创建checkpoint。运行状况守护进程位于 Checkpoint.cpp中的cp_healthDaemon内。运行状况守护进程具有以下可配置的行为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ro.sys.cp_msleeptime：控制设备检查磁盘使用情况的频率。</span><br><span class="line">ro.sys.cp_min_free_bytes：控制运行状况守护进程查找的最小值。</span><br><span class="line">ro.sys.cp_commit_on_full：控制运行状况守护进程在磁盘已满时，是重新启动设备还是提交checkpoint并继续运行。</span><br></pre></td></tr></table></figure>
+<h3 id="三、checkpoint-API"><a href="#三、checkpoint-API" class="headerlink" title="三、checkpoint API"></a>三、checkpoint API</h3><p>UDC功能需要使用checkpoint API（IVoid.aidl）。</p>
+<p>1.void startCheckpoint(int retry)：</p>
+<p>创建一个检查点。framework会在准备好开始升级时调用此方法。系统会先创建checkpoint，然后，带有checkpoint的文件系统（如 userdata）会在重新启动之后挂载读写操作。如果retry counter为正值，API会处理跟踪重试，并且升级程序会调用needsRollback以检查是否需要回滚升级。如果retry counter为 -1，则API会遵循 A/B 升级bootloader的判断。执行正常的A/B升级时不会调用此方法。</p>
+<p>2.void commitChanges()：</p>
+<p>提交更改。准备好提交更改后，framework会在重启之后调用此方法。此方法在数据（如照片、视频、短信和服务器接收回执）写入userdata和BootComplete之前调用。如果不存在带有checkpoint的有效升级，则此方法不起作用。</p>
+<p>3.abortChanges()：</p>
+<p>强制重启并还原到checkpoint的状态。放弃自首次重启之后的所有userdata修改。framework在重启之后，执行commitChanges之前调用此方法。调用此方法时，retry_counter会减少。系统会生成日志条目。</p>
+<p>4.bool needsRollback()：</p>
+<p>确定是否需要回滚。在非checkpoint设备上，会返回 false。在checkpoint设备上，在非checkpoint启动期间会返回true。</p>
+<h3 id="四、UDC的参考实现（dm-bow-c）"><a href="#四、UDC的参考实现（dm-bow-c）" class="headerlink" title="四、UDC的参考实现（dm-bow.c）"></a>四、UDC的参考实现（dm-bow.c）</h3><p>1.设置：</p>
+<p>在init.hardware.rc文件的on fs阶段挂载fstab文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount_all /vendor/etc/fstab.$&#123;ro.boot.hardware.platform&#125; --early</span><br></pre></td></tr></table></figure>
+<p>在 init.hardware.rc 文件的on late-fs阶段挂载fstab文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount_all /vendor/etc/fstab.$&#123;ro.boot.hardware.platform&#125; --late</span><br></pre></td></tr></table></figure>
+<p>在fstab.hardware文件中，确保将/data标记为latemount：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/bootdevice/by-name/userdata              /data              f2fs</span><br><span class="line">noatime,nosuid,nodev,discard,reserve_root=32768,resgid=1065,fsync_mode=nobarrier</span><br><span class="line">latemount,wait,check,fileencryption=ice,keydirectory=/metadata/vold/metadata_encryption,quota,formattable,sysfs_path=/sys/devices/platform/soc/1d84000.ufshc,reservedsize=128M,checkpoint=fs</span><br></pre></td></tr></table></figure>
+<p>2.添加metadata分区：</p>
+<p>UDC需要使用metadata分区来存储非bootloader retry counter和key。设置metadata分区并提前将其挂载在 /metadata 中。在fstab.hardware文件中，确保将/metadata标记为earlymount或first_stage_mount：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/by-name/metadata           /metadata           ext4	noatime,nosuid,nodev,discard,sync	wait,formattable,first_stage_mount</span><br></pre></td></tr></table></figure>
+<p>将以下行添加到 BoardConfig.mk把分区初始化：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">BOARD_USES_METADATA_PARTITION := true</span><br><span class="line">BOARD_ROOT_EXTRA_FOLDERS := existing_folders metadata</span><br></pre></td></tr></table></figure>
+<p>3.升级系统</p>
+<p>(1)F2FS系统：确保F2FS版本支持checkpoint。对于在挂载/data的设备，将 checkpoint=fs标记添加到fstab的data的<code>&lt;fs_mgr_flags&gt;</code>部分。</p>
+<p>(2)非F2FS系统：必须在kernel config中启用dm-bow。对于在挂载/data的设备，将checkpoint=block 标记添加到fstab的data的<code>&lt;fs_mgr_flags&gt;</code>部分。</p>
+<p>4.检查日志：</p>
+<p>调用Checkpoint API时，会生成日志条目。</p>
+<p>5.验证：</p>
+<p>运行VTS测试的VtsKernelCheckpointTest测试集，测试UDC实现。</p>
+<p>Android官网链接：</p>
+<p><a href="https://source.android.com/devices/tech/ota/user-data-checkpoint" target="_blank" rel="noopener">https://source.android.com/devices/tech/ota/user-data-checkpoint</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+            <a href="/tags/Android10/" rel="tag"># Android10</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/01/Boot/Android10_用户空间fastboot/" rel="next" title="Android10 用户空间fastboot">
+                <i class="fa fa-chevron-left"></i> Android10 用户空间fastboot
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">77</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、工作方式"><span class="nav-text">二、工作方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、checkpoint-API"><span class="nav-text">三、checkpoint API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、UDC的参考实现（dm-bow-c）"><span class="nav-text">四、UDC的参考实现（dm-bow.c）</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

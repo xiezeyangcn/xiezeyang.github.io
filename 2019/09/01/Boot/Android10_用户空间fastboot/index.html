@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。 二、统一fastboot和recovery由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整">
+<meta name="keywords" content="Boot,Android10">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android10 用户空间fastboot">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/09/01/Boot/Android10_用户空间fastboot/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。 二、统一fastboot和recovery由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-11-27T14:51:27.100Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android10 用户空间fastboot">
+<meta name="twitter:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。 二、统一fastboot和recovery由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/09/01/Boot/Android10_用户空间fastboot/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android10 用户空间fastboot | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/09/01/Boot/Android10_用户空间fastboot/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android10 用户空间fastboot
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-01 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-01T00:00:00+08:00">2019-09-01</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Android10/" itemprop="url" rel="index"><span itemprop="name">Android10</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h3><p>Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。</p>
+<h3 id="二、统一fastboot和recovery"><a href="#二、统一fastboot和recovery" class="headerlink" title="二、统一fastboot和recovery"></a>二、统一fastboot和recovery</h3><p>由于用户空间fastboot和recovery类似，因此可以将它们合并为一个分区/二进制文件。优点包括：占用空间更少，整体分区更少，以及fastboot和recovery共享kernel和lib的能力。</p>
+<p>要支持fastbootd，bootloader必须实现boot-fastboot的新引导控制块（BCB）命令。要进入fastbootd模式，</p>
+<p>bootloader应将boot-fastboot写入BCB消息的命令字段，并保持BCB的恢复字段不变（以启用中断恢复任务的重启）。状态，阶段和保留字段也保持不变。在BCB命令中看到boot-fastboot后，预计bootloader将加载并引导到 recovery映像中。然后recovery会解析BCB消息并切换到fastbootd模式。</p>
+<p>1.新增的adb指令：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">命令</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">adb reboot fastboot</td>
+<td style="text-align:center">在system中重启会进入fastbootd；在recovery中无需重启直接进入fastbootd。</td>
+</tr>
+</tbody>
+</table>
+<p>2.新增的fastboot 命令：</p>
+<p>命令 ｜ 说明<br>:-: | :-:<br>reboot recovery | 在bootloader 模式下会重启进入recovery。在 fastboot 模式无需重启即可直接进入 recovery 模式。<br>reboot fastboot | 重启进入 fastboot 模式。<br>getvar is-userspace | 返回 yes 表示正处于fastboot 模式，返回 no 表示正处于bootloader 模式。<br>getvar is-logical:<partition> | 若给定分区是逻辑分区，则返回yes，否则返回no。<br>getvar super-partition-name | 返回super分区的名称。如果super分区是 A / B 分区，则该名称包括当前slot后缀。<br>create-logical-partition <partition> <size>  | 创建具有给定名称和大小的逻辑分区。该名称不得作为逻辑分区存在。<br>delete-logical-partition <partition> | 删除给定的逻辑分区（有效擦除分区）。<br>resize-logical-partition<partition> <size> | 将逻辑分区的大小调整为新大小而不更改其内容。<br>update-super <partition> | 合并对 super 分区元数据的更改。 如果无法进行合并，则此命令将失败。可选的“erase”参数会覆盖设备的元数据，而不是执行合并。</partition></size></partition></partition></size></partition></partition></p>
+<p>3.仍支持旧的fastboot指令：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">命令</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">flash <code>&lt;partition&gt; [&lt;filename&gt;]</code></td>
+<td style="text-align:center">解锁状态下向指定分区烧录image。</td>
+</tr>
+<tr>
+<td style="text-align:center">erase <code>&lt;partition&gt;</code></td>
+<td style="text-align:center">解锁状态下擦除指定分区。</td>
+</tr>
+<tr>
+<td style="text-align:center">getvar <code>&lt;variable&gt;</code> all</td>
+<td style="text-align:center">显示bootloader变量，如果不存在则返回error。</td>
+</tr>
+<tr>
+<td style="text-align:center">set_active <code>&lt;slot&gt;</code></td>
+<td style="text-align:center">A/B系统用于设置active slot。</td>
+</tr>
+<tr>
+<td style="text-align:center">reboot</td>
+<td style="text-align:center">重启设备。</td>
+</tr>
+<tr>
+<td style="text-align:center">reboot-bootloader (reboot bootloader)</td>
+<td style="text-align:center">重启进入bootloader模式。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="三、bootloader的变更"><a href="#三、bootloader的变更" class="headerlink" title="三、bootloader的变更"></a>三、bootloader的变更</h3><p>bootloader继续支持烧录 bootloader，radio和boot/recovery分区，之后设备将引导至 fastboot（用户空间）并烧录所有其他分区。bootloader还支持以下指令：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">命令</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">download</td>
+<td style="text-align:center">下载image。</td>
+</tr>
+<tr>
+<td style="text-align:center">flash recovery <code>&lt;image&gt;</code>/flash boot <code>&lt;image&gt;</code>/flash bootloader <code>&lt;image&gt;</code></td>
+<td style="text-align:center">烧录boot/recovery.bootloader。</td>
+</tr>
+<tr>
+<td style="text-align:center">oem</td>
+<td style="text-align:center">OEM定义的指令。</td>
+</tr>
+</tbody>
+</table>
+<p>bootloader不允许烧录动态分区，会返回error，而应该在 fastbootd 中烧录分区。对于动态分区设备，fastboot 工具支持强制模式，以便在 bootloader 模式下直接烧录动态分区。例如，如果 system 是设备上的动态分区，则 fastboot –force flash 系统允许bootloader烧录分区而不是fastbootd。此强制模式旨在为工厂烧录提供灵活性，不建议开发人员使用。</p>
+<h3 id="四、启用-fastbootd"><a href="#四、启用-fastbootd" class="headerlink" title="四、启用 fastbootd"></a>四、启用 fastbootd</h3><p>（1）将 fastbootd 添加到 device.mk 中的 PRODUCT_PACKAGES：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_PACKAGES + = fastbootd</span><br></pre></td></tr></table></figure>
+<p>（2）确保将 fastboot HAL，引导控制 HAL 和运行状况 HAL 打包为recovery image的一部分。</p>
+<p>（3）添加 fastbootd 所需的任何特定于设备的 sepolicy 权限。例如，fastbootd 需要对特定于设备的分区进行写访问才能烧录该分区。此外，fastboot HAL 实现还可能需要特定于设备的权限。</p>
+<h3 id="五、GSI的烧录"><a href="#五、GSI的烧录" class="headerlink" title="五、GSI的烧录"></a>五、GSI的烧录</h3><p>（1）在Settings模块打开Developer options，勾选OEM unlock选项；</p>
+<p>（2）执行adb reboot bootloader进入bootloader模式；</p>
+<p>（3）执行fastboot flashing unlock并根据界面提示unlock设备；</p>
+<p>（4）执行fastboot reboot-bootloader重启进入bootloader模式；</p>
+<p>（5）执行fastboot flash boot_a boot-debug.img用于VTS测试；</p>
+<p>（6）执行fastboot reboot fastboot进入fastbootd模式；</p>
+<p>（7）执行fastboot flash system_a aosp-system.img烧录Google System Image；</p>
+<p>（8）执行fastboot –disable-verification flash vbmeta_a vbmeta.img禁用AVB；</p>
+<p>（9）执行fastboot reboot bootloader重启进入bootloader模式；</p>
+<p>（10）执行fastboot -w（或fastboot flash userdata userdata.img / fastboot flash metadata meta.img）擦除用户数据；</p>
+<p>（11）执行fastboot flashing unlock锁定设备；</p>
+<p>（12）执行fastboot reboot进入Android准备测试。</p>
+<p>注1：需要适用Android Q最新SDK中的fastboot.ext/adb.exe文件。</p>
+<p>注2：若GSI是ext4格式文件（可用file aosp-system.img查看），请先用img2simg（若out/hose/linux-x86/bin目录没有该文件可编译system/core/libsparse来生成）将其转换为sparse格式再烧录。</p>
+<p>Android 官网链接：</p>
+<p><a href="https://source.android.com/devices/bootloader/fastbootd" target="_blank" rel="noopener">https://source.android.com/devices/bootloader/fastbootd</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Android10/" rel="tag"># Android10</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/24/Filesystem/Android10_动态分区/" rel="next" title="Android10 动态分区">
+                <i class="fa fa-chevron-left"></i> Android10 动态分区
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/15/Security/Android10_用户数据检查点/" rel="prev" title="Android10 用户数据检查点">
+                Android10 用户数据检查点 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">77</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、统一fastboot和recovery"><span class="nav-text">二、统一fastboot和recovery</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、bootloader的变更"><span class="nav-text">三、bootloader的变更</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、启用-fastbootd"><span class="nav-text">四、启用 fastbootd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、GSI的烧录"><span class="nav-text">五、GSI的烧录</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

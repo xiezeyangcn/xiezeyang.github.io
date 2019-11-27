@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于">
+<meta name="keywords" content="Filesystem,Android10">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android10 动态分区">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/08/24/Filesystem/Android10_动态分区/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-11-27T14:50:54.256Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android10 动态分区">
+<meta name="twitter:description" content="动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/08/24/Filesystem/Android10_动态分区/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android10 动态分区 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/08/24/Filesystem/Android10_动态分区/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android10 动态分区
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-24 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-24T00:00:00+08:00">2019-08-24</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Android10/" itemprop="url" rel="index"><span itemprop="name">Android10</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于所有动态分区。</p>
+<h3 id="一、实现动态分区"><a href="#一、实现动态分区" class="headerlink" title="一、实现动态分区"></a>一、实现动态分区</h3><p>动态分区是使用Linux内核中的dm-linear device-mapper模块实现的。super分区包含元数据（metadata），该元数据列出了super分区内部每个动态分区的名称和block范围。在第一阶段init期间，将解析和验证此元数据，并创建虚拟块设备来表示每个动态分区。应用OTA时，会根据需要自动创建、调整大小或删除动态分区。对于A/B系统，有两个元数据副本，并且更改仅应用于代表目标插槽（slot）的副本。由于动态分区是在用户空间中实现的，因此引导加载程序（bootloader）所需的分区无法设置为动态。如bootloader读取boot，dtbo和vbmeta，因此它们必须保留为物理分区。每个动态分区可以属于一个更新（update）组。这些组限制了该组中的分区可以消耗的最大空间。如system和vendor可以属于限制system和vendor总规模的组。</p>
+<h4 id="1-1-在新设备上实现动态分区"><a href="#1-1-在新设备上实现动态分区" class="headerlink" title="1.1 在新设备上实现动态分区"></a>1.1 在新设备上实现动态分区</h4><h5 id="1-1-1-分区配置"><a href="#1-1-1-分区配置" class="headerlink" title="1.1.1 分区配置"></a>1.1.1 分区配置</h5><p>对于使用Android 10启动的设备，会创建一个名为super的分区。超级分区在内部处理A/B slot，因此A/B设备不需要单独的super_a和super_b分区。bootloader未使用的所有只读AOSP分区必须是动态的，并且必须从GUID分区表（GPT）中删除。vendor特定的分区不必动态，可以继续放在GPT中。要估算super分区的大小，需要添加从GPT中删除的分区的大小。对于A/B设备，这应该包括两个slot的大小。下图显示了转换为动态分区之前和之后的示例分区表。</p>
+<p>注：避免将userdata或任何其他永久读写分区放在super中。</p>
+<p>支持的动态分区是：system、vendor、product、system_ext4、odm。对于使用Android 10启动的设备，kernel command line中androidboot.super_partition项必须为空，以确保sysprop ro.boot.super_partition属性为空。如果super分区未正确对齐，则dm-mapper模块的运行效率可能会降低。super分区必须与block层确定的最小I/O请求大小对齐。默认情况下，编译系统（通过lpmake生成super分区映像）假定每个动态分区的1 MB对齐就足够了。但是，厂商应确保super分区正确对齐。</p>
+<p>可以通过检查sysfs来确定块设备的最小请求大小：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># ls -l /dev/block/by-name/super</span><br><span class="line">lrwxrwxrwx <span class="number">1</span> root root <span class="number">16</span> <span class="number">1970</span>-<span class="number">04</span>-<span class="number">05</span> <span class="number">01</span>:<span class="number">41</span> /dev/block/by-name/super -&gt; /dev/block/sda17</span><br><span class="line"># cat /sys/block/sda/queue/minimum_io_size</span><br><span class="line"><span class="number">786432</span></span><br></pre></td></tr></table></figure>
+<p>可以通过类似的方式验证超级分区的对齐方式：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#对齐偏移必须为<span class="number">0</span>。</span><br><span class="line"># cat /sys/block/sda/sda17/alignment_offset</span><br></pre></td></tr></table></figure>
+<h5 id="1-1-2-device配置"><a href="#1-1-2-device配置" class="headerlink" title="1.1.2 device配置"></a>1.1.2 device配置</h5><p>要启用动态分区，需要在device.mk中添加以下配置：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_USE_DYNAMIC_PARTITIONS := true</span><br></pre></td></tr></table></figure>
+<p>需要在BoardConfig.mk中设置超级分区的大小：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BOARD_SUPER_PARTITION_SIZE := &lt;size-in-bytes&gt;</span><br></pre></td></tr></table></figure>
+<p>在A/B设备上，如果动态分区映像的总大小超过super分区大小的一半，则编译系统将出现错误提示。对于使用update组的设备，在BOARD_SUPER_PARTITION_GROUPS变量中列出这些组。然后每个组名都有一个BOARD_group_SIZE和BOARD_group_PARTITION_LIST变量。对于A/B设备，组的最大大小应仅覆盖一个slot，因为组名称在内部带有slot后缀。</p>
+<p>下面的配置示例将所有分区放入一个名为example_dynamic_partitions的组中：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BOARD_SUPER_PARTITION_GROUPS := example_dynamic_partitions</span><br><span class="line">BOARD_EXAMPLE_DYNAMIC_PARTITIONS_SIZE := 6442450944</span><br><span class="line">BOARD_EXAMPLE_DYNAMIC_PARTITIONS_PARTITION_LIST := system vendor product</span><br></pre></td></tr></table></figure>
+<p>下面的配置示例将vendor和product服务放在group_foo中，将vendor，product和odm放置在group_bar中：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BOARD_SUPER_PARTITION_GROUPS := group_foo group_bar</span><br><span class="line">BOARD_GROUP_FOO_SIZE := 4831838208</span><br><span class="line">BOARD_GROUP_FOO_PARTITION_LIST := system product_services</span><br><span class="line">BOARD_GROUP_BAR_SIZE := 1610612736</span><br><span class="line">BOARD_GROUP_BAR_PARTITION_LIST := vendor product odm</span><br></pre></td></tr></table></figure>
+<p>注：避免选择可能与编译变量冲突的名称，例如super和super_partition。为了提高可读性，应选择诸如foo_dp，foo_dynamic_partitions，foo_dp_group，super_foo或group_foo之类的名称（其中foo是更新给定组的特定分区的名称）。例如，group_OEM或group_VENDOR。</p>
+<p>设备上可能有一个或多个update组。</p>
+<p>(1)对于新发布A/B设备，所有组的最大大小之和必须为：BOARD_SUPER_PARTITION_SIZE/2 - 开销。</p>
+<p>(2)对于Non-A/B设备或售后Ａ/B设备，所有组的最大大小之和必须为：BOARD_SUPER_PARTITION_SIZE - 开销。</p>
+<p>(3)在编译时，update组中每个分区的image大小之和不得超过该组的最大大小。</p>
+<p>(4)计算中需要开销，以说明元数据，对齐方式等。合理的开销是4 MB，但也可以根据设备需要选择更大的开销。</p>
+<p>在动态分区之前，分区大小已经过分配，以确保它们有足够的空间用于将来的升级。实际大小按原样使用，大多数只读分区在其文件系统中具有一定的可用空间。在动态分区中，该未使用的可用空间，可用于在OTA期间增加分区大小。 确保分区不浪费空间，并且可以分配最小可用的大小至关重要。对于只读ext4映像，如果未指定硬编码分区大小，则编译系统会自动分配最小大小。编译系统适配该映像，以便文件系统具有尽可能少的未使用空间。这样可以确保设备不会浪费可用于OTA的空间。</p>
+<p>另外，可以通过启用block级重复数据删除来进一步压缩ext4图像。要启用此功能，需作以下配置：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BOARD_EXT4_SHARE_DUP_BLOCKS := true</span><br></pre></td></tr></table></figure>
+<p>如果不希望自动分配分区的最小大小，则有两种方法可以控制分区的大小。可以使用BOARD_partitionIMAGE_PARTITION_RESERVED_SIZE指定最小的可用空间，也可以指定BOARD_partitionIMAGE_PARTITION_SIZE将动态分区强制为特定大小。除非必要，否则均不建议使用这些方法。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#强制product.img中的文件系统具有50 MiB的未使用空间。</span></span><br><span class="line">BOARD_PRODUCTIMAGE_PARTITION_RESERVED_SIZE := 52428800</span><br></pre></td></tr></table></figure>
+<p>注：编译系统只能最适用于ext4文件系统映像，并且只能编译该编译的映像。对于预编译映像或使用其他文件系统的映像，重要的是手动确保文件系统不会浪费磁盘空间。</p>
+<h5 id="1-1-3-取消system-as-root"><a href="#1-1-3-取消system-as-root" class="headerlink" title="1.1.3 取消system-as-root"></a>1.1.3 取消system-as-root</h5><p>使用Android 10启动的设备不得使用system-as-root。具有动态分区的设备（无论它是使用动态分区发布还是进行了升级）都不得使用system-as-root。Linux内核无法解析super分区，因此无法安装system本身。system现在通过驻留在ramdisk中的第一阶段init进行挂载。不要设置BOARD_BUILD_SYSTEM_ROOT_IMAGE。在Android 10中，BOARD_BUILD_SYSTEM_ROOT_IMAGE标志仅用于区分系统是由kernel挂载还是由ramdisk中的第一阶段init挂载。当PRODUCT_USES_DYNAMIC_PARTITIONS也为true时，将BOARD_BUILD_SYSTEM_ROOT_IMAGE设置为true会导致编译错误。当BOARD_USES_RECOVERY_AS_BOOT设置为true时，recovery映像将编入boot.img，其中包含recovery的ramdisk。以前，bootloader使用skip_initramfs　kernel command line参数来决定启动进入哪种模式。对于Android 10设备，bootloader不得将skip_initramfs传递给kernel command line。相反，bootloader应传递androidboot.force_normal_boot = 1来跳过recovery并启动正常的Android。</p>
+<h5 id="1-1-4-AVB-配置"><a href="#1-1-4-AVB-配置" class="headerlink" title="1.1.4 AVB 配置"></a>1.1.4 AVB 配置</h5><p>使用动态分区的前提需要支持Android Verified Boot（AVB），它无法与verified boot 1.0一起使用。使用AVB 2.0时，如果设备未使用链式分区描述符（chained partition descriptors），则无需进行任何更改。但是，如果使用链接分区（chained partitions），并且其中一个已验证分区是动态的，则必须进行更改。下面是为system分区和vendor分区链接vbmeta的设备的配置的示例:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_SYSTEM_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem</span><br><span class="line">BOARD_AVB_SYSTEM_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_SYSTEM_ROLLBACK_INDEX := <span class="variable">$(PLATFORM_SECURITY_PATCH_TIMESTAMP)</span></span><br><span class="line">BOARD_AVB_SYSTEM_ROLLBACK_INDEX_LOCATION := 1</span><br><span class="line">BOARD_AVB_VENDOR_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem</span><br><span class="line">BOARD_AVB_VENDOR_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_VENDOR_ROLLBACK_INDEX := <span class="variable">$(PLATFORM_SECURITY_PATCH_TIMESTAMP)</span></span><br><span class="line">BOARD_AVB_VENDOR_ROLLBACK_INDEX_LOCATION := 1</span><br></pre></td></tr></table></figure>
+<p>使用上面的配置，bootloader希望在system和vendor分区的末尾找到vbmeta页脚（footer）。由于这些分区对于bootloader不再可见（位于super中），因此需要进行两项修改。</p>
+<p>(1)将vbmeta_system和vbmeta_vendor分区添加到设备的分区表中。对于A/B设备，添加vbmeta_system_a，vbmeta_system_b，vbmeta_vendor_a和vbmeta_vendor_b。如果添加一个或多个这些分区，则它们的大小应与vbmeta分区的大小相同。</p>
+<p>(2)通过添加”VBMETA_”重命名配置标志（flags），并指定链接扩展到的分区：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_VBMETA_SYSTEM := system</span><br><span class="line">BOARD_AVB_VBMETA_SYSTEM_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem</span><br><span class="line">BOARD_AVB_VBMETA_SYSTEM_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX := <span class="variable">$(PLATFORM_SECURITY_PATCH_TIMESTAMP)</span></span><br><span class="line">BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX_LOCATION := 1</span><br><span class="line">BOARD_AVB_VBMETA_VENDOR := vendor</span><br><span class="line">BOARD_AVB_VBMETA_VENDOR_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem</span><br><span class="line">BOARD_AVB_VBMETA_VENDOR_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_VBMETA_VENDOR_ROLLBACK_INDEX := <span class="variable">$(PLATFORM_SECURITY_PATCH_TIMESTAMP)</span></span><br><span class="line">BOARD_AVB_VBMETA_VENDOR_ROLLBACK_INDEX_LOCATION := 1</span><br></pre></td></tr></table></figure>
+<p>设备可能正在使用这些分区中的一个，两个或两个都不使用。仅当链接到逻辑分区时才需要进行更改。</p>
+<p>如果bootloader已导入libavb，则必须包含以下patch：</p>
+<p>(1)818cf56740775446285466eda984acedd4baeac0 —“libavb：仅在cmdline需要分区GUID时查询分区GUID”。</p>
+<p>(2)5abd6bc2578968d24406d834471adfd995a0c2e9 —“允许不存在系统分区”。</p>
+<p>(3)9ba3b6613b4e5130fa01a11d984c6b5f0eb3af05-“修复AvbSlotVerifyData-&gt; cmdline可能为NULL”。</p>
+<p>如果使用链接分区，则必须包含下面patch：<br>49936b4c0109411fdd38bd4ba3a32a01c40439a9 —“libavb：在分区开始时支持vbmeta blob”。</p>
+<p>注：以前，在AvbOps中实现get_size_of_partition是可选的。进行此更改后，bootloader必须实现此功能。</p>
+<h5 id="1-1-5-kernel-command-line配置"><a href="#1-1-5-kernel-command-line配置" class="headerlink" title="1.1.5 kernel command line配置"></a>1.1.5 kernel command line配置</h5><p>必须将新参数androidboot.boot_devices添加到kernel command line中。init用来启用/dev/block/by-name符号链接。它应该是ueventd创建的基础，按名称符号链接的设备路径组件，即/dev/block/platform/device-path/by-name/partition-name。如果super分区的别名链接是/dev/block/platform/soc/100000.ufshc/by-name/super，则可以在BoardConfig.mk文件中添加command line参数，如下所示：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BOARD_KERNEL_CMDLINE += androidboot.boot_devices=soc/100000.ufshc</span><br></pre></td></tr></table></figure>
+<h5 id="1-1-6-fstab配置"><a href="#1-1-6-fstab配置" class="headerlink" title="1.1.6 fstab配置"></a>1.1.6 fstab配置</h5><p>设备树（device tree）和设备树覆盖（device tree overlays）不得包含fstab条目。要使用是ramdisk一部分的fstab文件。必须对逻辑分区的fstab文件进行更改：</p>
+<p>(1)fs_mgr标志字段必须包含在Android 10中引入的logical标志和first_stage_mount标志，该标志指示要在第一阶段挂载分区。</p>
+<p>(2)分区可以将avb = vbmeta分区名称指定为fs_mgr标志，然后在尝试挂载任何设备之前，由第一阶段init初始化指定的vbmeta分区。</p>
+<p>(3)dev字段必须是分区名称。</p>
+<p>以下fstab条目将system，vendor和product设置为遵循上述规则的逻辑分区。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#&lt;dev&gt;  &lt;mnt_point&gt; &lt;type&gt;  &lt;mnt_flags options&gt; &lt;fs_mgr_flags&gt;</span><br><span class="line">system   /system     ext4    ro,barrier=1        wait,slotselect,avb=vbmeta,logical,first_stage_mount</span><br><span class="line">vendor   /vendor     ext4    ro,barrier=1        wait,slotselect,avb,logical,first_stage_mount</span><br><span class="line">product  /product    ext4    ro,barrier=1        wait,slotselect,avb,logical,first_stage_mount</span><br></pre></td></tr></table></figure>
+<p>注：对于Non-A/B设备，不能包括slotselect标志。将fstab文件复制到第一阶段ramdisk。</p>
+<h5 id="1-1-7-SELinux配置"><a href="#1-1-7-SELinux配置" class="headerlink" title="1.1.7 SELinux配置"></a>1.1.7 SELinux配置</h5><p>super分区block设备必须标记为标签super_block_device。如果super分区的名称符号链接是/dev/block/platform/soc/100000.ufshc/by-name/super，需要将以下行添加到file_contexts中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/platform/soc/10000\.ufshc/by-name/super   u:object_r:super_block_device:s0</span><br></pre></td></tr></table></figure>
+<h5 id="1-1-8-fastboot和adb变化"><a href="#1-1-8-fastboot和adb变化" class="headerlink" title="1.1.8 fastboot和adb变化"></a>1.1.8 fastboot和adb变化</h5><p>bootloader（或任何非用户空间下载工具）不知道动态分区的存在，因此无法下载它们。为了解决这个问题，设备必须使用称为fastbootd的fastboot协议的用户空间实现。</p>
+<p>对于编译eng或userdebug的开发人员，adb remount对于快速迭代非常有用。动态分区给adb remount带来了问题，因为每个文件系统中都不再有可用空间。为了解决这个问题，设备可以启用overlayfs。只要super分区中有可用空间，adb remount就会自动创建一个临时动态分区，并使用overlayfs进行写操作。临时分区的名称为scratch，因此决不能将此名称用于其他分区。</p>
+<h4 id="1-2-升级配置动态分区"><a href="#1-2-升级配置动态分区" class="headerlink" title="1.2 升级配置动态分区"></a>1.2 升级配置动态分区</h4><p>如果将设备升级到Android 10，并且想在OTA中包含动态分区支持，则无需更改内置分区表。需要一些额外的配置。</p>
+<h5 id="1-2-1-device配置"><a href="#1-2-1-device配置" class="headerlink" title="1.2.1 device配置"></a>1.2.1 device配置</h5><p>要支持动态分区，需在device.mk中添加以下配置：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_USE_DYNAMIC_PARTITIONS := true</span><br><span class="line">PRODUCT_RETROFIT_DYNAMIC_PARTITIONS := true</span><br></pre></td></tr></table></figure>
+<p>需要在Board_Config.mk中设置以下变量：</p>
+<p>(1)将BOARD_SUPER_PARTITION_BLOCK_DEVICES设置为用于存储动态分区范围的块设备列表。这是设备上现有物理分区的名称列表。</p>
+<p>(2)将BOARD_SUPER_PARTITION_partition_DEVICE_SIZE分别设置为BOARD_SUPER_PARTITION_BLOCK_DEVICES中每个块设备的大小。这是设备上现有物理分区大小的列表。在现有Board_Config.mk配置中，通常为BOARD_partitionIMAGE_PARTITION_SIZE。</p>
+<p>(3)取消设置BOARD_SUPER_PARTITION_BLOCK_DEVICES中所有分区的现有BOARD_partitionIMAGE_PARTITION_SIZE。</p>
+<p>(4)将BOARD_SUPER_PARTITION_SIZE设置为BOARD_SUPER_PARTITION_partition_DEVICE_SIZE的总和。</p>
+<p>(5)将BOARD_SUPER_PARTITION_METADATA_DEVICE设置为存储动态分区元数据的块设备。必须是BOARD_SUPER_PARTITION_BLOCK_DEVICES之一。通常，将其设置为system。</p>
+<p>(6)分别设置BOARD_SUPER_PARTITION_GROUPS，BOARD_group_SIZE和BOARD_group_PARTITION_LIST。</p>
+<p>例如，如果设备已经有system分区和vendor分区，想将它们转换为动态分区，并在升级期间添加新的product分区，可进行如下配置：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">BOARD_SUPER_PARTITION_BLOCK_DEVICES := system vendor</span><br><span class="line">BOARD_SUPER_PARTITION_METADATA_DEVICE := system</span><br><span class="line"><span class="comment"># Rename BOARD_SYSTEMIMAGE_PARTITION_SIZE to BOARD_SUPER_PARTITION_SYSTEM_DEVICE_SIZE.</span></span><br><span class="line">BOARD_SUPER_PARTITION_SYSTEM_DEVICE_SIZE := &lt;size-in-bytes&gt;</span><br><span class="line"><span class="comment"># Rename BOARD_VENDORIMAGE_PARTITION_SIZE to BOARD_SUPER_PARTITION_VENDOR_DEVICE_SIZE</span></span><br><span class="line">BOARD_SUPER_PARTITION_VENDOR_DEVICE_SIZE := &lt;size-in-bytes&gt;</span><br><span class="line"><span class="comment"># This is BOARD_SUPER_PARTITION_SYSTEM_DEVICE_SIZE + BOARD_SUPER_PARTITION_VENDOR_DEVICE_SIZE</span></span><br><span class="line">BOARD_SUPER_PARTITION_SIZE := &lt;size-in-bytes&gt;</span><br><span class="line"><span class="comment"># Configuration for dynamic partitions. For example:</span></span><br><span class="line">BOARD_SUPER_PARTITION_GROUPS := group_foo</span><br><span class="line">BOARD_GROUP_FOO_SIZE := &lt;size-in-bytes&gt;</span><br><span class="line">BOARD_GROUP_FOO_PARTITION_LIST := system vendor product</span><br></pre></td></tr></table></figure>
+<h5 id="1-2-2-SELinux配置"><a href="#1-2-2-SELinux配置" class="headerlink" title="1.2.2 SELinux配置"></a>1.2.2 SELinux配置</h5><p>super分区块设备必须标记为super_block_device_type属性。若设备已有system分区和vendor分区，则要将它们用作存储动态分区范围的块设备，它们的名称符号链接被标记为system_block_device：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/platform/soc/10000\.ufshc/by-name/system   u:object_r:system_block_device:s0</span><br><span class="line">/dev/block/platform/soc/10000\.ufshc/by-name/vendor   u:object_r:system_block_device:s0</span><br></pre></td></tr></table></figure>
+<p>然后，将以下行添加到device.te：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typeattribute system_block_device super_block_device_type;</span><br></pre></td></tr></table></figure>
+<h4 id="1-3产线下载"><a href="#1-3产线下载" class="headerlink" title="1.3产线下载"></a>1.3产线下载</h4><p>对于使用动态分区支持启动的设备，应避免使用用户空间fastboot下载工厂映像，因为启动到用户空间比其他下载方法要慢。为了解决这个问题，make dist现在会编译一个额外的super.img映像，该映像可以直接下载到super分区。它会自动捆绑逻辑分区的内容，这意味着除了超级分区元数据外，它还包含system.img，vendor.img等。该映像可以直接刷新到超级分区，而无需任何其他工具或使用fastbootd。编译完成后，super.img将放置在$ {ANDROID_PRODUCT_OUT}中。</p>
+<p>对于使用动态分区启动的A/B设备，super.img在A插槽中包含image。直接下载super.img后，将slot A标记为可启动，然后重新启动设备。</p>
+<p>对于售后升级设备，make dist会编译一组super _ *.img映像，这些映像可以直接下载到相应的物理分区。例如，当BOARD_SUPER_PARTITION_BLOCK_DEVICES是system、vendor时，make dist会创建super_system.img和super_vendor.img。这些images放在target_files.zip中的OTA文件夹中。</p>
+<h3 id="二、支持动态分区的A-B设备的OTA升级"><a href="#二、支持动态分区的A-B设备的OTA升级" class="headerlink" title="二、支持动态分区的A/B设备的OTA升级"></a>二、支持动态分区的A/B设备的OTA升级</h3><p>Android 10支持动态分区，这是一种用户空间分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。本节介绍了在通过支持动态分区的A/B设备升级过程中，OTA客户端是如何调整动态分区的大小。</p>
+<h4 id="2-1-背景"><a href="#2-1-背景" class="headerlink" title="2.1 背景"></a>2.1 背景</h4><p>设备上有一个super分区。该分区没有slot后缀。block设备必须与fstab中/misc的blk_device条目一起存在。如果fstab文件列出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/bootdevice/by-name/misc    /misc    # Other fields</span><br></pre></td></tr></table></figure>
+<p>然后，用于super的块设备必须存在于/dev/block/bootdevice/by-name/super中，但是不必在fstab文件中列出super分区。</p>
+<p>在super分区中，有两个元数据slot，编号为0和1，分别对应于分区的slot_a和slot_b。本文中元数据slot称为元数据S（source）和元数据T（target）。类似地，分区被称为system_s，vendor_t等。升级之前，元数据S包含正在使用的动态分区的信息（通常是system_s，vendor_s，product_s等）。系统在升级过程中读取这些分区的扩展区，因此无法将其删除。分区属于update组。</p>
+<p>设备上的元数据的示例如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Metadata</th>
+<th style="text-align:center">Group</th>
+<th style="text-align:center">Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">foo_a</td>
+<td style="text-align:center">system_a分区</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">foo_a</td>
+<td style="text-align:center">product_services_a分区</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">foo_a</td>
+<td style="text-align:center">其它由Foo更新的分区</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">bar_a</td>
+<td style="text-align:center">vendor_a分区</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">bar_a</td>
+<td style="text-align:center">product_a分区</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">bar_a</td>
+<td style="text-align:center">其它由Bar更新的分区</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">foo_b</td>
+<td style="text-align:center">之前升级的</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">bar_b</td>
+<td style="text-align:center">之前升级的</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">foo_a</td>
+<td style="text-align:center">之前升级的</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">bar_a</td>
+<td style="text-align:center">之前升级的</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">foo_b</td>
+<td style="text-align:center">system_b分区</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">foo_b</td>
+<td style="text-align:center">product_services_b分区</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">foo_b</td>
+<td style="text-align:center">其它由Foo更新的分区</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">bar_b</td>
+<td style="text-align:center">vendor_b分区</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">bar_b</td>
+<td style="text-align:center">product_b分区</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">bar_b</td>
+<td style="text-align:center">其它由Bar更新的分区</td>
+</tr>
+</tbody>
+</table>
+<p>可以使用lpdump工具（system/extras/partition_tools下的源代码）将元数据转储到设备上。例如：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lpdump --slot <span class="number">0</span> /dev/block/bootdevice/by-name/super</span><br><span class="line">lpdump --slot <span class="number">1</span> /dev/block/bootdevice/by-name/super</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-更新流程"><a href="#2-2-更新流程" class="headerlink" title="2.2 更新流程"></a>2.2 更新流程</h4><h5 id="2-2-1-初始化super分区元数据"><a href="#2-2-1-初始化super分区元数据" class="headerlink" title="2.2.1 初始化super分区元数据"></a>2.2.1 初始化super分区元数据</h5><p>(1)从元数据S加载source动态分区的扩展区。让M成为已加载的元数据。</p>
+<p>(2)从M中删除目标组和分区（如foo_t，bar_t），以使M仅包含带有_s后缀的分区和组。</p>
+<p>(3)根据更新清单中的dynamic_partition_metadata字段添加目标组和分区。每个分区的大小可以在new_partition_info中找到。</p>
+<p>(4)将M写入元数据T。</p>
+<p>(5)将可添加的分区映射到device mapper上。</p>
+<h5 id="2-2-2-在块设备上应用更新"><a href="#2-2-2-在块设备上应用更新" class="headerlink" title="2.2.2 在块设备上应用更新"></a>2.2.2 在块设备上应用更新</h5><p>(1)如有必要，将设备分区上的source分区映射为只读。这对于sideloading是必需的，因为在升级之前未映射source分区。</p>
+<p>(2)对目标slot中的所有块设备应用完全升级或增量升级。</p>
+<p>(3)挂载分区以运行post-install脚本，然后卸载分区。</p>
+<h5 id="2-2-3-取消映射目标分区"><a href="#2-2-3-取消映射目标分区" class="headerlink" title="2.2.3 取消映射目标分区"></a>2.2.3 取消映射目标分区</h5><p>由于source和target动态分区的范围都跨越整个超级分区。因此，必须加载source元数据，以便这些扩展区不用作任何target分区的一部分。在升级前后，以下系统属性应具有各自的值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ro.boot.dynamic_partitions=true</span><br><span class="line">ro.boot.dynamic_partitions_retrofit=true</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-将groups和partitions添加到升级manifest中"><a href="#2-3-将groups和partitions添加到升级manifest中" class="headerlink" title="2.3 将groups和partitions添加到升级manifest中"></a>2.3 将groups和partitions添加到升级manifest中</h4><p>在支持动态分区的A/B设备上执行OTA升级时，需要向升级manifest中添加groups和partitions。下面的代码段显示了有关升级manifest的其他信息。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">message DeltaArchiveManifest &#123;</span><br><span class="line">    optional DynamicPartitionMetadata dynamic_partition_metadata;</span><br><span class="line">&#125;</span><br><span class="line">message DynamicPartitionMetadata &#123;</span><br><span class="line">    repeated DynamicPartitionGroup groups;</span><br><span class="line">&#125;</span><br><span class="line">message DynamicPartitionGroup &#123;</span><br><span class="line">    required string name;</span><br><span class="line">    optional uint64 size; // maximum size of group</span><br><span class="line">    repeated string partition_names;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、不支持动态分区的A-B设备的OTA升级"><a href="#三、不支持动态分区的A-B设备的OTA升级" class="headerlink" title="三、不支持动态分区的A/B设备的OTA升级"></a>三、不支持动态分区的A/B设备的OTA升级</h3><p>Android 10支持动态分区，这是一个用户空间分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。本节介绍了在不支持动态分区的情况下启动A/B设备的升级过程中，OTA客户端如何调整动态分区的大小以及OTA客户端如何升级到Android 10。</p>
+<h4 id="3-1-背景"><a href="#3-1-背景" class="headerlink" title="3.1 背景"></a>3.1 背景</h4><p>在升级A/B设备以支持动态分区的过程中，将保留设备上的GUID分区表（GPT），因此设备上没有super分区。元数据存储在system_a和system_b，但是可以通过更改BOARD_SUPER_PARTITION_METADATA_DEVICE进行自定义。在每个块设备中，都有两个元数据slot。每个块设备中仅使用一个元数据slot。例如，system_a处的metadata0和system_b处的metadata1分别对应于slot_a和slot_b的分区。在运行时，升级哪个slot都没有关系。在本文中，metadata slot称为元数据S（source）和元数据T（target）。类似地，分区被称为system_s，vendor_t等。</p>
+<p>设备上元数据的示例是：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">-</th>
+<th style="text-align:center">Metadata</th>
+<th style="text-align:center">Group</th>
+<th style="text-align:center">Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">system_a</td>
+<td style="text-align:center">metadata0</td>
+<td style="text-align:center">foo_a</td>
+<td style="text-align:center">逻辑分区（动态分区）system_a</td>
+</tr>
+<tr>
+<td style="text-align:center">system_a</td>
+<td style="text-align:center">metadata0</td>
+<td style="text-align:center">foo_a</td>
+<td style="text-align:center">逻辑分区（动态分区）product_services_a</td>
+</tr>
+<tr>
+<td style="text-align:center">system_a</td>
+<td style="text-align:center">metadata0</td>
+<td style="text-align:center">foo_a</td>
+<td style="text-align:center">其它由Foo更新的分区</td>
+</tr>
+<tr>
+<td style="text-align:center">system_a</td>
+<td style="text-align:center">metadata0</td>
+<td style="text-align:center">bar_a</td>
+<td style="text-align:center">逻辑分区（动态分区）vendor_a</td>
+</tr>
+<tr>
+<td style="text-align:center">system_a</td>
+<td style="text-align:center">metadata0</td>
+<td style="text-align:center">bar_a</td>
+<td style="text-align:center">逻辑分区（动态分区）product_a</td>
+</tr>
+<tr>
+<td style="text-align:center">system_a</td>
+<td style="text-align:center">metadata0</td>
+<td style="text-align:center">bar_a</td>
+<td style="text-align:center">其它由Bar更新的分区</td>
+</tr>
+<tr>
+<td style="text-align:center">system_a</td>
+<td style="text-align:center">metadata1</td>
+<td style="text-align:center">－</td>
+<td style="text-align:center">不使用</td>
+</tr>
+<tr>
+<td style="text-align:center">system_b</td>
+<td style="text-align:center">metadata0</td>
+<td style="text-align:center">－</td>
+<td style="text-align:center">不使用</td>
+</tr>
+<tr>
+<td style="text-align:center">system_b</td>
+<td style="text-align:center">metadata1</td>
+<td style="text-align:center">foo_b</td>
+<td style="text-align:center">逻辑分区（动态分区）system_b</td>
+</tr>
+<tr>
+<td style="text-align:center">system_b</td>
+<td style="text-align:center">metadata1</td>
+<td style="text-align:center">foo_b</td>
+<td style="text-align:center">逻辑分区（动态分区）product_services_b</td>
+</tr>
+<tr>
+<td style="text-align:center">system_b</td>
+<td style="text-align:center">metadata1</td>
+<td style="text-align:center">foo_b</td>
+<td style="text-align:center">其它由Foo更新的分区</td>
+</tr>
+<tr>
+<td style="text-align:center">system_b</td>
+<td style="text-align:center">metadata1</td>
+<td style="text-align:center">bar_b</td>
+<td style="text-align:center">逻辑分区（动态分区）vendor_b</td>
+</tr>
+<tr>
+<td style="text-align:center">system_b</td>
+<td style="text-align:center">metadata1</td>
+<td style="text-align:center">bar_b</td>
+<td style="text-align:center">逻辑分区（动态分区）product_b</td>
+</tr>
+<tr>
+<td style="text-align:center">system_b</td>
+<td style="text-align:center">metadata1</td>
+<td style="text-align:center">bar_b</td>
+<td style="text-align:center">其它由Bar更新的分区</td>
+</tr>
+</tbody>
+</table>
+<p>可以使用system/extras/partition_tools下的lpdump工具将元数据转储到设备上。例如：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lpdump --slot <span class="number">0</span> /dev/block/by-name/system_a</span><br><span class="line">lpdump --slot <span class="number">1</span> /dev/block/by-name/system_b</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-retrofit升级"><a href="#3-2-retrofit升级" class="headerlink" title="3.2 retrofit升级"></a>3.2 retrofit升级</h4><p>在运行Android 9及更低版本的设备上，设备上的OTA客户端在升级之前不支持映射动态分区。创建了一组额外的补丁程序，以便可以将映射直接应用于现有的物理分区。OTA编译生成最终的super.img文件，该文件包含所有动态分区的内容，然后将image分为与system，vendor等对应的物理块设备大小匹配的多个image。这些image被命名为super_system.img，super_vendor.img等。OTA客户端将这些image应用于物理分区，而不是将image应用于逻辑（动态）分区。由于OTA客户端不知道如何映射动态分区，因此在生成升级包时，将自动为这些分区禁用所有post-install步骤。升级流程与Android 9中的相同。</p>
+<p>升级之前：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ro.boot.dynamic_partitions=</span><br><span class="line">ro.boot.dynamic_partitions_retrofit=</span><br></pre></td></tr></table></figure>
+<p>升级之后：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ro.boot.dynamic_partitions=true</span><br><span class="line">ro.boot.dynamic_partitions_retrofit=true</span><br></pre></td></tr></table></figure>
+<h4 id="3-3-retrofit之后的升级"><a href="#3-3-retrofit之后的升级" class="headerlink" title="3.3 retrofit之后的升级"></a>3.3 retrofit之后的升级</h4><p>初次升级后，OTA客户端将升级为可使用动态分区。source分区的范围永远不会跨越target物理分区。使用常规升级包升级流程，同《2.2 升级流程》。</p>
+<p>使用retrofit升级包升级流程。如果retrofit升级包应用于已经启用了动态分区的设备，则OTA客户端将拆分的super.img文件直接应用于块设备。升级流程类似于翻新retrofit升级。</p>
+<p>例如，假设以下内容：</p>
+<p>(1)slot_a是active slot。</p>
+<p>(2)system_a包含slot 0处的active metadata。</p>
+<p>(3)system_a，vendor_a和product_a用作块设备。</p>
+<p>当OTA客户端收到retrofit升级包时，它将在物理system_b上应用super_system.img，在物理vendor_b上应用super_vendor.img，在物理product_b上应用super_product.img。物理块设备system_b包含正确的元数据，以在启动时映射逻辑system_b，vendor_b和product_b。</p>
+<p>在升级前后，这些值不会更改：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_USE_LOGICAL_PARTITIONS：= true</span><br><span class="line">PRODUCT_RETROFIT_DYNAMIC_PARTITIONS：= true</span><br></pre></td></tr></table></figure>
+<h4 id="3-4-生成升级包"><a href="#3-4-生成升级包" class="headerlink" title="3.4 生成升级包"></a>3.4 生成升级包</h4><h5 id="3-4-1-增量包"><a href="#3-4-1-增量包" class="headerlink" title="3.4.1 增量包"></a>3.4.1 增量包</h5><p>在为retrofit设备生成增量OTA时，升级取决于基版本是否有定义PRODUCT_USE_LOGICAL_PARTITIONS和PRODUCT_RETROFIT_DYNAMIC_PARTITIONS：</p>
+<p>(1)如果基版本未定义这些变量，则为retrofit升级。该升级包包含拆分的super.img文件，且禁用了post-install步骤。</p>
+<p>(2)如果基版本确实定义了变量，则这与具有动态分区的升级相同。该升级包包含逻辑（动态）分区的image。可以启用post-install步骤。</p>
+<h5 id="3-4-2-全包"><a href="#3-4-2-全包" class="headerlink" title="3.4.2 全包"></a>3.4.2 全包</h5><p>为retrofit设备生成了两个完整的OTA软件包。</p>
+<p>1.<code>$(PRODUCT)-ota-retrofit-$(TAG).zip</code>始终包含split super.img，且禁用post-install步骤升级更新：</p>
+<p>(1)它是通过ota_from_target_files脚本的附加参数–retrofit_dynamic_partitions生成的。</p>
+<p>(2)它可以应用于所有编译。</p>
+<p>2.<code>$(PRODUCT)-ota-$(TAG).zip</code>包含用于将来升级的逻辑image：</p>
+<p>仅将此选项应用于启用了动态分区的编译。</p>
+<h5 id="3-5-旧版本不支持非retrofit更新"><a href="#3-5-旧版本不支持非retrofit更新" class="headerlink" title="3.5 旧版本不支持非retrofit更新"></a>3.5 旧版本不支持非retrofit更新</h5><p>常规完整OTA软件包应仅应用于启用了动态分区的编译。如果OTA服务器配置不正确，并将这些软件包推送到运行Android 9或更低版本的设备，则设备将无法启动。Android 9及更低版本上的OTA客户端无法分辨retrofit的OTA软件包与常规的完整OTA软件包之间的区别，因此客户端不会拒绝完整的软件包。为防止设备接受完整的OTA软件包，可以要求执行post-install步骤来检查现有设备配置。例如：</p>
+<p>(1)device/device_name/dynamic_partitions/check_dynamic_partitions</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/system/bin/sh</span><br><span class="line">DP_PROPERTY_NAME="ro.boot.dynamic_partitions"</span><br><span class="line">DP_RETROFIT_PROPERTY_NAME="ro.boot.dynamic_partitions_retrofit"</span><br><span class="line">DP_PROPERTY=$(getprop $&#123;DP_PROPERTY_NAME&#125;)</span><br><span class="line">DP_RETROFIT_PROPERTY=$(getprop $&#123;DP_RETROFIT_PROPERTY_NAME&#125;)</span><br><span class="line">if [ "$&#123;DP_PROPERTY&#125;" != "true" ] || [ "$&#123;DP_RETROFIT_PROPERTY&#125;" != "true" ] ; then</span><br><span class="line">    echo "Error: applied non-retrofit update on build without dynamic" \</span><br><span class="line">         "partitions."</span><br><span class="line">    echo "$&#123;DP_PROPERTY_NAME&#125;=$&#123;DP_PROPERTY&#125;"</span><br><span class="line">    echo "$&#123;DP_RETROFIT_PROPERTY_NAME&#125;=$&#123;DP_RETROFIT_PROPERTY&#125;"</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+<p>(2)device/device_name/dynamic_partitions/Android.mk</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line">LOCAL_MODULE:= check_dynamic_partitions</span><br><span class="line">LOCAL_MODULE_TAGS := optional</span><br><span class="line">LOCAL_MODULE_CLASS := EXECUTABLES</span><br><span class="line">LOCAL_SRC_FILES := check_dynamic_partitions</span><br><span class="line">LOCAL_PRODUCT_MODULE := true</span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_PREBUILT)</span></span><br></pre></td></tr></table></figure>
+<p>(3)device/device_name/device.mk</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_PACKAGES += check_dynamic_partitions</span><br><span class="line"><span class="comment"># OPTIONAL=false so that the error in check_dynamic_partitions will be</span></span><br><span class="line"><span class="comment"># propagated to OTA client.</span></span><br><span class="line">AB_OTA_POSTINSTALL_CONFIG += \</span><br><span class="line">    RUN_POSTINSTALL_product=true \</span><br><span class="line">    POSTINSTALL_PATH_product=bin/check_dynamic_partitions \</span><br><span class="line">    FILESYSTEM_TYPE_product=ext4 \</span><br><span class="line">    POSTINSTALL_OPTIONAL_product=false \</span><br></pre></td></tr></table></figure>
+<p>如果将常规OTA软件包应用于未启用动态分区的设备，则OTA客户端会在post-install步骤中运行check_dynamic_partitions并拒绝升级。</p>
+<h3 id="四、不支持动态分区的Non-A-B设备的OTA升级"><a href="#四、不支持动态分区的Non-A-B设备的OTA升级" class="headerlink" title="四、不支持动态分区的Non-A/B设备的OTA升级"></a>四、不支持动态分区的Non-A/B设备的OTA升级</h3><p>Android 10支持动态分区，这是一种用户空间分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。本节介绍了在Non-A/B设备升级期间OTA客户端如何调整动态分区的大小。对于Non-A/B设备，动态分区的OTA升级是使用升级包中的updater来升级的。</p>
+<h4 id="4-1-升级新发布设备"><a href="#4-1-升级新发布设备" class="headerlink" title="4.1 升级新发布设备"></a>4.1 升级新发布设备</h4><p>本节适用于通过动态分区支持启动的Non-A/B设备；这些设备从Android 10升级到更高版本。</p>
+<h5 id="4-1-1-生成升级包"><a href="#4-1-1-生成升级包" class="headerlink" title="4.1.1 生成升级包"></a>4.1.1 生成升级包</h5><p>OTA升级软件包由位于build/make/tools/releasetools下的ota_from_target_files脚本编译生成。默认情况下，脚本会生成一个升级system和vendor分区的软件包。如果还有其他动态分区，例如product，product_services或odm，则它们的升级必须以特定于设备的代码生成。要生成升级包，需要在扩展的Python模块中实现FullOTA_GetBlockDifferences()和IncrementalOTA_GetBlockDifferences()。这两个函数返回BlockDifference对象的列表，每个对象描述将应用于分区的升级patch。这两个函数返回的分区不应手动修改或在其他地方进行验证，例如在<em> _InstallBegi()或</em> _InstallEnd()中。</p>
+<p>升级包编译示例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># device/yoyodyne/tardis/releasetools.py</span></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> common <span class="keyword">import</span> BlockDifference, EmptyImage, GetUserImage</span><br><span class="line"><span class="comment"># The joined list of user image partitions of source and target builds.</span></span><br><span class="line"><span class="comment"># - Items should be added to the list if new dynamic partitions are added.</span></span><br><span class="line"><span class="comment"># - Items should not be removed from the list even if dynamic partitions are</span></span><br><span class="line"><span class="comment">#   deleted. When generating an incremental OTA package, this script needs to</span></span><br><span class="line"><span class="comment">#   know that an image is present in source build but not in target build.</span></span><br><span class="line">USERIMAGE_PARTITIONS = [</span><br><span class="line">    <span class="string">"product"</span>,</span><br><span class="line">    <span class="string">"odm"</span>,</span><br><span class="line">]</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">GetUserImages</span><span class="params">(input_tmp, input_zip)</span>:</span></span><br><span class="line">  <span class="keyword">return</span> &#123;partition: GetUserImage(partition, input_tmp, input_zip)</span><br><span class="line">          <span class="keyword">for</span> partition <span class="keyword">in</span> USERIMAGE_PARTITIONS</span><br><span class="line">          <span class="keyword">if</span> os.path.exists(os.path.join(input_tmp,</span><br><span class="line">                                         <span class="string">"IMAGES"</span>, partition + <span class="string">".img"</span>))&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">FullOTA_GetBlockDifferences</span><span class="params">(info)</span>:</span></span><br><span class="line">  images = GetUserImages(info.input_tmp, info.input_zip)</span><br><span class="line">  <span class="keyword">return</span> [BlockDifference(partition, image)</span><br><span class="line">          <span class="keyword">for</span> partition, image <span class="keyword">in</span> images.items()]</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">IncrementalOTA_GetBlockDifferences</span><span class="params">(info)</span>:</span></span><br><span class="line">  source_images = GetUserImages(info.source_tmp, info.source_zip)</span><br><span class="line">  target_images = GetUserImages(info.target_tmp, info.target_zip)</span><br><span class="line">  <span class="comment"># Use EmptyImage() as a placeholder for partitions that will be deleted.</span></span><br><span class="line">  <span class="keyword">for</span> partition <span class="keyword">in</span> source_images:</span><br><span class="line">    target_images.setdefault(partition, EmptyImage())</span><br><span class="line">  <span class="comment"># Use source_images.get() because new partitions are not in source_images.</span></span><br><span class="line">  <span class="keyword">return</span> [BlockDifference(partition, target_image, source_images.get(partition))</span><br><span class="line">          <span class="keyword">for</span> partition, target_image <span class="keyword">in</span> target_images.items()]</span><br></pre></td></tr></table></figure>
+<h5 id="4-1-2-升级流程"><a href="#4-1-2-升级流程" class="headerlink" title="4.1.2 升级流程"></a>4.1.2 升级流程</h5><p>在edify脚本中添加了以下功能：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">-</th>
+<th style="text-align:center">Function</th>
+<th style="text-align:center">Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">edify</td>
+<td style="text-align:center">unmap_partition(name)</td>
+<td style="text-align:center">如果已映射，则取消映射分区，否则不执行任何操作。</td>
+</tr>
+<tr>
+<td style="text-align:center">edify</td>
+<td style="text-align:center">unmap_partition(name)</td>
+<td style="text-align:center">成功返回字符串t，失败返回空字符串。</td>
+</tr>
+<tr>
+<td style="text-align:center">edify</td>
+<td style="text-align:center">map_partition(name)</td>
+<td style="text-align:center">映射分区（如果尚未映射）。</td>
+</tr>
+<tr>
+<td style="text-align:center">edify</td>
+<td style="text-align:center">map_partition(name)</td>
+<td style="text-align:center">成功返回映射块设备的绝对路径，失败则返回空字符串。</td>
+</tr>
+<tr>
+<td style="text-align:center">edify</td>
+<td style="text-align:center">update_dynamic_partitions(op_list)</td>
+<td style="text-align:center">将给定的操作列表应用于动态分区元数据，并在必要时取消映射分区。</td>
+</tr>
+<tr>
+<td style="text-align:center">edify</td>
+<td style="text-align:center">update_dynamic_partitions(op_list)</td>
+<td style="text-align:center">如果成功，则返回t；如果失败，则返回一个空字符串。</td>
+</tr>
+</tbody>
+</table>
+<p>update_dynamic_partitions的op_list参数指向升级包中的文件。文件中的每一行都指定一个操作。如果任何操作失败，则update_dynamic_partitions立即返回一个空字符串。具体参数是：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">-</th>
+<th style="text-align:center">ops</th>
+<th style="text-align:center">comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">resize partition-name size</td>
+<td style="text-align:center">取消映射分区，然后将其调整大小。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">remove partition_name</td>
+<td style="text-align:center">取消映射分区，然后将其删除。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">add partition-name group-name</td>
+<td style="text-align:center">将新分区添加到指定的组。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">move partition-name group-name</td>
+<td style="text-align:center">如果该组不存在或该分区已存在，则中止。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">move partition-name group-name</td>
+<td style="text-align:center">将分区移动到指定的组。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">move partition-name group-name</td>
+<td style="text-align:center">如果该组不存在或分区不存在，则中止。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">add_group group-name maximum-size</td>
+<td style="text-align:center">添加具有给定名称和最大大小的组。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">add_group group-name maximum-size</td>
+<td style="text-align:center">如果该组已经存在，则中止。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">add_group group-name maximum-size</td>
+<td style="text-align:center">maximum_size为0表示该组中的分区没有大小限制。需要进行其他测试，以确保组中的分区不会超出设备上的可用空间。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">resize_group group-name maximum-size</td>
+<td style="text-align:center">将组调整为给定的最大大小。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">resize_group group-name maximum-size</td>
+<td style="text-align:center">如果组不存在，则中止。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">resize_group group-name maximum-size</td>
+<td style="text-align:center">maximum_size为0表示该组中的分区没有大小限制。需要进行其他测试，以确保组中的分区不会超出设备上的可用空间。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">remove_group group-name    删除组。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">remove_group group-name    如果组中有分区，则中止。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">remove_all_groups</td>
+<td style="text-align:center">从设备映射器取消映射所有分区。</td>
+</tr>
+<tr>
+<td style="text-align:center">update_dynamic_partitions</td>
+<td style="text-align:center">remove_all_groups</td>
+<td style="text-align:center">删除所有分区和组。</td>
+</tr>
+</tbody>
+</table>
+<h5 id="4-1-3-增量包"><a href="#4-1-3-增量包" class="headerlink" title="4.1.3 增量包"></a>4.1.3 增量包</h5><p>增量OTA升级包使用以下逻辑：</p>
+<p>(1)缩小分区/删除分区/将分区移出组（以便有足够的空间来缩小组）。</p>
+<p>(2)缩小群组（以便我们有足够的空间来扩大群组）。</p>
+<p>(3)增长组（以便我们有足够的空间来增长/添加分区）。</p>
+<p>(4)增加分区/添加分区/将分区移动到新组。</p>
+<p>使用以下逻辑生成update-script：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for each shrinking partition:</span><br><span class="line">    block_image_update(map_partition(name), …)</span><br><span class="line">update_dynamic_partitions(op_list)</span><br><span class="line">for each growing / adding partition:</span><br><span class="line">    block_image_update(map_partition(name), …)</span><br></pre></td></tr></table></figure>
+<p>使用以下逻辑生成update_dynamic_partitions的op_list文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">for each deleting partition:</span><br><span class="line">    remove</span><br><span class="line">for each partition that changes groups:</span><br><span class="line">    move to "default"</span><br><span class="line">for each shrinking partition:</span><br><span class="line">    resize</span><br><span class="line">for each shrinking / removing group:</span><br><span class="line">    resize_group / remove_group</span><br><span class="line">for each growing / adding group:</span><br><span class="line">    resize_group / add_group</span><br><span class="line">for each adding partition:</span><br><span class="line">    add</span><br><span class="line">for each growing / adding partition:</span><br><span class="line">    resize</span><br><span class="line">for each partition that changes groups:</span><br><span class="line">    move to target group</span><br></pre></td></tr></table></figure>
+<h5 id="4-1-4-全包"><a href="#4-1-4-全包" class="headerlink" title="4.1.4 全包"></a>4.1.4 全包</h5><p>完整的OTA升级包使用以下逻辑：</p>
+<p>(1)删除所有现有的组和分区。</p>
+<p>(2)新增群组。</p>
+<p>(3)添加分区。</p>
+<p>使用以下逻辑生成update-script：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">update_dynamic_partitions(op_list)</span><br><span class="line">for each adding partition:</span><br><span class="line">    block_image_update(map_partition(name), …)</span><br><span class="line">使用以下逻辑生成update_dynamic_partitions的op_list文件：</span><br><span class="line">remove_all_groups</span><br><span class="line">for each adding group:</span><br><span class="line">    add_group</span><br><span class="line">for each adding partition:</span><br><span class="line">    add</span><br><span class="line">for each adding partition:</span><br><span class="line">    resize</span><br></pre></td></tr></table></figure>
+<p>Android官网链接：</p>
+<p><a href="https://source.android.com/devices/tech/ota/dynamic_partitions" target="_blank" rel="noopener">https://source.android.com/devices/tech/ota/dynamic_partitions</a>　</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Filesystem/" rel="tag"># Filesystem</a>
+          
+            <a href="/tags/Android10/" rel="tag"># Android10</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/14/Boot/开机时间优化总结/" rel="next" title="开机时间优化总结">
+                <i class="fa fa-chevron-left"></i> 开机时间优化总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/01/Boot/Android10_用户空间fastboot/" rel="prev" title="Android10 用户空间fastboot">
+                Android10 用户空间fastboot <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">77</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、实现动态分区"><span class="nav-text">一、实现动态分区</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-在新设备上实现动态分区"><span class="nav-text">1.1 在新设备上实现动态分区</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-1-分区配置"><span class="nav-text">1.1.1 分区配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-2-device配置"><span class="nav-text">1.1.2 device配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-3-取消system-as-root"><span class="nav-text">1.1.3 取消system-as-root</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-4-AVB-配置"><span class="nav-text">1.1.4 AVB 配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-5-kernel-command-line配置"><span class="nav-text">1.1.5 kernel command line配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-6-fstab配置"><span class="nav-text">1.1.6 fstab配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-7-SELinux配置"><span class="nav-text">1.1.7 SELinux配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-8-fastboot和adb变化"><span class="nav-text">1.1.8 fastboot和adb变化</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-升级配置动态分区"><span class="nav-text">1.2 升级配置动态分区</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-1-device配置"><span class="nav-text">1.2.1 device配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-2-SELinux配置"><span class="nav-text">1.2.2 SELinux配置</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3产线下载"><span class="nav-text">1.3产线下载</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、支持动态分区的A-B设备的OTA升级"><span class="nav-text">二、支持动态分区的A/B设备的OTA升级</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-背景"><span class="nav-text">2.1 背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-更新流程"><span class="nav-text">2.2 更新流程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-初始化super分区元数据"><span class="nav-text">2.2.1 初始化super分区元数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-2-在块设备上应用更新"><span class="nav-text">2.2.2 在块设备上应用更新</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-3-取消映射目标分区"><span class="nav-text">2.2.3 取消映射目标分区</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-将groups和partitions添加到升级manifest中"><span class="nav-text">2.3 将groups和partitions添加到升级manifest中</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、不支持动态分区的A-B设备的OTA升级"><span class="nav-text">三、不支持动态分区的A/B设备的OTA升级</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-背景"><span class="nav-text">3.1 背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-retrofit升级"><span class="nav-text">3.2 retrofit升级</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-retrofit之后的升级"><span class="nav-text">3.3 retrofit之后的升级</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-生成升级包"><span class="nav-text">3.4 生成升级包</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-4-1-增量包"><span class="nav-text">3.4.1 增量包</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-4-2-全包"><span class="nav-text">3.4.2 全包</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-5-旧版本不支持非retrofit更新"><span class="nav-text">3.5 旧版本不支持非retrofit更新</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、不支持动态分区的Non-A-B设备的OTA升级"><span class="nav-text">四、不支持动态分区的Non-A/B设备的OTA升级</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-升级新发布设备"><span class="nav-text">4.1 升级新发布设备</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#4-1-1-生成升级包"><span class="nav-text">4.1.1 生成升级包</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-1-2-升级流程"><span class="nav-text">4.1.2 升级流程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-1-3-增量包"><span class="nav-text">4.1.3 增量包</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-1-4-全包"><span class="nav-text">4.1.4 全包</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
