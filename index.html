@@ -494,6 +494,619 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/10/20/Security/AndroidVerifiedBoot那些事儿/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/20/Security/AndroidVerifiedBoot那些事儿/" class="post-title-link" itemprop="url">Android Verified Boot 那些事儿</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-20 00:00:00" itemprop="dateCreated datePublished" datetime="2019-10-20T00:00:00+08:00">2019-10-20</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="一、Verified-Boot介绍"><a href="#一、Verified-Boot介绍" class="headerlink" title="一、Verified Boot介绍"></a>一、Verified Boot介绍</h3><h4 id="1-1-Verified-Boot简介"><a href="#1-1-Verified-Boot简介" class="headerlink" title="1.1 Verified Boot简介"></a>1.1 Verified Boot简介</h4><p>Verified Boot是Google为Android启动定义的一种安全机制。它建立了一条从受硬件保护的Root of trust到booloader，再到boot和其它验证分区（包括system、vendor、product、odm等）的完整信任链。在设备启动的过程中，无论处于哪个阶段，都会在进入下一个阶段前先验证下一个阶段的完整性和真实性。除了确保设备运行的是安全的Android系统以外，verified boot还支持回滚保护（anti-roll back），它可以保证设备只会更新到更高版本，以避免可能的漏洞持续存在。另外，verified boot还允许设备将其完整性传到给终端用户。</p>
+<p>要想使能verified boot，需要在编译系统中启用dm-verity功能。Android 4.4就增加了对验证启动和 dm-verity 内核功能的支持。以前的Android版本会在发现设备损坏时向用户发出警告，但仍允许他们启动设备。从Android 7.0 开始，系统会严格强制执行verified boot，从而使得遭到入侵的设备无法启动，与此同时还增加了对向前纠错功能的支持，能更可靠地防范非恶意数据损坏。Android 8.0及更高版本包含了 Android Verified Boot (AVB)功能。其实AVB就是验证启动的一个参考实现，可与 Project Treble 配合使用。除此之外，AVB 还对分区脚本格式进行了标准化处理，并增添了回滚保护功能。为了便于区分，我们一般将此之前的verified boot称为1.0版，而AVB专指verified boot 2.0版。</p>
+<h4 id="1-2-Verified-Boot的状态"><a href="#1-2-Verified-Boot的状态" class="headerlink" title="1.2 Verified Boot的状态"></a>1.2 Verified Boot的状态</h4><p>Verified boot支持两个设备状态（LOCKED和UNLOCKED）和四个启动状态（GREEN、YELLOW、RED和ORANGE）。设备开机后，bootloader会首先检查设备是LOCKED还是UNLOCKED。如果设备是UNLOCKED的，则bootloader会向用户显示警告，然后继续引导，即使加载的操作系统未由信任根签名也是如此。UNLOCKED的设备允许进行修改。如果设备是LOCKED，则bootloader将通过verified boot的步骤来验证设备的软件，仅当加载的操作系统已由信任根正确签名时，锁定设备才会启动。如果设备是LOCKED，则引导加载程序将通过“验证引导”中的步骤来验证设备的软件。LOCKED的设备禁止将新软件下载到设备上。</p>
+<p>要更改设备状态，可使用 fastboot flashing [unlock | lock] 命令。另外，为了保护用户数据，只要设备状态发生变化，都会先擦除数据分区中的数据，并会在删除数据之前要求用户确认。锁定设备后，只要没有警告，用户应该就会确信设备处于设备制造商开发的状态。如果开发者出于开发目的停用设备上的验证功能，应该将设备状态从 LOCKED 改为 UNLOCKED。</p>
+<p>确定设备的启动状态后，需要将该状态传达给用户。bootloader必须在kernel cmdline上设置androidboot.verifiedbootstate参数来标识引导状态。下面介绍一下这几种引导状态：</p>
+<p>（1）green：设备处于LOCKED状态，使用OEM密钥（嵌入在bootloader中）成功验证了boot分区后，设备会引导进入green状态。</p>
+<p>（2）yellow：设备处于LOCKED状态，当只能使用分区中证书所包含的密钥来验证设备时，设备将以yellow状态启动。换句话说就是，在yellow状态下，使用OEM密钥的验证未成功，但是已通过附加到image的密钥成功验证了分区。</p>
+<p>（3）red：如果boot分区没有OEM密钥或分区中的密钥无法成功验证，则将设置为red状态并关闭设备。</p>
+<p>（4）orange：设备处于UNLOCKED状态，未执行image验证。</p>
+<p>下面来看看yellow，orange，red三种状态下的警告界面：</p>
+<p>（1）yellow警告界面</p>
+<p>每次启动时都会显示一个黄色界面。十秒钟后，黄色界面消失，设备继续启动。如果用户按下电源按钮，则“按电源按钮暂停”文本将变为“按电源按钮继续”，并且从不关闭屏幕，尽管设备可能会变暗或关闭屏幕。如果再按一次，则屏幕消失，手机继续启动。该界面中通常包含以下文字内容：你的设备已加载其他操作系统。在其他设备上访问此链接以了解更多信息：g.co/ABH。</p>
+<p>（2）orange警告界面</p>
+<p>每次启动时显示一个orange屏幕。十秒钟后，“橙色”屏幕将关闭，设备将继续启动。如果用户按下电源按钮，“按电源按钮暂停”文本将变为“按电源按钮继续”，并且屏幕永远不会关闭。如果再按一次，则屏幕消失，手机继续启动。该界面中通常包含以下文字内容：引导加载程序已解锁，无法保证软件的完整性。设备上存储的任何数据都可能对攻击者可用。不要在设备上存储任何敏感数据。</p>
+<p>（3）red警告界面</p>
+<p>如果找到有效版本的Android，并且设备当前处于eio dm-verity模式，则显示RED eio屏幕。如果找不到有效的Android版本，也会显示红色屏幕。用户需要单击电源按钮才能继续。如果用户在30秒内未确认警告屏幕，则设备将关闭电源。该界面中通常包含以下文字内容：你的设备已损坏。 它不能被信任并且可能无法正常工作。在其他设备上访问此链接以了解更多信息：g.co/ABH。或（找不到有效的操作系统。设备将无法启动。在其他设备上访问此链接以了解更多信息：g.co/ABH）。</p>
+<p><img src="/images/fastboot_orange.png" alt><img src="/images/fastboot_yellow.png" alt><img src="/images/fastboot_red1.png" alt><img src="/images/fastboot_red2.png" alt></p>
+<p>在fastboot界面执行fastboot flashing unlock命令，通常会显示一个请用户确认的界面。如果用户在30秒内未与警告屏幕进行交互，则该屏幕将消失并且命令失败。该界面包含以下内容：</p>
+<p>（1）如果解锁引导加载程序，则可以在此手机上安装自定义操作系统软件。自定义操作系统的测试级别与原始操作系统不同，并且可能导致手机和已安装的应用程序停止正常运行。使用自定义操作系统无法保证软件的完整性，因此在解锁引导加载程序时在手机上存储的任何数据都可能会受到威胁。为防止未经授权访问的个人数据，解锁引导加载程序也会删除手机上的所有个人数据。</p>
+<p>（2）按增大音量/减小音量选择是否解锁引导加载程序，然后按电源按钮继续。</p>
+<p>（3）开锁：解锁引导加载程序。不要解锁：请勿解锁引导加载程序并重启手机。锁确认。</p>
+<p>在fastboot界面执行fastboot flashing lock命令，显示一个锁定确认屏幕。如果用户在30秒内未与警告屏幕进行交互，则该屏幕将消失并且命令失败。该界面包含以下内容：</p>
+<p>（1）如果锁定引导加载程序，则将无法在此手机上安装自定义操作系统软件。为防止未经授权访问的个人数据，锁定引导加载程序还将删除手机上的所有个人数据。</p>
+<p>（2）按增大音量/减小音量选择是否锁定引导加载程序，然后按电源按钮继续。</p>
+<p>（3）锁：锁定引导加载程序。不要锁：请勿锁定引导程序并重启手机。</p>
+<p><img src="/images/fastboot_red3.png" alt><img src="/images/fastboot_red4.png" alt></p>
+<h4 id="1-3-信任根"><a href="#1-3-信任根" class="headerlink" title="1.3 信任根"></a>1.3 信任根</h4><p>信任根（Root of trust）是用于对存储在设备上的Android副本进行签名的加密密钥。信任根的private部分只有设备制造商才知道，用于为分发的每个Android版本签名。信任根的public部分嵌入在设备中，并存储在一个不能被篡改（通常为只读存储）位置中。加载Android时，bootloader会使用信任根来验证真实性。设备可能具有多个bootloader，因此可能正在使用多个加密密钥。设备可以选择允许用户配置信任根（例如公钥）。设备可以将此用户可设置的信任根用于verified boot，而不是内置的信任根。这使用户可以安装和使用Android的自定义版本，而无需牺牲经过验证的启动的安全性。</p>
+<p>如果实现了可由用户设置的信任根，则应满足以下要求：</p>
+<p>（1）需要进行物理确认才能设置/清除可由用户设置的信任根。</p>
+<p>（2）可由用户设置的信任根只能由终端用户设置。在终端用户获得设备之前，不能在工厂或任何中间点进行设置。</p>
+<p>（3）可由用户设置的信任根存储在防篡改存储中。防篡改可以检测Android是否篡改了数据，例如，数据是否已被覆盖或更改。</p>
+<p>（4）如果设置了可由用户设置的信任根，则设备应允许启动带有内置信任根或可由用户设置的信任根签名的Android版本。</p>
+<p>（5）每次设备使用可由用户设置的信任根启动时，系统应通知用户设备正在加载自定义版本的Android。例如，警告屏幕。</p>
+<p>实现用户可设置的信任根的一种方法是：将虚拟分区设置为仅在设备处于UNLOCKED状态时才能被刷写或清除。虚拟分区常称为avb_custom_key。该分区中数据的格式是avbtool extract_public_key命令输出的。下面是如何设置可由用户设置的信任根的示例：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">avbtool extract_public_key --key key.pem --output pkmd.bin</span><br><span class="line">fastboot flash avb_custom_key pkmd.bin</span><br></pre></td></tr></table></figure>
+<p>另外，可以通过发出”fastboot erase avb_custom_key”命令清除用户可设置的信任根。</p>
+<h4 id="1-4-Verified-Boot的流程"><a href="#1-4-Verified-Boot的流程" class="headerlink" title="1.4 Verified Boot的流程"></a>1.4 Verified Boot的流程</h4><p>经过验证的启动要求在使用前以密码方式验证作为正在启动的Android版本一部分的所有可执行代码和数据。这包括kernel（从boot分区加载），device tree（从dtbo分区加载），system分区，vendor分区等。通常仅将一次读取的小分区（例如boot和dtbo）通过将整个内容加载到内存中，然后计算其哈希值来进行验证。然后将该计算出的哈希值与预期哈希值进行比较。如果该值不匹配，则不会加载Android。无法容纳到内存中的较大分区（例如文件系统）可能会使用哈希树，在哈希树中，验证是在将数据加载到内存时发生的连续过程。在这种情况下，将在运行时计算哈希树的根哈希，并对照预期的根哈希值进行检查。 Android包含dm-verity驱动程序以验证更大的分区。如果在某些时候计算出的根哈希值与预期的根哈希值不匹配，则不使用数据，Android进入错误状态。预期的哈希通常存储在每个已验证分区的末尾或开始，专用分区或两者中。至关重要的是，这些哈希值是由信任根签名的（直接或间接）。</p>
+<p>即使具有完全安全的升级过程，非持久性Android内核漏洞也有可能手动安装较旧的，更易受攻击的Android版本，重新启动易受攻击的版本，然后使用该Android版本安装持久性漏洞。 攻击者从那里永久拥有该设备，并且可以执行任何操作，包括禁用更新。针对此类攻击的防护称为回滚防护。回滚保护通常是通过使用防篡改存储来记录最新版本的Android并在其低于所记录版本的情况下拒绝启动Android来实现的。通常按分区跟踪版本。</p>
+<p>验证可能在启动时（例如如果启动分区上计算出的哈希值与预期的哈希值不匹配）或运行时（例如，dm-verity在系统分区上遇到验证错误）失败。如果启动时验证失败，则设备无法启动，最终用户需要执行步骤来恢复设备。</p>
+<p>如果在运行时验证失败，则流程会更加复杂。如果设备使用dm-verity，则应将其配置为重启模式。在重新启动模式下，如果遇到验证错误，则会立即通过设置特定标志以指示原因的方式重新启动设备。引导加载程序应注意此标志，并切换dm-verity以使用I / O错误（eio）模式，并保持此模式，直到安装了新更新。</p>
+<p>在eio模式下启动时，设备显示错误屏幕，通知用户已检测到损坏，并且设备可能无法正常运行。屏幕显示直到用户将其关闭为止。在eio模式下，如果遇到验证错误，dm-verity驱动程序将不会重新启动设备，而是返回EIO错误，并且应用程序需要处理该错误。</p>
+<p>目的是运行系统更新程序（以便可以安装没有损坏错误的新操作系统），或者用户可以从设备中获取尽可能多的数据。一旦安装了新的操作系统，引导加载程序就会注意到新安装的操作系统，并切换回重启模式。</p>
+<p><img src="/images/avb_boot_flow.png" alt></p>
+<p>设备的建议启动流程如下：如果设备使用的是A / B，则引导流程会略有不同。 在更新回滚保护元数据之前，必须首先使用引导控制HAL将要引导的插槽标记为SUCCESSFUL。如果平台更新失败（未标记为SUCCESSFUL），则A / B堆栈会退回到另一个插槽，该插槽中仍装有Android的早期版本。 但是，如果设置了”回滚保护”元数据，则由于”回滚保护”而无法启动以前的版本。</p>
+<p>下面三张图分别是VB 1.0 在A/B和Non-A/B系统中的流程和AVB 2.0的流程：</p>
+<p><img src="/images/ab_vb10.png" alt><img src="/images/nonab_vb10.png" alt><img src="/images/ab_avb20.png" alt></p>
+<h4 id="1-5-Verified-Boot的实现"><a href="#1-5-Verified-Boot的实现" class="headerlink" title="1.5 Verified Boot的实现"></a>1.5 Verified Boot的实现</h4><p>实现步骤：</p>
+<p>（1）生成 EXT4 系统映像。</p>
+<p>（2）为该映像生成哈希树。</p>
+<p>（3）为该哈希树构建 dm-verity 表。</p>
+<p>（4）为该 dm-verity 表签名以生成表签名。</p>
+<p>（5）将表签名和 dm-verity 表绑定到 Verity 元数据。</p>
+<p>（6）将系统映像、Verity 元数据和哈希树连接起来。</p>
+<p>哈希树是 dm-verity 不可或缺的一部分。cryptsetup 工具将生成哈希树。也可以使用下面定义的兼容方式：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;your block device name&gt; &lt;your block device name&gt; &lt;block size&gt; &lt;block size&gt; &lt;image size <span class="keyword">in</span> blocks&gt; &lt;image size <span class="keyword">in</span> blocks + <span class="number">8</span>&gt; &lt;root hash&gt; &lt;salt&gt;</span><br></pre></td></tr></table></figure>
+<p>为了形成哈希，该工具会将系统映像在第 0 层拆分成 4k 大小的块，并为每个块分配一个 SHA256 哈希。然后，通过仅将这些 SHA256 哈希组合成 4k 大小的块来形成第 1 层，从而产生一个小得多的映像。接下来再使用第 1 层的 SHA256 哈希以相同的方式形成第 2 层。直到前一层的 SHA256 哈希可以放到一个块中，该过程就完成了。获得该块的 SHA256 哈希后，就相当于获得了树的根哈希。</p>
+<p>哈希树的大小（以及相应的磁盘空间使用量）会因已验证分区的大小而异。在实际中，哈希树一般都比较小，通常不到 30 MB。如果某个层中的某个块无法由前一层的哈希正好填满，应在其中填充 0 来获得所需的 4k 大小。这样一来，就知道哈希树没有被移除，而是填入了空白数据。为了生成哈希树，需要将第 2 层哈希组合到第 1 层哈希的上方，将第 3 层哈希组合到第 2 层哈希的上方，依次类推。然后将所有这些数据写入到磁盘中。请注意，这种方式不会引用根哈希的第 0 层。</p>
+<p>总而言之，构建哈希树的一般算法如下：</p>
+<p>（1）选择一个随机盐（十六进制编码）。</p>
+<p>（2）将系统映像拆分成 4k 大小的块。</p>
+<p>（3）获取每个块的加盐 SHA256 哈希。</p>
+<p>（4）组合这些哈希以形成层。</p>
+<p>（5）在层中填充 0，直至达到 4k 块的边界。</p>
+<p>（6）将层组合到哈希树中。</p>
+<p>（7）重复第 2-6 步（使用前一层作为下一层的来源），直到最后只有一个哈希。</p>
+<p>该过程的结果是一个哈希，也就是根哈希。在构建 dm-verity 映射表时会用到该哈希和选择的盐。构建 dm-verity 映射表，该映射表会标明内核的块设备（或目标）以及哈希树的位置（是同一个值）。在生成 fstab 和设备启动时会用到此映射。该映射表还会标明块的大小和 hash_start，即哈希树的起始位置（具体来说，就是哈希树在映像开头处的块编号）。为 dm-verity 表签名以生成表签名。在验证分区时，会首先验证表签名。该验证是对照位于启动映像上某个固定位置的密钥来完成的。密钥通常包含在制造商的编译系统中，以便自动添加到设备上的固定位置。要使用这种签名和密钥的组合来验证分区，请执行以下操作：</p>
+<p>将一个格式与 libmincrypt 兼容的 RSA-2048 密钥添加到 /boot 分区的 /verity_key 中。确定用于验证哈希树的密钥所在的位置。在相关条目的 fstab 中，将 verify 添加到 fs_mgr 标记。将表签名和 dm-verity 表绑定到 Verity 元数据。为整个元数据块添加版本号，以便它可以进行扩展，例如添加第二种签名或更改某些顺序。</p>
+<p>一个magic（作为一个健全性检查项目）会与每组表元数据相关联，以协助标识表。由于长度包含在 EXT4 系统映像标头中，因此这为提供了一种在不知道数据本身内容的情况下搜索元数据的方式。这可确保未选择验证未验证的分区。如果是这样，缺少此magic将会导致验证流程中断。该数字类似于：0xb001b001</p>
+<p>十六进制的字节值为：第一字节 = b0, 第二字节 = 01, 第三字节 = b0, 第四字节 = 01</p>
+<p>下图展示了 Verity 元数据的细分：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;magic number&gt;|&lt;version&gt;|&lt;signature&gt;|&lt;table length&gt;|&lt;table&gt;|&lt;padding&gt;</span><br><span class="line">\-------------------------------------------------------------------/</span><br><span class="line">\----------------------------------------------------------/   |</span><br><span class="line">                            |                                  |</span><br><span class="line">                            |                                 32K</span><br><span class="line">                       block content</span><br></pre></td></tr></table></figure>
+<p>下表介绍了这些元数据字段。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">字段</th>
+<th style="text-align:center">用途</th>
+<th style="text-align:center">大小</th>
+<th style="text-align:center">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">magic</td>
+<td style="text-align:center">供 fs_mgr 用作一个健全性检查项目</td>
+<td style="text-align:center">4 个字节</td>
+<td style="text-align:center">0xb001b001</td>
+</tr>
+<tr>
+<td style="text-align:center">版本</td>
+<td style="text-align:center">用于为元数据块添加版本号</td>
+<td style="text-align:center">4 个字节</td>
+<td style="text-align:center">目前为 0</td>
+<td>-</td>
+</tr>
+<tr>
+<td style="text-align:center">签名</td>
+<td style="text-align:center">PKCS1.5 填充形式的表签名</td>
+<td style="text-align:center">256 个字节</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">表长度</td>
+<td style="text-align:center">dm-verity 表的长度（以字节数计）</td>
+<td style="text-align:center">4 个字节</td>
+<td style="text-align:center">-    </td>
+</tr>
+<tr>
+<td style="text-align:center">表</td>
+<td style="text-align:center">上文介绍的 dm-verity 表</td>
+<td style="text-align:center">字节数与表长度相同</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">填充</td>
+<td style="text-align:center">此结构会通过填充 0 达到 32k 长度</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+<p>为了充分发挥 dm-verity 的最佳性能，应该：在内核中开启 NEON SHA-2（如果是 ARMv7）或 SHA-2 扩展程序（如果是 ARMv8）。使用不同的预读设置和 prefetch_cluster 设置进行实验，找出适合设备的最佳配置。</p>
+<p><img src="/images/avb_vbmeta_structure.png" alt></p>
+<h4 id="1-6-dm-verity介绍"><a href="#1-6-dm-verity介绍" class="headerlink" title="1.6 dm-verity介绍"></a>1.6 dm-verity介绍</h4><p>Android 4.4 及更高版本支持通过可选的 device-mapper-verity (dm-verity) 内核功能进行的验证启动，以便对块设备进行透明的完整性检查。dm-verity 有助于阻止可以持续保有 Root 权限并入侵设备的持续性Rootkit。验证启动功能有助于 Android 用户在启动设备时确定设备状态与上次使用时是否相同。具有 Root 权限的可能有害的应用 (PHA) 可以躲开检测程序的检测，并以其他方式掩蔽自己。可以获取 Root 权限的软件就能够做到这一点，因为它通常比检测程序的权限更高，从而能够“欺骗”检测程序。</p>
+<p>通过 dm-verity 功能，可以查看块设备（文件系统的底部存储层），并确定它是否与预期配置一致。该功能是利用加密哈希树做到这一点的。对于每个块（通常为 4k），都有一个 SHA256 哈希。由于哈希值存储在页面树中，因此顶级“根”哈希必须可信，才能验证树的其余部分。能够修改任何块相当于能够破坏加密哈希。下图描绘了此结构。</p>
+<p><img src="/images/dm_verity_layer.png" alt></p>
+<p>启动分区中包含一个公钥，该公钥必须已由设备制造商在外部进行验证。该密钥用于验证相应哈希的签名，并用于确认设备的系统分区是否受到保护且未被更改。</p>
+<p>dm-verity 保护机制位于内核中。因此，如果获取 Root 权限的软件在内核启动之前入侵系统，它将会一直拥有该权限。为了降低这种风险，大多数制造商都会使用烧录到设备的密钥来验证内核。该密钥在设备出厂后将无法被更改。制造商会使用该密钥来验证第一级引导加载程序中的签名，而该引导加载程序会依次验证后续级别引导加载程序、应用引导加载程序和内核中的签名。希望利用验证启动功能的每个制造商都应该有验证内核完整性的方法。内核经过验证后，可以在块设备装载时对其进行检查和验证。</p>
+<p>验证块设备的一种方法是直接对其内容进行哈希处理，然后将其与存储的值进行比较。不过，尝试验证整个块设备可能会需要较长的时间，并且会消耗设备的大量电量。设备将需要很长时间来启动，从而在可供使用之前便消耗了大量电量。而 dm-verity 只有在各个块被访问时才会对其进行单独验证。将块读入内存时，会以并行方式对其进行哈希处理。然后，会从第一级开始逐级验证整个哈希树的哈希。由于读取块是一项耗时又耗电的操作，因此这种块级验证带来的延时相对而言就有些微不足道了。</p>
+<p>注：作为针对 Android Go 和类似的低 RAM 设备进行的优化，dm-verity 可以配置为仅在首次（而不是每次）从数据设备读取页面时验证这些页面。首次验证之后，它会设置一个位以指示验证成功。由于此项优化可提供级别略低的完整性保证，因此不应将其用于 RAM 更高的设备。要了解详情，请参阅这些内核补丁程序。</p>
+<p>如果验证失败，设备会生成 I/O 错误，指明无法读取相应块。设备看起来与文件系统损坏时一样，也与预期相同。应用可以选择在没有结果数据的情况下继续运行，例如，当这些结果并不是应用执行主要功能所必需的数据时。不过，如果应用在没有这些数据的情况下无法继续运行，则会失败。</p>
+<p>Android 7.0 及更高版本通过前向纠错 (FEC) 功能提高了 dm-verity 的稳健性。AOSP 实现首先使用常用的 Reed-Solomon 纠错码，并应用一种称为交错的技术来减少空间开销并增加可以恢复的损坏块的数量。</p>
+<h3 id="二、VBMeta介绍"><a href="#二、VBMeta介绍" class="headerlink" title="二、VBMeta介绍"></a>二、VBMeta介绍</h3><h4 id="2-1-VBMeta结构"><a href="#2-1-VBMeta结构" class="headerlink" title="2.1 VBMeta结构"></a>2.1 VBMeta结构</h4><p>AVB中使用的核心数据结构是VBMeta结构。该数据结构包含许多描述符和元数据，并且所有这些数据都会经过密钥签名。描述符用于映像哈希（image hash）、映像哈希树元数据（image hashtree metadata）和所谓的链接分区（chain partitions）。下图是一个简单的VBMeta结构：</p>
+<p><img src="/images/avb_vbmeta1.png" alt></p>
+<p>其中vbmeta分区在哈希描述符中保存boot分区的哈希。对于system分区和vendor分区，哈希树取决于文件系统数据，而vbmeta分区在哈希树描述符中保存哈希树的根哈希（root hash），盐（salt）和偏移量（offset）。由于vbmeta分区中的VBMeta结构是经过加密签名的，因此bootloader可以检查签名并验证其是否由key0的owner进行签名，从而确认boot，system和vendor是否可信。</p>
+<p>链式分区描述符用于委派权限，它包含委派权限的分区的名称，以及可信特定分区上的签名的公共密钥。其设置如下图：</p>
+<p><img src="/images/avb_vbmeta2.png" alt></p>
+<p>在该设置中，xyz分区具有用于完整性检查的哈希树。哈希树之后是一个VBMeta结构，其中包含带有哈希树元数据（根哈希，盐，偏移量等）的哈希树描述符，并且此结构用key1签名。最后，在分区的末尾是一个页脚（footer），该页脚有VBMeta结构的偏移量。</p>
+<p>该设置允许bootloader使用链分区描述符名称在分区末尾找到页脚，这反过来又有助于找到VBMeta结构并验证其是否由key1签名，因为key1_pub存储在链分区描述符中。正是由于有一个带有偏移量的页脚，所以可以更新xyz分区，而无需更改vbmeta分区。</p>
+<p>VBMeta结构足够灵活，允许任何分区的哈希描述符和哈希树描述符都驻留在vbmeta分区，通过链分区描述符对分区进行完整性检查。</p>
+<p>链式分区不需要使用页脚，该页脚允许将链式分区指向VBMeta结构位于开头的分区。这对于将整个组织拥有的分区的所有哈希和哈希树描述符存储在专用分区（例如vbmeta_google）中的用例很有用。在此示例中，系统的哈希树描述符位于vbmeta_google分区中，这意味着bootloader完全不需要访问system分区，这对于将system分区作为逻辑分区进行管理很有用。</p>
+<h4 id="2-2-VBMeta摘要"><a href="#2-2-VBMeta摘要" class="headerlink" title="2.2 VBMeta摘要"></a>2.2 VBMeta摘要</h4><p>VBMeta摘要（digest）是所有VBMeta结构的摘要，包括根结构和所有VBMeta结构在链式分区中。可以在构建时使用avbtoolcalculate_vbmeta_digest计算摘要，也可以在运行时使用avb_slot_verify_data_calculate_vbmeta_digest()函数计算摘要。可在kernel cmdline上设置androidboot.vbmeta.digest。</p>
+<p>该摘要可与libavb一起在加载的操作系统内的用户空间中使用，以验证加载的vbmeta结构的真实性。如果信任根和存储的回滚索引仅在bootloader中运行时可用，这将很有用。如果VBMeta摘要包含在硬件支持的证明数据（attestation data）中，则依赖方可以提取摘要并将其与已知良好操作系统的摘要列表进行比较，如果找到该摘要，则可以为运行应用程序的设备提供额外的保证。</p>
+<p>对于Pixel 3及更高版本设备的出厂映像，位于tools/transparency中的pixel_factory_image_verify.py是用于下载，验证和计算VBMeta摘要的工具。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ pixel_factory_image_verify.py https://dl.google.com/dl/android/aosp/image.zip</span><br><span class="line">Fetching file from: https://dl.google.com/dl/android/aosp/image.zip</span><br><span class="line">Successfully downloaded file.</span><br><span class="line">Successfully unpacked factory image.</span><br><span class="line">Successfully unpacked factory image partitions.</span><br><span class="line">Successfully verified VBmeta.</span><br><span class="line">Successfully calculated VBMeta Digest.</span><br><span class="line">The VBMeta Digest <span class="keyword">for</span> factory image is: <span class="number">1</span>f329b20a2dd69425e7a29566ca870dad51d2c579311992d41c9ba9ba05e170e</span><br></pre></td></tr></table></figure>
+<p>如果给定的参数不是URL，则将其视为本地文件：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ pixel_factory_image_verify.py image.zip</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-A-B系统支持"><a href="#2-3-A-B系统支持" class="headerlink" title="2.3 A/B系统支持"></a>2.3 A/B系统支持</h4><p>为确保AVB可以与A/B一起使用，存储在描述符中的任何分区名称中都不使用_a/_b后缀。下图是有两个 插槽（slot）的示例：</p>
+<p><img src="/images/avb_vbmeta3.png" alt></p>
+<p>上图中slot_a的回滚索引为[42，101]，slot_b的回滚索引为[43，103]。</p>
+<p>在1.1版或更高版本中，avbtool支持do_not_use_ab用于add_hash_footer和add_hashtree_footer操作。这样就支持Non-A/B了。对应于AVB_HASH [TREE] _DESCRIPTOR_FLAGS_DO_NOT_USE_AB标志。</p>
+<h4 id="2-4-回滚保护"><a href="#2-4-回滚保护" class="headerlink" title="2.4 回滚保护"></a>2.4 回滚保护</h4><p>AVB支持回滚保护（Rollback protection），用于防止已知的安全漏洞。每个VBMeta结构都有一个回滚索引，如下图所示：</p>
+<p><img src="/images/avb_vbmeta4.png" alt></p>
+<p>这些数字称为rollback_index [n]，并随着发现和修复安全漏洞而针对每个映像增加1。此外，该设备还将最后一次看到的回滚索引存储在防篡改存储（tamper-evident storage）中，这些被称为stored_rollback_index [n]。回滚保护是使设备拒绝映像，除非所有n的rollback_index [n]&gt; = stored_rollback_index [n]，并且使设备随时间增加stored_rollback_index [n]。 在更新存储的回滚索引部分中讨论了确切的操作方法。</p>
+<p><img src="/images/avb_vbmeta5.png" alt></p>
+<p>为了使回滚保护起作用，引导程序将需要在将控制权转移到HLOS之前更新设备上的stored_rollback_indexes [n]阵列。如果不使用A / B，这很简单-只需在引导前将其更新为该插槽的AVB元数据中的内容即可。用伪代码看起来像这样：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The |slot_data| parameter should be the AvbSlotVerifyData returned</span></span><br><span class="line"><span class="comment">// by avb_slot_verify() for the slot we're about to boot.</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">update_stored_rollback_indexes_for_slot</span><span class="params">(AvbOps* ops,</span></span></span><br><span class="line"><span class="function"><span class="params">                                             AvbSlotVerifyData* slot_data)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> n = <span class="number">0</span>; n &lt; AVB_MAX_NUMBER_OF_ROLLBACK_INDEX_LOCATIONS; n++) &#123;</span><br><span class="line">        <span class="keyword">uint64_t</span> rollback_index = slot_data-&gt;rollback_indexes[n];</span><br><span class="line">        <span class="keyword">if</span> (rollback_index &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            AvbIOResult io_ret;</span><br><span class="line">            <span class="keyword">uint64_t</span> current_stored_rollback_index;</span><br><span class="line">            io_ret = ops-&gt;read_rollback_index(ops, n, &amp;current_stored_rollback_index);</span><br><span class="line">            <span class="keyword">if</span> (io_ret != AVB_IO_RESULT_OK) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (rollback_index &gt; current_stored_rollback_index) &#123;</span><br><span class="line">                io_ret = ops-&gt;write_rollback_index(ops, n, rollback_index);</span><br><span class="line">                <span class="keyword">if</span> (io_ret != AVB_IO_RESULT_OK) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但是，如果使用A / B，则必须格外小心，如果更新无法正常进行，则仍应允许设备退回到旧插槽。</p>
+<p>对于像Android这样的HLOS，仅在发现更新的OS版本不起作用时才支持回滚，应仅从A / B元数据中标记为SUCCESSFUL的插槽中更新stored_rollback_index [n]。伪代码如下所示，其中is_slot_is_marked_as_successful()来自使用中的A / B堆栈：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (is_slot_is_marked_as_successful(slot-&gt;ab_suffix)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!update_stored_rollback_indexes_for_slot(ops, slot)) &#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> handle error.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于可以回滚到以前版本的HLOS，应将stored_rollback_index [n]设置为最大可能值，以允许所有可引导插槽引导。这种方法是在AVB的实验性A（B栈）libavb_ab（现已弃用）中实现的。这需要在每次引导时都验证所有可引导插槽，这可能会影响引导时间。</p>
+<h3 id="三、Verified-Boot的配置"><a href="#三、Verified-Boot的配置" class="headerlink" title="三、Verified Boot的配置"></a>三、Verified Boot的配置</h3><h4 id="3-1-使能Verified-Boot-1-0"><a href="#3-1-使能Verified-Boot-1-0" class="headerlink" title="3.1 使能Verified Boot 1.0"></a>3.1 使能Verified Boot 1.0</h4><h5 id="3-1-1-QCT平台"><a href="#3-1-1-QCT平台" class="headerlink" title="3.1.1 QCT平台"></a>3.1.1 QCT平台</h5><p>（1）在kernel/msm-4.4/arch/arm64/configs/$project_defconfig中打开dm-verity功能：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_DM_VERITY=y</span><br><span class="line">CONFIG_DM_VERITY_FEC=y</span><br></pre></td></tr></table></figure>
+<p>（2）在device/qcom/common/base.mk中启用system/vendor签名：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifneq</span> (<span class="variable">$(BOARD_AVB_ENABLE)</span>, true)</span><br><span class="line">   PRODUCT_SYSTEM_VERITY_PARTITION=/dev/block/bootdevice/by-name/system</span><br><span class="line">   <span class="keyword">ifeq</span> (<span class="variable">$(ENABLE_VENDOR_IMAGE)</span>, true)</span><br><span class="line">      PRODUCT_VENDOR_VERITY_PARTITION=/dev/block/bootdevice/by-name/vendor</span><br><span class="line">   <span class="keyword">endif</span></span><br><span class="line">   <span class="variable">$(<span class="built_in">call</span> inherit-product, build/target/product/verity.mk)</span></span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<p>（3）在device/$manufacturer/$project/$project.mk中启用PRODUCT_SUPPORTS_VERITY：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifneq</span> (<span class="variable">$(BOARD_AVB_ENABLE)</span>, true)</span><br><span class="line">    PRODUCT_SUPPORTS_VERITY := true</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<p>（4）在device/$manufacturer/$project/fstab.qti中为system/vendor添加verify flag：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/bootdevice/by-name/system  /   ext4   ro,barrier=1,discard   wait,verify</span><br><span class="line">/dev/block/bootdevice/by-name/vendor  /vendor   ext4   ro,barrier=1,discard   wait,verify</span><br></pre></td></tr></table></figure>
+<p>（5）在kernel/msm-4.4/arch/arm64/boot/dts/qcom/$platform.dtsi中为system/vendor添加verify flag：</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">firmware:</span> <span class="class">firmware </span>&#123;</span><br><span class="line">	<span class="class">android </span>&#123;</span><br><span class="line">		compatible = <span class="string">"android,firmware"</span>;</span><br><span class="line">		<span class="class">fstab </span>&#123;</span><br><span class="line">			compatible = <span class="string">"android,fstab"</span>;</span><br><span class="line">			<span class="class">vendor </span>&#123;</span><br><span class="line">				compatible = <span class="string">"android,vendor"</span>;</span><br><span class="line">				dev = <span class="string">"/dev/block/platform/soc/7824900.sdhci/by-name/vendor"</span>;</span><br><span class="line">				type = <span class="string">"ext4"</span>;</span><br><span class="line">				mnt_flags = <span class="string">"ro,barrier=1,discard"</span>;</span><br><span class="line">				fsmgr_flags = <span class="string">"wait,verify"</span>;</span><br><span class="line">				status = <span class="string">"ok"</span>;</span><br><span class="line">			&#125;;</span><br><span class="line">			<span class="class">system </span>&#123;</span><br><span class="line">				compatible = <span class="string">"android,system"</span>;</span><br><span class="line">				dev = <span class="string">"/dev/block/platform/soc/7824900.sdhci/by-name/system"</span>;</span><br><span class="line">				type = <span class="string">"ext4"</span>;</span><br><span class="line">				mnt_flags = <span class="string">"ro,barrier=1,discard"</span>;</span><br><span class="line">				fsmgr_flags = <span class="string">"wait,verify"</span>;</span><br><span class="line">				status = <span class="string">"ok"</span>;</span><br><span class="line">			&#125;;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h5 id="3-1-2-MTK平台"><a href="#3-1-2-MTK平台" class="headerlink" title="3.1.2 MTK平台"></a>3.1.2 MTK平台</h5><p>（1）在kernel-4.4/arch/arm64/configs/${project}_defconfig中打开dm-verity功能：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_DM_VERITY=y</span><br><span class="line">CONFIG_DM_VERITY_FEC=y</span><br><span class="line"><span class="comment"># CONFIG_MTK_DM_VERITY_OFF is not set</span></span><br></pre></td></tr></table></figure>
+<p>（2）在device/mediatek/common/device.mk中启用system/vendor签名：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/platform/bootdevice/by-name/system</span><br><span class="line">PRODUCT_VENDOR_VERITY_PARTITION := /dev/block/platform/bootdevice/by-name/vendor</span><br></pre></td></tr></table></figure>
+<p>（3）在device/$manufacturer/$project/ProjectConfig.mk中关闭MTK_DM_VERITY_OFF宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_DM_VERITY_OFF=no</span><br></pre></td></tr></table></figure>
+<p>（4）在kernel-4.9/arch/arm64/boot/dts/mtxxxx.dts或kernel-4.9/arch/arm/boot/dts/mtxxxx.dts中在fsmgr_flag中添加verify。</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class">firmware </span>&#123;</span><br><span class="line">	<span class="class">android </span>&#123;</span><br><span class="line">		compatible=<span class="string">"android,firmware"</span>;</span><br><span class="line">		<span class="class">fstab </span>&#123;</span><br><span class="line">			compatible=<span class="string">"android,fstab"</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_AB_OTA_UPDATER</span></span><br><span class="line">			<span class="class">system </span>&#123;</span><br><span class="line">				compatible=<span class="string">"android,system"</span>;</span><br><span class="line">				dev=<span class="string">"/dev/block/platform/mtk-msdc.0/1123000.msdc0/by-name/system"</span></span><br><span class="line">				type=<span class="string">"ext4"</span></span><br><span class="line">				mnt_flags=<span class="string">"ro"</span></span><br><span class="line">				fsmgr_flags=<span class="string">"wait,verify"</span></span><br><span class="line">			&#125;;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_LATE_MOUNT</span></span><br><span class="line">			<span class="class">vendor </span>&#123;</span><br><span class="line">				compatible=<span class="string">"android,vendor"</span></span><br><span class="line">				dev=<span class="string">"/dev/block/platform/mtk-msdc.0/1123000.msdc0/by-name/vendor"</span></span><br><span class="line">				type=<span class="string">"ext4"</span></span><br><span class="line">				mnt_flags=<span class="string">"ro"</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_AB_OTA_UPDATER</span></span><br><span class="line">				fsmgr_flags=<span class="string">"wait,verify"</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_DM_VERITY_OFF</span></span><br><span class="line">				fsmgr_flags=<span class="string">"wait,slotselect,verify"</span></span><br></pre></td></tr></table></figure>
+<p>（5）在vendor/mediatek/proprietary/bootable/bootloader/lk/project/$project.mk中关闭MTK_DM_VERITY_OFF宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_DM_VERITY_OFF=no</span><br></pre></td></tr></table></figure>
+<h5 id="3-1-3-如何定义verity-key"><a href="#3-1-3-如何定义verity-key" class="headerlink" title="3.1.3 如何定义verity key"></a>3.1.3 如何定义verity key</h5><p>（1）生成RSA密钥对</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out prvk.pem <span class="number">2048</span></span><br></pre></td></tr></table></figure>
+<p>（2）生成verity.pk8</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs8 -topk8 -inform PEM -outform DER -<span class="keyword">in</span> prvk.pem -out verity.pk8 -nocrypt</span><br></pre></td></tr></table></figure>
+<p>（3）生成verity.x509.pem和verity.x509</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openssl req -new -x509 -key prvk.pem -out verity.x509.pem -ha256</span><br><span class="line">openssl x509 -n verity.x509.pem -outform der -out verity.x509</span><br></pre></td></tr></table></figure>
+<p>（4）执行下面命令可以在out/host/linux-x86/bin目录生成generate_verity_key工具。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make generate_verity_key</span><br><span class="line">或</span><br><span class="line">mmm system/extras/verity</span><br></pre></td></tr></table></figure>
+<p>（5）通过generate_verity_key工具将verity.x509.pem转换为verity_key。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./out/host/linux-x86/bin/generate_verity_key -<span class="built_in">convert</span> verity.x509.pem verity_key</span><br><span class="line">mv verity_key.pub verity_key</span><br></pre></td></tr></table></figure>
+<p>（6）将key拷贝到指定目录。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cp verity.pk8/verity.x509.pem/verity_key to build/target/product/security/</span><br><span class="line">cp verity.x509.pem to build/target/product/security/</span><br><span class="line">cp verity_key to build/target/product/security/</span><br><span class="line">cp verity.x509.pem to kernel-<span class="number">4</span>.<span class="number">4</span>/certs/verity.x509.pem</span><br></pre></td></tr></table></figure>
+<h5 id="3-1-4-如何验证DM-VERITY功能是否启用？"><a href="#3-1-4-如何验证DM-VERITY功能是否启用？" class="headerlink" title="3.1.4 如何验证DM-VERITY功能是否启用？"></a>3.1.4 如何验证DM-VERITY功能是否启用？</h5><p>（1）执行下面指令挂载分区后，若system分区中包含dm-x字样即表明dm-verity功能已启用</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$adb shell mount | grep system</span><br><span class="line">/dev/block/dm-<span class="number">0</span> /system ext4 ro, seclable, relatime, data=ordered <span class="number">0</span> <span class="number">0</span></span><br><span class="line">$adb shell mount -o rw,remount /system</span><br><span class="line">Buffer I/O error on device dm-<span class="number">0</span>, logical block <span class="number">0</span> Lost page write due to I/O error on dm-<span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>（2）从vendor/etc中导入fstab文件，检查是否包含verify flag。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#mediatek</span><br><span class="line">adb pull vendor/etc/fstab.mtxxxx .</span><br><span class="line">#qualcomm</span><br><span class="line">adb pull vendor/etc/fstab.qcom .</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-使能AVB-2-0"><a href="#3-2-使能AVB-2-0" class="headerlink" title="3.2 使能AVB 2.0"></a>3.2 使能AVB 2.0</h4><p>注：如果平台使用的kernel版本大于等于4.9，并且是Android P版本，AVB2.0是必须要开启的。</p>
+<h5 id="3-2-1-QCT平台"><a href="#3-2-1-QCT平台" class="headerlink" title="3.2.1 QCT平台"></a>3.2.1 QCT平台</h5><p>（1）在device/$manufacturer/$project/$project.mk中打开BOARD_AVB_ENABLE宏，并做如下配置：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_ENABLE := true</span><br><span class="line">BOARD_AVB_SYSTEM_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem</span><br><span class="line">BOARD_AVB_SYSTEM_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_SYSTEM_ROLLBACK_INDEX := 0</span><br><span class="line">BOARD_AVB_SYSTEM_ROLLBACK_INDEX_LOCATION := 2</span><br></pre></td></tr></table></figure>
+<p>还可以根据需要添加以下配置：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">配置</th>
+<th style="text-align:center">选项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS</td>
+<td style="text-align:center">–set_hashtree_disabled_flag</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_BOOT_ADD_HASH_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_SYSTEM_ADD_HASHTREE_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt –block_size –do_not_generate_fec</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_VENDOR_ADD_HASHTREE_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt –block_size –do_not_generate_fec</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_VENDOR_ADD_HASHTREE_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt</td>
+</tr>
+</tbody>
+</table>
+<h5 id="3-2-2-MTK平台"><a href="#3-2-2-MTK平台" class="headerlink" title="3.2.2 MTK平台"></a>3.2.2 MTK平台</h5><p>（1）在device/mediatek/common/device.mk中打开AVB宏，配置 key：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_ENABLE := true</span><br><span class="line">BOARD_AVB_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_KEY_PATH := device/mediatek/common/oem_prvk.pem</span><br></pre></td></tr></table></figure>
+<p>（2）在vendor/mediatek/proprietary/bootable/bootloader/lk/target/$project/inc/avbkey.h中配置oem_prvk.pem对应的public key（用于校验vbmeta中的public key合法性） 。</p>
+<p>（3）在vendor/mediate/proprietary/bootable/bootloader/lk/platform/$platform/rules.mk打开AVB20宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_AVB20_SUPPORT=yes</span><br></pre></td></tr></table></figure>
+<p>（4）在kernel-4.9/arch/arm64/configs/$porject_defconfig打开AVB宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_MTK_AVB20_SUPPORT=y</span><br></pre></td></tr></table></figure>
+<p>（5）如有需要可在device/mediatek/common/device.mk中为recovery/system添加chain partition配置，否则默认为hash partition：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#ifeq ($(strip $(MAIN_VBMETA_IN_BOOT)),no)</span></span><br><span class="line">    <span class="comment">#settings for recovery, which is configured as chain partition</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_KEY_PATH := device/mediatek/common/recovery_prvk.pem</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_ALGORITHM := SHA256_RSA2048</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_ROLLBACK_INDEX := 0</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 1</span></span><br><span class="line"><span class="comment">#endif</span></span><br><span class="line">    <span class="comment">#settings for system, which is configured as chain partition</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_KEY_PATH := device/mediatek/common/system_prvk.pem</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_ALGORITHM := SHA256_RSA2048</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_ROLLBACK_INDEX := 0</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_ROLLBACK_INDEX_LOCATION := 2</span></span><br></pre></td></tr></table></figure>
+<p>注：MTK默认会调用自己的脚本将dtbo改为mtk签名方式，即不受AVB 2.0保护。但是如果编译OTA包，又会改用AVB签名方式。</p>
+<h5 id="3-2-3-不同分区签名"><a href="#3-2-3-不同分区签名" class="headerlink" title="3.2.3 不同分区签名"></a>3.2.3 不同分区签名</h5><table>
+<thead>
+<tr>
+<th style="text-align:center">partition</th>
+<th style="text-align:center">meta verifier</th>
+<th style="text-align:center">verify key</th>
+<th style="text-align:center">enable dm-verity</th>
+<th style="text-align:center">mount partition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vbmeta</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">oem_pubk</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+<tr>
+<td style="text-align:center">boot</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">boot_pubk</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+<tr>
+<td style="text-align:center">dtbo</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">dtbo_pubk</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+<tr>
+<td style="text-align:center">system</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">system_pubk</td>
+<td style="text-align:center">kernel</td>
+<td style="text-align:center">kernel</td>
+</tr>
+<tr>
+<td style="text-align:center">vendor</td>
+<td style="text-align:center">bootloader and fs_mgr</td>
+<td style="text-align:center">vendor_pubk</td>
+<td style="text-align:center">fs_mgr</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+</tbody>
+</table>
+<h5 id="3-2-4-command-line中新增的vbmeta信息"><a href="#3-2-4-command-line中新增的vbmeta信息" class="headerlink" title="3.2.4 command line中新增的vbmeta信息"></a>3.2.4 command line中新增的vbmeta信息</h5><p>androidboot.vbmeta.device=PARTUUID=9c1520f3-c2c5-4b89-8284-fe4c61208a9e<br>androidboot.vbmeta.avb_version=1.0<br>androidboot.vbmeta.device_state=locked<br>androidboot.vbmeta.hash_alg=sha256<br>androidboot.vbmeta.size=1792<br>androidboot.vbmeta.digest=20cddc43f2e23ba5b55f5e4179a1bc1a8dc07be48d83f0bc94587c42c1b140e<br>androidboot.vbmeta.invalidate_on_error=yes</p>
+<h5 id="3-2-5-自定义密钥"><a href="#3-2-5-自定义密钥" class="headerlink" title="3.2.5 自定义密钥"></a>3.2.5 自定义密钥</h5><p>默认情况下，算法”SHA256_RSA4096”与”external / avb / test / data”目录中的测试密钥一起使用。可以使用BOARD_AVB_ALGORITHM<code>和</code>BOARD_AVB_KEY_PATH变量来覆盖它以使用例如4096位RSA密钥和SHA-512：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_ALGORITHM：= SHA512_RSA4096</span><br><span class="line">BOARD_AVB_KEY_PATH：=  device/qcom/common/rsa_key_4096.pem</span><br></pre></td></tr></table></figure>
+<p>该密钥的公共部分必须可用于设备的bootloader，以验证image。使用avbtool extract_public_key以预期格式提取密钥avbpubkey。</p>
+<p>（１）生成oem.key</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out oem.key -f4 <span class="number">4096</span></span><br></pre></td></tr></table></figure>
+<p>（２）用oem.key替换external/avb/test/data/testkey_rsa4096.pem</p>
+<p>（３）在bootable/bootloader/edk2/QcomModulePkg/Include/Library/DeviceInfo.h中保存该key。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">device_info</span> &#123;</span></span><br><span class="line">&lt;snip&gt;</span><br><span class="line">UINT32 user_public_key_length;</span><br><span class="line">CHAR8 user_public_key[MAX_USER_KEY_SIZE]; &lt;snip&gt;</span><br><span class="line">&#125;DeviceInfo;</span><br></pre></td></tr></table></figure>
+<p>（４）在bootable/bootloader/edk2/QcomModulePkg/Library/avb/OEMPublicKey.h或<br>bootable/bootloader/lk/platform/msm_shared/avb/OEMPublicKey.h中保存key</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Internal builds use TestKeyRSA4096Public</span></span><br><span class="line"><span class="comment">* OEM should replace this Array with public key used to sign boot.img * avbtool extract_public_key --key KEY --output OUTPUT</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> OEMPublicKey[] = &#123;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs8 -inform DER -nocrypt -<span class="keyword">in</span> &lt;PRODUCT_VERITY_SIGNING_KEY&gt; -out &lt;RSA_PUBLIC_KEY_PEM&gt;</span><br><span class="line">openssl rsa –<span class="keyword">in</span> &lt;RSA_PUBLIC_KEY_PEM&gt; -pubout –outform DER –out &lt;RSA_PUBLIC_KEY_DER&gt;</span><br><span class="line">keystore_signer &lt;PRODUCT_VERITY_SIGNING_KEY&gt; &lt;verity.x509.pem&gt; &lt;KEYSTORE_IMG&gt; &lt;RSA_PUBLIC_KEY_DER&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="四、AVB的工具"><a href="#四、AVB的工具" class="headerlink" title="四、AVB的工具"></a>四、AVB的工具</h3><h4 id="4-1-libavb库"><a href="#4-1-libavb库" class="headerlink" title="4.1 libavb库"></a>4.1 libavb库</h4><h5 id="4-1-1-目录结构"><a href="#4-1-1-目录结构" class="headerlink" title="4.1.1 目录结构"></a>4.1.1 目录结构</h5><p>libavb库用于在设备端执行所有验证，在代码中的路径是external/avb。其目录结构如下：</p>
+<p>（1）libavb：image验证的实现。具有高度可移植性。此代码会兼容C99的C编译器。其中avb_rsa.c/avb_rsa.h和avb_sha.c/avb_sha.h用于内部实现，不应在外部被使用。avb_sysdeps.h用于定义由平台提供的系统依赖项。如果平台提供了标准的C runtime，则可以使用avb_sysdeps_posix.c。<br>（2）libavb_atx：用于验证public key metadata的Android Things扩展。<br>（3）libavb_user：用于Android用户空间的AvbOps实现。在boot_control.avb和avbctl中被使用。<br>（4）libavb_ab：用于bootloader和适用于A/B系统的AVB实现(已于2018年6月1日弃用，必须定义AVB_AB_I_UNDERSTAND_LIBAVB_AB_IS_DEPRECATED才能使用它）。<br>（5）boot_control：使用libavb_ab 堆栈与bootloader一起使用的Android boot_control HAL的实现（已于2018年6月1日弃用）。<br>（6）contrib：包含其他项目中与AVB互操作性所需的patch。<br>（7）Android.bp：用于编译设备静态库libavb，单元测试的host库和单元测试的编译说明。<br>（8）avbtool：用于处理与verified boot相关的image。<br>（9）test：abvtool，libavb，libavb_ab和libavb_atx的单元测试代码。<br>（10）tool/ avbctl：可用于在Android runtime控制AVB的工具的源代码。<br>（11）example/ UEFI：使用libavb和libavb_ab的基于UEFI的bootloader的源代码。<br>（12）example/things：包含适用于Android Things的slot验证的源代码。<br>（13）README.md：说明文档。<br>（14）docs：包含文档文件。</p>
+<h5 id="4-1-2-版本号"><a href="#4-1-2-版本号" class="headerlink" title="4.1.2 版本号"></a>4.1.2 版本号</h5><p>avbtool有三个字段的版本号：主版本.次版本.子版本。如1.4.3中”1”代表主版本号，”4”代表次版本号，”3”代表子版本号。仅当兼容性有问题时，major version才会被改变，如结构字段已被删除或更改的情况出现。minor version只有在引入了新功能的情况下才会被更改，如已添加新算法或描述符。修正错误或进行其他不影响兼容性的更改时，sub version会增加。</p>
+<p>在avb_vbmeta_image.h中定义AvbVBMetaImageHeader结构会带有libavb的主要版本号和次要版本号，用于验证相关结构。它存储在required_libavb_version_major和required_libavb_version_minor字段中。此外，此结构还包含一个文本字段，其中包含用于创建该结构的avbtool版本，例如”avbtool 1.4.3”或”avbtool 1.4.3 some_board Git-4589fbec”。如下图所示：</p>
+<figure class="highlight h"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">required_libavb_version_major = <span class="number">1</span></span><br><span class="line">required_libavb_version_minor = <span class="number">0</span></span><br><span class="line">avbtool_release_string = <span class="string">"avbtool 1.4.3"</span></span><br></pre></td></tr></table></figure>
+<h4 id="4-2-avbtool脚本"><a href="#4-2-avbtool脚本" class="headerlink" title="4.2 avbtool脚本"></a>4.2 avbtool脚本</h4><h5 id="4-2-1-编译image"><a href="#4-2-1-编译image" class="headerlink" title="4.2.1 编译image"></a>4.2.1 编译image</h5><p>（1）boot.img</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">out/host/linux-x86/bin/avbtool add_hash_footer \</span><br><span class="line">--image out/target/product/mh4/boot.img \</span><br><span class="line">--partition_size <span class="number">0</span>x04000000 \</span><br><span class="line">--partition_name boot \</span><br><span class="line">--algorithm SHA256_RSA4096 \</span><br><span class="line">--key external/avb/test/data/testkey_rsa4096.pem</span><br></pre></td></tr></table></figure>
+<p>（2）dtbo.img</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">out/host/linux-x86/bin/avbtool add_hash_footer \</span><br><span class="line">--image out/target/product/mh4/dtbo.img \</span><br><span class="line">--partition_size <span class="number">0</span>x0800000 \</span><br><span class="line">--partition_name dtbo \</span><br><span class="line">--algorithm SHA256_RSA4096 \</span><br><span class="line">--key external/avb/test/data/testkey_rsa4096.pem</span><br></pre></td></tr></table></figure>
+<p>（3）system.img</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">out/host/linux-x86/bin/avbtool add_hashtree_footer \</span><br><span class="line">--partition_size <span class="number">2797600768</span>\</span><br><span class="line">--partition_name system \</span><br><span class="line">--image out/target/product/mh4/system.img \</span><br><span class="line">--algorithm SHA256_RSA4096 \</span><br><span class="line">--key external/avb/test/data/testkey_rsa4096.pem</span><br></pre></td></tr></table></figure>
+<p>（4）vendor.img</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">out/host/linux-x86/bin/avbtool add_hashtree_footer</span><br><span class="line">--partition_size <span class="number">654311424</span>\</span><br><span class="line">--partition_name vendor \</span><br><span class="line">--image out/target/product/mh4/vendor.img \</span><br><span class="line">--algorithm SHA256_RSA4096 \</span><br><span class="line">--key external/avb/test/data/testkey_rsa4096.pem</span><br></pre></td></tr></table></figure>
+<p>（5）product.img</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">out/host/linux-x86/bin/avbtool add_hashtree_footer</span><br><span class="line">--partition_size <span class="number">1442840576</span>\</span><br><span class="line">--partition_name product\</span><br><span class="line">--image out/target/product/mh4/product.img \</span><br><span class="line">--algorithm SHA256_RSA4096 \</span><br><span class="line">--key external/avb/test/data/testkey_rsa4096.pem</span><br></pre></td></tr></table></figure>
+<p>（6）vbmeta.img</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">out/host/linux-x86/bin/avbtool make_vbmeta_image</span><br><span class="line">--include_descriptors_from_image out/target/product/mh4/boot.img \</span><br><span class="line">--include_descriptors_from_image out/target/product/mh4/system.img \</span><br><span class="line">--include_descriptors_from_image out/target/product/mh4/vendor.img \</span><br><span class="line">--include_descriptors_from_image out/target/product/mh4/product.img \</span><br><span class="line">--include_descriptors_from_image out/target/product/mh4/dtbo.img \</span><br><span class="line">--setup_as_rootfs_from_kernel out/target/product/tf10/obj/PACKAGING/systemimage_intermediates/system.img \</span><br><span class="line">--algorithm SHA256_RSA4096 \</span><br><span class="line">--key external/avb/test/data/testkey_rsa4096.pem \</span><br><span class="line">--output out/target/product/m4/vbmeta.img</span><br></pre></td></tr></table></figure>
+<h5 id="4-2-2-获取image信息"><a href="#4-2-2-获取image信息" class="headerlink" title="4.2.2 获取image信息"></a>4.2.2 获取image信息</h5><p>（1）boot.img</p>
+<p>执行指令：avbtool info_image –image boot.img &gt; boot.img.info，然后用文本编辑器打开boot.img.info文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">Footer version:           1.0</span><br><span class="line">Image size:               67108864 bytes</span><br><span class="line">Original image size:      22110208 bytes</span><br><span class="line">VBMeta offset:            22110208</span><br><span class="line">VBMeta size:              512 bytes</span><br><span class="line">--</span><br><span class="line">Minimum libavb version:   1.0</span><br><span class="line">Header Block:             256 bytes</span><br><span class="line">Authentication Block:     0 bytes</span><br><span class="line">Auxiliary Block:          256 bytes</span><br><span class="line">Algorithm:                NONE</span><br><span class="line">Rollback Index:           0</span><br><span class="line">Flags:                    0</span><br><span class="line">Release String:           &apos;avbtool 1.1.0&apos;</span><br><span class="line">Descriptors:</span><br><span class="line">    Hash descriptor:</span><br><span class="line">      Image Size:            22110208 bytes</span><br><span class="line">      Hash Algorithm:        sha256</span><br><span class="line">      Partition Name:        boot</span><br><span class="line">      Salt:                  7b4dfcca246616c387ebf9c1f27607b714e1884fdbbf3d8f635401f18ce90072</span><br><span class="line">      Digest:                3a076b7ec8052cc6d4b8e75a41e0bcca542f3ab52ff23ea718693ddcebc18a5a</span><br><span class="line">      Flags:                 0</span><br></pre></td></tr></table></figure>
+<p>（2）dtbo.img</p>
+<p>执行指令：avbtool info_image –image dtbo.img &gt; dtbo.img.info，然后用文本编辑器打开dtbo.img.info文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">Footer version:           1.0</span><br><span class="line">Image size:               8388608 bytes</span><br><span class="line">Original image size:      884876 bytes</span><br><span class="line">VBMeta offset:            888832</span><br><span class="line">VBMeta size:              512 bytes</span><br><span class="line">--</span><br><span class="line">Minimum libavb version:   1.0</span><br><span class="line">Header Block:             256 bytes</span><br><span class="line">Authentication Block:     0 bytes</span><br><span class="line">Auxiliary Block:          256 bytes</span><br><span class="line">Algorithm:                NONE</span><br><span class="line">Rollback Index:           0</span><br><span class="line">Flags:                    0</span><br><span class="line">Release String:           &apos;avbtool 1.1.0&apos;</span><br><span class="line">Descriptors:</span><br><span class="line">    Hash descriptor:</span><br><span class="line">      Image Size:            884876 bytes</span><br><span class="line">      Hash Algorithm:        sha256</span><br><span class="line">      Partition Name:        dtbo</span><br><span class="line">      Salt:                  edd273c37eff93d2fae049a507c54ff291878a7351aaa4d4faa9347c22b300bc</span><br><span class="line">      Digest:                393d3a964874db65e566798dc5b369d66beec4391e7192912b9cbcdfbfd2423e</span><br><span class="line">      Flags:                 0</span><br></pre></td></tr></table></figure>
+<p>（3）system.img</p>
+<p>执行指令：avbtool info_image –image system.img &gt; system.img.info，然后用文本编辑器打开system.img.info文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">Footer version:           1.0</span><br><span class="line">Image size:               4831838208 bytes</span><br><span class="line">Original image size:      4755517440 bytes</span><br><span class="line">VBMeta offset:            4830863360</span><br><span class="line">VBMeta size:              1856 bytes</span><br><span class="line">--</span><br><span class="line">Minimum libavb version:   1.0 (Sparse)</span><br><span class="line">Header Block:             256 bytes</span><br><span class="line">Authentication Block:     320 bytes</span><br><span class="line">Auxiliary Block:          1280 bytes</span><br><span class="line">Algorithm:                SHA256_RSA2048</span><br><span class="line">Rollback Index:           0</span><br><span class="line">Flags:                    0</span><br><span class="line">Release String:           &apos;avbtool 1.1.0&apos;</span><br><span class="line">Descriptors:</span><br><span class="line">    Hashtree descriptor:</span><br><span class="line">      Version of dm-verity:  1</span><br><span class="line">      Image Size:            4755517440 bytes</span><br><span class="line">      Tree Offset:           4755517440</span><br><span class="line">      Tree Size:             37449728 bytes</span><br><span class="line">      Data Block Size:       4096 bytes</span><br><span class="line">      Hash Block Size:       4096 bytes</span><br><span class="line">      FEC num roots:         2</span><br><span class="line">      FEC offset:            4792967168</span><br><span class="line">      FEC size:              37896192 bytes</span><br><span class="line">      Hash Algorithm:        sha1</span><br><span class="line">      Partition Name:        system</span><br><span class="line">      Salt:                  2af56bd6a339d14619816f1a432ac20a269d4d37</span><br><span class="line">      Root Digest:           a550134cdb421e710581705f835102e936a9c6a4</span><br><span class="line">      Flags:                 0</span><br><span class="line">    Kernel Cmdline descriptor:</span><br><span class="line">      Flags:                 1</span><br><span class="line">      Kernel Cmdline:        &apos;dm=&quot;1 vroot none ro 1,0 9288120 verity 1 PARTUUID=$(ANDROID_SYSTEM_PARTUUID) PARTUUID=$(ANDROID_SYSTEM_PARTUUID) 4096 4096 1161015 1161015 sha1 a550134cdb421e710581705f835102e936a9c6a4 2af56bd6a339d14619816f1a432ac20a269d4d37 10 $(ANDROID_VERITY_MODE) ignore_zero_blocks use_fec_from_device PARTUUID=$(ANDROID_SYSTEM_PARTUUID) fec_roots 2 fec_blocks 1170158 fec_start 1170158&quot; root=/dev/dm-0&apos;</span><br><span class="line">    Kernel Cmdline descriptor:</span><br><span class="line">      Flags:                 2</span><br><span class="line">      Kernel Cmdline:        &apos;root=PARTUUID=$(ANDROID_SYSTEM_PARTUUID)&apos;</span><br></pre></td></tr></table></figure>
+<p>（4）vendor.img</p>
+<p>执行指令：avbtool info_image –image vendor.img &gt; vendor.img.info，然后用文本编辑器打开vendor.img.info文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Footer version:           1.0</span><br><span class="line">Image size:               1073741824 bytes</span><br><span class="line">Original image size:      1056714752 bytes</span><br><span class="line">VBMeta offset:            1073463296</span><br><span class="line">VBMeta size:              512 bytes</span><br><span class="line">--</span><br><span class="line">Minimum libavb version:   1.0 (Sparse)</span><br><span class="line">Header Block:             256 bytes</span><br><span class="line">Authentication Block:     0 bytes</span><br><span class="line">Auxiliary Block:          256 bytes</span><br><span class="line">Algorithm:                NONE</span><br><span class="line">Rollback Index:           0</span><br><span class="line">Flags:                    0</span><br><span class="line">Release String:           &apos;avbtool 1.1.0&apos;</span><br><span class="line">Descriptors:</span><br><span class="line">    Hashtree descriptor:</span><br><span class="line">      Version of dm-verity:  1</span><br><span class="line">      Image Size:            1056714752 bytes</span><br><span class="line">      Tree Offset:           1056714752</span><br><span class="line">      Tree Size:             8327168 bytes</span><br><span class="line">      Data Block Size:       4096 bytes</span><br><span class="line">      Hash Block Size:       4096 bytes</span><br><span class="line">      FEC num roots:         2</span><br><span class="line">      FEC offset:            1065041920</span><br><span class="line">      FEC size:              8421376 bytes</span><br><span class="line">      Hash Algorithm:        sha1</span><br><span class="line">      Partition Name:        vendor</span><br><span class="line">      Salt:                  a7b29e339d9583845e4da7be047052a6b748ac8a</span><br><span class="line">      Root Digest:           a6e12dfad11420ecd46892410bc3d85a84f46fcf</span><br><span class="line">      Flags:                 0</span><br></pre></td></tr></table></figure>
+<p>（5）product.img</p>
+<p>执行指令：avbtool info_image –image product.img &gt; product.img.info，然后用文本编辑器打开product.img.info文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Footer version:           1.0</span><br><span class="line">Image size:               1610612736 bytes</span><br><span class="line">Original image size:      1585115136 bytes</span><br><span class="line">VBMeta offset:            1610235904</span><br><span class="line">VBMeta size:              512 bytes</span><br><span class="line">--</span><br><span class="line">Minimum libavb version:   1.0 (Sparse)</span><br><span class="line">Header Block:             256 bytes</span><br><span class="line">Authentication Block:     0 bytes</span><br><span class="line">Auxiliary Block:          256 bytes</span><br><span class="line">Algorithm:                NONE</span><br><span class="line">Rollback Index:           0</span><br><span class="line">Flags:                    0</span><br><span class="line">Release String:           &apos;avbtool 1.1.0&apos;</span><br><span class="line">Descriptors:</span><br><span class="line">    Hashtree descriptor:</span><br><span class="line">      Version of dm-verity:  1</span><br><span class="line">      Image Size:            1585115136 bytes</span><br><span class="line">      Tree Offset:           1585115136</span><br><span class="line">      Tree Size:             12488704 bytes</span><br><span class="line">      Data Block Size:       4096 bytes</span><br><span class="line">      Hash Block Size:       4096 bytes</span><br><span class="line">      FEC num roots:         2</span><br><span class="line">      FEC offset:            1597603840</span><br><span class="line">      FEC size:              12632064 bytes</span><br><span class="line">      Hash Algorithm:        sha1</span><br><span class="line">      Partition Name:        product</span><br><span class="line">      Salt:                  1e59ddfb5e23b479aa9cb8bb00345ba8b426fb9c</span><br><span class="line">      Root Digest:           1a621c82d44e2ebf4d1cc50d009bc17ae96b1279</span><br><span class="line">      Flags:                 0</span><br></pre></td></tr></table></figure>
+<p>（6）vbmeta.img</p>
+<p>执行指令：avbtool info_image –image vbmeta.img &gt; vbmeta.img.info，然后用文本编辑器打开vbmeta.img.info文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">Minimum libavb version:   1.0</span><br><span class="line">Header Block:             256 bytes</span><br><span class="line">Authentication Block:     576 bytes</span><br><span class="line">Auxiliary Block:          2560 bytes</span><br><span class="line">Algorithm:                SHA256_RSA4096</span><br><span class="line">Rollback Index:           0</span><br><span class="line">Flags:                    0</span><br><span class="line">Release String:           &apos;avbtool 1.1.0&apos;</span><br><span class="line">Descriptors:</span><br><span class="line">    Chain Partition descriptor:</span><br><span class="line">      Partition Name:          system</span><br><span class="line">      Rollback Index Location: 2</span><br><span class="line">      Public key (sha1):       cdbb77177f731920bbe0a0f94f84d9038ae0617d</span><br><span class="line">    Hash descriptor:</span><br><span class="line">      Image Size:            22110208 bytes</span><br><span class="line">      Hash Algorithm:        sha256</span><br><span class="line">      Partition Name:        boot</span><br><span class="line">      Salt:                  7b4dfcca246616c387ebf9c1f27607b714e1884fdbbf3d8f635401f18ce90072</span><br><span class="line">      Digest:                3a076b7ec8052cc6d4b8e75a41e0bcca542f3ab52ff23ea718693ddcebc18a5a</span><br><span class="line">      Flags:                 0</span><br><span class="line">    Hashtree descriptor:</span><br><span class="line">      Version of dm-verity:  1</span><br><span class="line">      Image Size:            1056714752 bytes</span><br><span class="line">      Tree Offset:           1056714752</span><br><span class="line">      Tree Size:             8327168 bytes</span><br><span class="line">      Data Block Size:       4096 bytes</span><br><span class="line">      Hash Block Size:       4096 bytes</span><br><span class="line">      FEC num roots:         2</span><br><span class="line">      FEC offset:            1065041920</span><br><span class="line">      FEC size:              8421376 bytes</span><br><span class="line">      Hash Algorithm:        sha1</span><br><span class="line">      Partition Name:        vendor</span><br><span class="line">      Salt:                  a7b29e339d9583845e4da7be047052a6b748ac8a</span><br><span class="line">      Root Digest:           a6e12dfad11420ecd46892410bc3d85a84f46fcf</span><br><span class="line">      Flags:                 0</span><br><span class="line">    Hashtree descriptor:</span><br><span class="line">      Version of dm-verity:  1</span><br><span class="line">      Image Size:            1585115136 bytes</span><br><span class="line">      Tree Offset:           1585115136</span><br><span class="line">      Tree Size:             12488704 bytes</span><br><span class="line">      Data Block Size:       4096 bytes</span><br><span class="line">      Hash Block Size:       4096 bytes</span><br><span class="line">      FEC num roots:         2</span><br><span class="line">      FEC offset:            1597603840</span><br><span class="line">      FEC size:              12632064 bytes</span><br><span class="line">      Hash Algorithm:        sha1</span><br><span class="line">      Partition Name:        product</span><br><span class="line">      Salt:                  1e59ddfb5e23b479aa9cb8bb00345ba8b426fb9c</span><br><span class="line">      Root Digest:           1a621c82d44e2ebf4d1cc50d009bc17ae96b1279</span><br><span class="line">      Flags:                 0</span><br><span class="line">    Hash descriptor:</span><br><span class="line">      Image Size:            884876 bytes</span><br><span class="line">      Hash Algorithm:        sha256</span><br><span class="line">      Partition Name:        dtbo</span><br><span class="line">      Salt:                  edd273c37eff93d2fae049a507c54ff291878a7351aaa4d4faa9347c22b300bc</span><br><span class="line">      Digest:                393d3a964874db65e566798dc5b369d66beec4391e7192912b9cbcdfbfd2423e</span><br><span class="line">      Flags:                 0</span><br></pre></td></tr></table></figure>
+<h5 id="4-2-3-其它功能"><a href="#4-2-3-其它功能" class="headerlink" title="4.2.3 其它功能"></a>4.2.3 其它功能</h5><p>（１）使用resize_image命令更改带有完整页脚的映像的大小：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ avbtool resize_image          \</span><br><span class="line">    --image IMAGE           \</span><br><span class="line">    --partition_size SIZE</span><br></pre></td></tr></table></figure>
+<p>（２）可以删除映像上的完整性页脚。哈希树可以选择保留在适当的位置：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ avbtool erase_footer --image IMAGE [--keep_hashtree]</span><br></pre></td></tr></table></figure>
+<p>（３）可以使用命令将映像中的哈希树和FEC数据清零：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ avbtool zero_hashtree --image IMAGE</span><br></pre></td></tr></table></figure>
+<p>（４）可使用–calc_max_image_size选项计算适合给定大小分区的映像的最大大小：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ avbtool add_hash_footer --partition_size $((<span class="number">10</span>*<span class="number">1024</span>*<span class="number">1024</span>))  \</span><br><span class="line">    --calc_max_image_size</span><br><span class="line"><span class="number">10416128</span></span><br><span class="line">$ avbtool add_hashtree_footer --partition_size $((<span class="number">10</span>*<span class="number">1024</span>*<span class="number">1024</span>))  \</span><br><span class="line">    --calc_max_image_size</span><br><span class="line"><span class="number">10330112</span></span><br></pre></td></tr></table></figure>
+<p>（５）可使用–print_required_libavb_version选项获取放入vbmeta结构中的所需libavb版本：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ avbtool make_vbmeta_image \</span><br><span class="line">    --algorithm SHA256_RSA2048 --key external/avb/test/data/testkey_rsa4096.pem \</span><br><span class="line">    --include_descriptors_from_image out/target/product/mh4/boot.img \</span><br><span class="line">    --include_descriptors_from_image out/target/product/mh4/system.img \</span><br><span class="line">    --print_required_libavb_version</span><br><span class="line"><span class="number">1</span>.<span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>（６）–no_hashtree可以与avbtool add_hashtree_footer命令一起使用。如果给出了–no_hashtree，则省略哈希树blob，仅将其描述符添加到vbmeta结构中。描述符表示哈希树的大小为0，这表明应用程序需要重新计算哈希树。</p>
+<p>（７）append_vbmeta_image命令可用于将整个vbmeta blob附加到另一个映像的末尾。这在不使用任何vbmeta分区的情况下非常有用，例如：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cp boot.img boot-with-vbmeta-appended.img</span><br><span class="line">$ avbtool append_vbmeta_image                     \</span><br><span class="line">    --image boot-with-vbmeta-appended.img           \</span><br><span class="line">    --partition_size SIZE_OF_BOOT_PARTITION     \</span><br><span class="line">    --vbmeta_image vbmeta.img</span><br><span class="line">$ fastboot flash boot boot-with-vbmeta-appended.img</span><br></pre></td></tr></table></figure>
+<p>（８）verify_image命令可用于同时验证多个映像文件的内容。在映像上调用时，将执行以下检查：</p>
+<p>如果映像具有VBMeta结构，则根据嵌入式public key检查签名。如果映像看起来不像vbmeta.img，那么将查找页脚并使用它。如果传递了–key选项，则应使用.pem文件，并检查所述VBMeta结构中的嵌入式public key是否与给定密钥匹配。采用下列方式检查VBMeta结构中的所有描述符：</p>
+<p>a.对于散列描述符，将加载与分区名称相对应的映像文件，并对照描述符中的摘要检查其摘要。</p>
+<p>b. 对于哈希树描述符，将加载与分区名称相对应的映像文件，并计算哈希树，并将其根摘要与描述符中的摘要进行比较。</p>
+<p>c. 对于链接的分区描述符，将其内容与需要通过–expected_chain_partition选项传递的内容进行比较。该选项的格式类似于–chain_partition选项的格式。如果链分区描述符没有–expected_chain_partition描述符，则检查失败。</p>
+<p>下面是一个示例，其中boot.img和system.img的摘要存储在vbmeta.img中，该摘要已用my_key.pem签名。它还检查分区foobar的链分区是否使用回滚索引8，以及AVB格式的公钥是否与文件foobar_vendor_key.avbpubkey的公钥匹配：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ avbtool verify_image \</span><br><span class="line">     --image out/target/product/mh4/vbmeta.img \</span><br><span class="line">     --key external/avb/test/data/testkey_rsa4096.pem \</span><br><span class="line">     --expect_chained_partition system:<span class="number">2</span>:system.avbpubkey</span><br><span class="line">Verifying image ../<span class="number">1607</span>/vbmeta.img using key <span class="built_in">at</span> test/data/testkey_rsa4096.pem</span><br><span class="line"><span class="function">system: <span class="title">Successfully</span> <span class="title">verified</span> <span class="title">sha1</span> <span class="title">hashtree</span> <span class="title">of</span> <span class="title">out</span>/<span class="title">target</span>/<span class="title">product</span>/<span class="title">mh4</span>/<span class="title">system.img</span> <span class="title">for</span> <span class="title">image</span> <span class="title">of</span> 4831838208 <span class="title">bytes</span></span></span><br></pre></td></tr></table></figure>
+<p>（９）compute_vbmeta_digest命令可用于同时计算多个映像文件的vbmeta摘要。结果将以十六进制字符串的形式打印在STDOUT或提供的路径上（使用–output选项）：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ avbtool calculate_vbmeta_digest \</span><br><span class="line">     --hash_algorithm sha256 \</span><br><span class="line">     --image /<span class="built_in">path</span>/to/vbmeta.img</span><br><span class="line">a20fdd01a6638c55065fe08497186acde350d6797d59a55d70ffbcf41e95c2f5</span><br></pre></td></tr></table></figure>
+<p>calculate_vbmeta_digest命令将加载vbmeta.img文件。如果此映像具有一个或多个链分区描述符，则使用与verify_image命令相同的逻辑来加载这些文件的文件（例如，假定与给定映像具有相同的目录和文件扩展名）。加载完所有vbmeta结构后，将计算摘要（使用–hash_algorithm选项提供的哈希算法）并打印出来。</p>
+<h3 id="五、分析思路"><a href="#五、分析思路" class="headerlink" title="五、分析思路"></a>五、分析思路</h3><h4 id="5-1-dm-verity问题处理流程"><a href="#5-1-dm-verity问题处理流程" class="headerlink" title="5.1 dm-verity问题处理流程"></a>5.1 dm-verity问题处理流程</h4><p>（1）回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。</p>
+<p>（2）将mmc / ufs寄给供应商，以检查物理块是否损坏。 </p>
+<p>（3）擦除分区并下载软件。</p>
+<p>（4）做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快复制速度。若可以复现该问题，则删除损坏的物理块，请转到步骤3。若不能复现问题，则重复步骤4，或继续观察设备。如果复现问题并重复执行步骤3和步骤4超过 3次，且物理块始终相同，请返回到步骤2。如果物理块并不总是相同，则转到步骤5。</p>
+<p>（5）检查dmesg日志，看是否有任何mmc驱动程序/UFS驱动程序故障。如果有，则向mmc/ufs team提交case协助分析。否则执行步骤6。</p>
+<p>（6）mmc/ufs硬件/驱动程序基本被排除嫌疑，此时可以从DDR角度进行检查。在此设备上进行Qblizzard压力测试。如果测试结果良好，则执行步骤7。如果测试fail，则向DDR team提交case协助分析。</p>
+<p>（7）观察损坏时，在第一次使设备崩溃后收集ramdump信息。添加以下debug信息：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">static int verity_handle_err()</span><br><span class="line"><span class="keyword">if</span> (v-&gt;<span class="built_in">mode</span> == DM_VERITY_MODE_LOGGING) return <span class="number">0</span>;</span><br><span class="line"><span class="keyword">if</span> (v-&gt;<span class="built_in">mode</span> == DM_VERITY_MODE_RESTART)</span><br><span class="line">-kernel_restart("dm-verity device corrupted");</span><br><span class="line">+BUG_ON("dm-verity device corrupted");)</span><br></pre></td></tr></table></figure>
+<p>通过ramdump，可以从稳定性的角度进行一些完整性检查，例如任务列表遍历，与vmlinux进行只读区域比较，cache/ ddr比较，vma列表和rbtree比较等等。如果发现有问题，则在完成步骤6的情况下，转到步骤9。如果没有发现任何错误，转到步骤8。</p>
+<p>（8）与硬件团队进行交换测试。</p>
+<p>（9）尝试禁用CPR，提高APC电压，提高vdd-mx，以确保AP缓存稳定运行。</p>
+<p>（10）如果烧录GSI时出现下方开机异常，则需要烧录禁用avb的vbmeta。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">avb_slot_verify.c:432: DEBUG: Loading vbmeta struct from partition &apos;system&apos;.</span><br><span class="line">avb_footer.c:41: ERROR: Footer magic is incorrect.</span><br><span class="line">avb_slot_verify.c:464: ERROR: system: Error validating footer.</span><br><span class="line">Non Multi-slot: Unbootable entering fastboot mode</span><br><span class="line">VB2: boot state: red(3)</span><br></pre></td></tr></table></figure>
+<p>参考指令如下：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot --disable-verification flash vbmeta[_a/b] vbmeta.img</span><br></pre></td></tr></table></figure>
+<h4 id="5-2-处理dm-verity错误"><a href="#5-2-处理dm-verity错误" class="headerlink" title="5.2 处理dm-verity错误"></a>5.2 处理dm-verity错误</h4><p>通过设计，哈希树验证错误是由HLOS而非引导程序检测到的。AVB提供了一种方法，该方法通过avb_slot_verify()函数中的hashtree_error_mode参数指定应如何处理错误。可能的值包括:</p>
+<p>AVB_HASHTREE_ERROR_MODE_RESTART_AND_INVALIDATE表示HLOS将使当前插槽无效并重新启动。在具有A / B的设备上，这将导致尝试引导另一个插槽（如果标记为可引导），或者导致无法引导任何操作系统的模式（例如某种形式的修复模式）。在Linux中，这需要使用CONFIG_DM_VERITY_AVB构建的内核。</p>
+<p>AVB_HASHTREE_ERROR_MODE_RESTART表示操作系统将在不使当前插槽无效的情况下重新启动。请谨慎使用此模式，因为如果每次启动都遇到相同的哈希树验证错误，则可能会导致启动循环。</p>
+<p>AVB_HASHTREE_ERROR_MODE_EIO表示将向应用程序返回EIO错误。</p>
+<p>AVB_HASHTREE_ERROR_MODE_MANAGED_RESTART_AND_EIO表示使用RESTART或EIO模式，具体取决于状态。此模式实现状态机，默认情况下使用RESTART，并且将AVB_SLOT_VERIFY_FLAGS_RESTART_CAUSED_BY_HASHTREE_CORRUPTION传递给avb_slot_verify()时，该模式会转换为EIO。当检测到新的操作系统时，设备将转换回重新启动模式。</p>
+<p>为此，需要持久存储-特别是这意味着传递的AvbOps将需要实现read_persistent_value（）和write_persistent_value()操作。使用的持久值的名称为avb.managed_verity_mode，并且需要32个字节的存储空间。</p>
+<p>AVB_HASHTREE_ERROR_MODE_LOGGING意味着将记录错误，并且损坏的数据可能返回给应用程序。此模式仅应用于诊断和调试。除非允许验证错误，否则不能使用它。</p>
+<p>在hashtree_error_mode中传递的值实际上是通过androidboot.veritymode，androidboot.veritymode.managed和androidboot.vbmeta.invalidate_on_error内核命令行参数通过以下方式传递给HLOS的：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">-</th>
+<th style="text-align:center">androidboot.veritymode</th>
+<th style="text-align:center">androidboot.veritymode.managed</th>
+<th style="text-align:center">androidboot.vbmeta.invalidate_on_error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_RESTART_AND_INVALIDATE</td>
+<td style="text-align:center">enforcing</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">yes</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_RESTART</td>
+<td style="text-align:center">enforcing</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_EIO</td>
+<td style="text-align:center">eio</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_MANAGED_RESTART_AND_EIO</td>
+<td style="text-align:center">eio or enforcing</td>
+<td style="text-align:center">yes</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_LOGGING</td>
+<td style="text-align:center">ignore_corruption</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+</tbody>
+</table>
+<p>该表的唯一例外是，如果在顶级vbmeta中设置了AVB_VBMETA_IMAGE_FLAGS_HASHTREE_DISABLED标志，则将androidboot.veritymode设置为disable，并取消设置androidboot.veritymode.managed和androidboot.vbmeta.invalidate_on_error。</p>
+<h4 id="5-3-案例说明"><a href="#5-3-案例说明" class="headerlink" title="5.3 案例说明"></a>5.3 案例说明</h4><h5 id="5-3-1-分区位置读取错乱导致-Verified-Error"><a href="#5-3-1-分区位置读取错乱导致-Verified-Error" class="headerlink" title="5.3.1 分区位置读取错乱导致 Verified Error"></a>5.3.1 分区位置读取错乱导致 Verified Error</h5><p>uart日志如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[3830] read from system_a, 0x40 bytes at Offset 0x12b7fffc0, partition size 1696096256</span><br><span class="line">[3840] StartBlock 0x12b7ff, ReadOffset 0xfc0, read_size 0x40</span><br><span class="line">[3850] Data segment length: 14</span><br><span class="line">[3860] SCSI Request failed and we have sense data</span><br><span class="line">[3880] =================== Dumping SCSI COMMAND ==========================</span><br><span class="line">[3890] req-&gt;lun (4)</span><br><span class="line">[3890] data_buffer_Addr (0x91e36c00)</span><br><span class="line">[3890] data_length (4096)</span><br><span class="line">[3890] scsi_upiu_flags (64)</span><br><span class="line">[3900] upiu_dd_type (2)</span><br><span class="line">[3900] =============================================</span><br><span class="line">[3900] ucs_do_scsi_cmd failed status = 2</span><br><span class="line">[3910] ucs_do_scsi_read: failed</span><br><span class="line">[3910] UFS read failed.</span><br><span class="line">[3930] Error: UFS read failed writing to block: 6720868352</span><br><span class="line">[3940] ReadBlocks failed -1</span><br><span class="line">[3950] avb_slot_verify.c[3950] :[3950] 465[3950] : FATAL: [3950] assert fail: footer_num_read == AVB_FOOTER_SIZE</span><br><span class="line">[3960] avb_abort![3960] panic (frame 0x91e10ba0): </span><br><span class="line">[3970] HALT: reboot into dload mode...</span><br></pre></td></tr></table></figure>
+<p>partition.xml内容如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- This is LUN 0 - HLOS LUN" --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">physical_partition</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">"system_a"</span> <span class="attr">size_in_kb</span>=<span class="string">"3809280"</span> <span class="attr">...</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">"system_b"</span> <span class="attr">size_in_kb</span>=<span class="string">"3809280"</span> <span class="attr">...</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">physical_partition</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>解决方案：</p>
+<p>验证分区前从分区表中获取分区位置，重新设置index。</p>
+<p>kernel/lk/platform/msm_shared/avb/libavb/avb_ops.c</p>
+<p><img src="/images/avb_ops_changed.png" alt></p>
+<h5 id="5-3-2-32位系统中system分区过大导致越界"><a href="#5-3-2-32位系统中system分区过大导致越界" class="headerlink" title="5.3.2 32位系统中system分区过大导致越界"></a>5.3.2 32位系统中system分区过大导致越界</h5><p>uart日志如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[    6.561417] device-mapper: uevent: version 1.0.3</span><br><span class="line">[    6.561765] device-mapper: ioctl: 4.35.0-ioctl (2016-06-23) initialised: dm-devel@redhat.com</span><br><span class="line">[    6.562038] device-mapper: req-crypt: dm-req-crypt successfully initalized.</span><br><span class="line">[   10.358500] device-mapper: init: attempting early device configuration.</span><br><span class="line">[   10.360507] device-mapper: init: adding target &apos;0 9288120 verity 1 PARTUUID=a4c4c338-1495-cf9b-7e73-c0ddf7c9bc48 PARTUUID=a4c4c338-1495-cf9b-7e73-c0ddf7c9bc48 4096 4096 1161015 1161015 sha1 b85c7febdfcd40528289d73d6fba83ef622fe25f 863e5389bbfb951324f892a712a696fe166ca70a 10 restart_on_corruption ignore_zero_blocks use_fec_from_device PARTUUID=a4c4c338-1495-cf9b-7e73-c0ddf7c9bc48 fec_roots 2 fec_blocks 1170158 fec_start 1170158&apos;</span><br><span class="line">[   10.405240] device-mapper: init: dm-0 is ready</span><br><span class="line">[   10.589628] init: [libfs_mgr]fs_mgr_read_fstab_default(): failed to find device default fstab</span><br><span class="line">[   10.774647] system_a : Error verifying vbmeta image: invalid vbmeta header</span><br><span class="line">[   10.774738] init: [libfs_mgr]avb_slot_verify failed, result: 6</span><br><span class="line">[   10.780513] init: Failed to open FsManagerAvbHandle: No such file or directory</span><br><span class="line">[   10.786246] init: Failed to setup verity for &apos;/vendor&apos;: No such file or directory</span><br><span class="line">[   10.793601] init: Failed to mount required partitions early ...</span><br><span class="line">[   10.801039] init: Reboot start, reason: reboot, rebootTarget: bootloader</span><br><span class="line">[   10.806753] pgd = e77ec000</span><br><span class="line">[   10.813678] [00000014] *pgd=f1dcc835</span><br></pre></td></tr></table></figure>
+<p>解决方案：</p>
+<p>修改vbmeta_offset的类型（size_t -&gt; uint64_t）</p>
+<p>external/avb/libavb/avb_slot_verify.c</p>
+<p><img src="/images/avb_slot_verify_changed1.png" alt></p>
+<h5 id="5-3-3-未打开FEC宏导致dm-verity找不到参数"><a href="#5-3-3-未打开FEC宏导致dm-verity找不到参数" class="headerlink" title="5.3.3 未打开FEC宏导致dm-verity找不到参数"></a>5.3.3 未打开FEC宏导致dm-verity找不到参数</h5><p>uart日志如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[    0.000000] device-mapper: init: will configure 1 devices</span><br><span class="line">[   21.089662] device-mapper: uevent: version 1.0.3</span><br><span class="line">[   21.091550] device-mapper: ioctl: 4.34.0-ioctl (2015-10-28) initialised: dm-devel@redhat.com</span><br><span class="line">[   21.093822] device-mapper: req-crypt: dm-req-crypt successfully initalized.</span><br><span class="line">[   23.798681] device-mapper: init: attempting early device configuration.</span><br><span class="line">[   23.803076] device-mapper: init: adding target &apos;0 9659008 verity 1 PARTUUID=bbfd550b-e7cb-04b5-a67f-85ae9774d6a7 PARTUUID=bbfd550b-e7cb-04b5-a67f-85ae9774d6a7 4096 4096 1207376 1207376 sha1 86951e16e496e7d1453ad9e2915ab9cd1e18e19a 05f694baa36f322ce668ce91ed3140a972e378a4 10 restart_on_corruption ignore_zero_blocks use_fec_from_device PARTUUID=bbfd550b-e7cb-04b5-a67f-85ae9774d6a7 fec_roots 2 fec_blocks 1216884 fec_start 1216884&apos;</span><br><span class="line">[   23.821562] device-mapper: table: 253:0: verity: Invalid number of feature args</span><br><span class="line">[   23.841996] device-mapper: init: starting dm-0 (vroot) failed</span><br><span class="line">[   23.850903] Unable to handle kernel NULL pointer dereference at virtual address 00000000</span><br><span class="line">[   23.855158] pgd = ffffff800a13e000</span><br><span class="line">[   23.863585] [00000000] *pgd=000000017e3be003, *pud=000000017e3be003, *pmd=0000000000000000</span><br></pre></td></tr></table></figure>
+<p>解决方案：</p>
+<p>在kernel config中打开CONFIG_DM_VERITY_FEC宏</p>
+<p>kernel/msm-4.4/arch/arm64/configs/project_defconfig</p>
+<p><img src="/images/defconfig_changed.png" alt></p>
+<h5 id="5-3-4-boot分区超过heap-size加载失败"><a href="#5-3-4-boot分区超过heap-size加载失败" class="headerlink" title="5.3.4 boot分区超过heap size加载失败"></a>5.3.4 boot分区超过heap size加载失败</h5><p>uart日志如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[partition_get_index]find boot_b index 38</span><br><span class="line">[AVB20]malloc: heap size not enough</span><br><span class="line">avbutil.c[2701] 199[2701]: ERROR: [2701] Failed to allocate memory.</span><br></pre></td></tr></table></figure>
+<p>解决方案：</p>
+<p>修改boot分区大小时同步修改AVB_HEAP_SZ</p>
+<p>vendor/mediatek/proprietary/bootable/bootloader/lk/platform/common/boot/avb20/load_vfy_boot_ab.c</p>
+<p><img src="/images/load_vfy_boot_ab_changed.png" alt></p>
+<h5 id="5-3-5-分区slot后缀未过滤导致无法加载"><a href="#5-3-5-分区slot后缀未过滤导致无法加载" class="headerlink" title="5.3.5 分区slot后缀未过滤导致无法加载"></a>5.3.5 分区slot后缀未过滤导致无法加载</h5><p>uart日志如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[3590] Loading image system_a</span><br><span class="line">[3610] read from system_a, 0x740 bytes at Offset 0xfff2a000, partition size 3011510272</span><br><span class="line">[3630] LastBlock 0x7ff953, ReadOffset 0x0, read_size 0x140</span><br><span class="line">[3630] FullBlock 0x7ff950, ReadOffset 0x0, read_size 0x600 outside range. StartPageReadSize 0x0 PageSize 512 ptn 0xb3800000 Buffer 0x8f7aedc0</span><br><span class="line">[3670] ReadRollbackIndex Location 2, RollbackIndex 0</span><br><span class="line">[3690] avb_slot_verify.c: dtbo_a : Loading entire partition.</span><br><span class="line">[3690] avb_slot_verify.c: load_and_verify_hash_partition.</span><br><span class="line">[3720] Loaded image [boot|22044672]</span><br><span class="line">[3720] Loaded image [dtbo|8388608]</span><br><span class="line">[3720] Loaded image [vbmeta|65536]</span><br><span class="line">[3730] Loading image dtbo_a</span><br><span class="line">[3750] read from dtbo_a, 0x800000 bytes at Offset 0x0, partition size 260046848</span><br><span class="line">[3770] FullBlock 0x0, ReadOffset 0x0, read_size 0x800000 outside range. StartPageReadSize 0x0 PageSize 512 ptn 0xf800000 Buffer 0x8f77b428</span><br><span class="line">[3780] Error: ADMA error</span><br><span class="line">[3780] MMC card is not in TRAN state</span><br><span class="line">[3790] Failed Reading block @ 7c000</span><br><span class="line">[3790] ReadBlocks failed 1</span><br><span class="line">[3790] data abort, halting</span><br></pre></td></tr></table></figure>
+<p>解决方案：</p>
+<p>验证分区时移除slot后缀，兼容a/b和non-a/b系统。</p>
+<p>kernel/lk/platform/msm_shared/avb/libavb/avb_slot_verify.c</p>
+<p><img src="/images/avb_slot_verify_changed2.png" alt></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/09/15/Security/Android10_用户数据检查点/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1788,172 +2401,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/05/11/Filesystem/UFS Provision那点事儿/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/11/Filesystem/UFS Provision那点事儿/" class="post-title-link" itemprop="url">UFS Provision那点事儿</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-11 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-11T00:00:00+08:00">2019-05-11</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>本篇将简单介绍一下高通平台UFS Provision那点事儿。</p>
-<h3 id="1-QFIL-Provision流程"><a href="#1-QFIL-Provision流程" class="headerlink" title="1. QFIL Provision流程"></a>1. QFIL Provision流程</h3><p>新的UFS上是没有LUN（Logic unit number）信息的，在下载前必须先provision UFS。通常来说UFS provision是一次不可逆操作，因此需要慎重操作。</p>
-<p>高通的QFIL工具支持Provision UFS及Download功能，流程如下：</p>
-<p><img src="/images/qfil_download_process.png" alt></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/05/11/Filesystem/UFS Provision那点事儿/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2002,7 +2449,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-count">79</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
