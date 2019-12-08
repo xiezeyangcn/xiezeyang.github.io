@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、DSU概述动态系统升级（Dynamic System Updates）允许制作Android系统映像，用户可以从互联网上下载并试用，而不会有损坏当前系统映像的风险。DSU依赖于dm-verity来验证系统映像，所以必须打开kernel config中以下两个Config： 12CONFIG_DM_VERITY=yCONFIG_DM_VERITY_FEC=y">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android10 动态系统升级">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/09/07/OTA/Android10_动态系统升级/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、DSU概述动态系统升级（Dynamic System Updates）允许制作Android系统映像，用户可以从互联网上下载并试用，而不会有损坏当前系统映像的风险。DSU依赖于dm-verity来验证系统映像，所以必须打开kernel config中以下两个Config： 12CONFIG_DM_VERITY=yCONFIG_DM_VERITY_FEC=y">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-08T06:51:44.115Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android10 动态系统升级">
+<meta name="twitter:description" content="一、DSU概述动态系统升级（Dynamic System Updates）允许制作Android系统映像，用户可以从互联网上下载并试用，而不会有损坏当前系统映像的风险。DSU依赖于dm-verity来验证系统映像，所以必须打开kernel config中以下两个Config： 12CONFIG_DM_VERITY=yCONFIG_DM_VERITY_FEC=y">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/09/07/OTA/Android10_动态系统升级/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android10 动态系统升级 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/09/07/OTA/Android10_动态系统升级/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android10 动态系统升级
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-07 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-07T00:00:00+08:00">2019-09-07</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OTA/" itemprop="url" rel="index"><span itemprop="name">OTA</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、DSU概述"><a href="#一、DSU概述" class="headerlink" title="一、DSU概述"></a>一、DSU概述</h3><p>动态系统升级（Dynamic System Updates）允许制作Android系统映像，用户可以从互联网上下载并试用，而不会有损坏当前系统映像的风险。DSU依赖于dm-verity来验证系统映像，所以必须打开kernel config中以下两个Config：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_DM_VERITY=y</span><br><span class="line">CONFIG_DM_VERITY_FEC=y</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>metadata分区用于存储分区相关数据，必须在启动的第一阶段挂载。userdata必须是f2fs或ext4类型文件系统。另外DSU只支持kernel 4.9及以上版本。</p>
+<p>ramdisk中必须包含三个GSI密钥：Q-GSI，R-GSI和S-GSI。 因此，设备可以使用DSU或修改fstab设置以使用这些密钥验证GSI映像。要包含GSI密钥，需将下面代码添加到文件device/&lt;device_name&gt;/device.mk：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(<span class="built_in">call</span> inherit-product, <span class="variable">$(SRC_TARGET_DIR)</span>/product/gsi_keys.mk)</span></span><br></pre></td></tr></table></figure>
+<p>推荐至少分配10 GB空间用于DSU，其中用于存储GSI的分区约占1.5GB, 用于GSI运行的data空间约占8G。另外DSU支持从SD卡分配空间（SD卡不可为adopted）。<br>使用adb启动DSU：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$&gt;simg2img out/target/product/.../system.img system.raw</span><br><span class="line">$&gt;gzip -c system.raw &gt; system.raw.gz</span><br><span class="line">$&gt;adb push system.raw.gz /storage/emulated/<span class="number">0</span>/Download</span><br><span class="line">$&gt;adb shell am <span class="built_in">start</span>-activity \</span><br><span class="line">-n com.android.dynsystem/com.android.dynsystem.VerificationActivity  \</span><br><span class="line">-a android.os.image.action.START_INSTALL    \</span><br><span class="line">-d file:///storage/emulated/<span class="number">0</span>/Download/system.raw.gz  \</span><br><span class="line">--el KEY_SYSTEM_SIZE $(du -b system.raw|cut -f1)  \</span><br><span class="line">--el KEY_USERDATA_SIZE <span class="number">8589934592</span></span><br></pre></td></tr></table></figure>
+<h3 id="DSU-API"><a href="#DSU-API" class="headerlink" title="DSU API"></a>DSU API</h3><p>android.os.image.DynamicSystemClient.java API如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DynamicSystemClient</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">     <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Start installing DynamicSystem from URL with default userdata size.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> systemUrl A network URL or a file URL to system image.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> systemSize size of system image.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">(String systemUrl, <span class="keyword">long</span> systemSize)</span> </span>&#123;</span><br><span class="line">        start(systemUrl, systemSize, DEFAULT_USERDATA_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用系统API需确保该app被预编译到系统中，可参考下面调用DynamicSystemClient的start方法，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DynamicSystemClient aot = <span class="keyword">new</span> DynamicSystemClient(...)</span><br><span class="line">   aot.start(</span><br><span class="line">        ...URL of the selected image...,</span><br><span class="line">        ...uncompressed size of the selected image...);</span><br></pre></td></tr></table></figure>
+<p>URL中文件名格式：<android version>.<lunch name>.<user defined title>.raw.gz，URL指向的是gzipped，非sparse格式的系统映像文件。转换指令如下：</user></lunch></android></p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$&gt; simg2img $&#123;OUT&#125;/system.img $&#123;OUT&#125;/system.raw</span><br><span class="line">$&gt; gzip $&#123;OUT&#125;/system.raw</span><br><span class="line">$&gt; ls $&#123;OUT&#125;/system.raw.gz</span><br></pre></td></tr></table></figure>
+<p>DSU在设置开发者选项的feature flags下面的settings_dynamic_android栏位，为避免user版本上该选项灰显不可点击，可使用下面的adb指令使能它：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell setprop persist.sys.fflag.override.settings_dynamic_system 1</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/01/Boot/Android10_用户空间fastboot/" rel="next" title="Android10 用户空间fastboot">
+                <i class="fa fa-chevron-left"></i> Android10 用户空间fastboot
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/15/Security/Android10_用户数据检查点/" rel="prev" title="Android10 用户数据检查点">
+                Android10 用户数据检查点 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">85</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、DSU概述"><span class="nav-text">一、DSU概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DSU-API"><span class="nav-text">DSU API</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

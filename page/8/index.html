@@ -329,6 +329,339 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/27/Other/Android基础知识点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/01/27/Other/Android基础知识点/" class="post-title-link" itemprop="url">Android基础知识点</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-01-27 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-27T00:00:00+08:00">2018-01-27</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-JNI调用过程"><a href="#1-JNI调用过程" class="headerlink" title="1. JNI调用过程"></a>1. JNI调用过程</h3><p><1> 安装、下载Cygwin，下载AndroidNDK</1></p>
+<p><2>在ndk项目中JNI接口的设计</2></p>
+<p><3>使用C/C++实现本地方法</3></p>
+<p><4>JNI生成动态链接库.so文件</4></p>
+<p><5>将动态链接库复制到java工程中</5></p>
+<h3 id="2-View-SurfaceView-GLSurfaceView"><a href="#2-View-SurfaceView-GLSurfaceView" class="headerlink" title="2. View, SurfaceView, GLSurfaceView"></a>2. View, SurfaceView, GLSurfaceView</h3><p>view必须在UI主线程中刷新，handle.sendmessage发送消息，然后在handle的getmessage中执行invaliate或者postinvaliate。<br>SurfaceView 是View的子类，使用了双缓机制，在新的线程中更新画面所以刷新界面速度比View快。<br>SurfaceView一般会与SurfaceHolder结合使用，调用SurfaceView的getHolder()方法即可获取SurfaceView关联的SurfaceHolder，SurfaceHolder用于向与之关联的SurfaceView上绘图，<br>SurfaceHolder提供了如下方法来获取Canvas对象：<br>－ CanvaslockCanvas()：锁定整个SurfaceView对象，获取该Surface上的Canvas。<br>－ CanvaslockCanvas(Rect dirty)：锁定SurfaceView上Rect划分的区域，获取该Surface上的Canvas。<br>当对同一个SurfaceView调用上面两个方法时，两个方法所返回的是同一个Canvas对象。但当程序调用第二个方法获取指定区域的Canvas时，SurfaceView将只对Rect所“圈”出来的区域进行更新，通过这种方式可以提高画面的更新速度。<br>当通过lockCanvas()获取指定了SurfaceView上的Canvas之后，接下来程序就可调用Canvas进行绘图了，Canvas绘图完成后通过如下方法来释放绘图、提交所绘制的图形：<br>－unlockCanvasAndPost(canvas);<br>GLSurfaceView 是SurfaceView的子类，OpenGL专用的。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/01/27/Other/Android基础知识点/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/20/Other/Parcelable接口用法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/01/20/Other/Parcelable接口用法/" class="post-title-link" itemprop="url">Parcelable接口用法</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-01-20 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-20T00:00:00+08:00">2018-01-20</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-Parcelable接口"><a href="#1-Parcelable接口" class="headerlink" title="1. Parcelable接口"></a>1. Parcelable接口</h3><p>Interface for classes whose instances can be written to and restored from a Parcel。 Classes implementing the Parcelable interface must also have a static field called CREATOR， which is an object implementing the Parcelable.Creator interface。</p>
+<h3 id="2-实现Parcelable就是为了进行序列化，那么为什么要序列化？"><a href="#2-实现Parcelable就是为了进行序列化，那么为什么要序列化？" class="headerlink" title="2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？"></a>2. 实现Parcelable就是为了进行序列化，那么为什么要序列化？</h3><p>1）永久性保存对象，保存对象的字节序列到本地文件中；<br>2）通过序列化对象在网络中传递对象；<br>3）通过序列化在进程间传递对象。</p>
+<h3 id="3-实现序列化的方法"><a href="#3-实现序列化的方法" class="headerlink" title="3. 实现序列化的方法"></a>3. 实现序列化的方法</h3><p>Android中实现序列化有两个选择：一是实现Serializable接口（是JavaSE本身就支持的），一是实现Parcelable接口（是Android特有功能，效率比实现Serializable接口高效，可用于Intent数据传递，也可以用于进程间通信（IPC））。实现Serializable接口非常简单，声明一下就可以了，而实现Parcelable接口稍微复杂一些，但效率更高，推荐用这种方法提高性能。<br>注：Android中Intent传递对象有两种方法：一是Bundle.putSerializable(Key，Object)，另一种是Bundle.putParcelable(Key，Object)。当然这些Object是有一定的条件的，前者是实现了Serializable接口，而后者是实现了Parcelable接口。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/01/20/Other/Parcelable接口用法/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/01/14/Build/Android系统源码编译环境搭建/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1626,338 +1959,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/11/04/Tool/adb常用指令详解/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2017/11/04/Tool/adb常用指令详解/" class="post-title-link" itemprop="url">adb常用指令详解</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2017-11-04 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-04T00:00:00+08:00">2017-11-04</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>所有 adb 客户端均使用端口 5037 与 adb服务器通信<br>设置-&gt;关于手机-&gt;版本号点击7次-&gt;返回上一级，进入开发者选项-&gt;打开USB调试</p>
-<p>显示已连接的模拟器/设备的列表</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">serial_number state</span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb -s serial_number command</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2017/11/04/Tool/adb常用指令详解/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2017/10/29/Tool/Git常用命令详解/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2017/10/29/Tool/Git常用命令详解/" class="post-title-link" itemprop="url">Git常用命令详解</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2017-10-29 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-29T00:00:00+08:00">2017-10-29</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>—-写在前面：</p>
-<p>  自打成为社会人以来，接触Git也四年有余了吧，说它是工作必备工具真是毫不夸张呢。本篇将讲述Git的基础操作，掌握了它们开发者基本够用了。除非你志在软件配置管理SCM，那就要移步官网深入研究了。</p>
-<h3 id="一、Git的安装"><a href="#一、Git的安装" class="headerlink" title="一、Git的安装"></a>一、Git的安装</h3><p>下面以Ubuntu系统为例:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 需先加入git软件源，再执行install操作</span><br><span class="line">$ sudo add-apt-repository ppa:git-core/ppa</span><br><span class="line">$ sudo apt update</span><br><span class="line">$ sudo apt-get install git</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2017/10/29/Tool/Git常用命令详解/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2006,7 +2007,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">83</span>
+                    <span class="site-state-item-count">85</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

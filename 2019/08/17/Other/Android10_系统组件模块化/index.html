@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Android 10模块化了一些Android系统组件，使其能在Android大版本升级之外进行独立升级，即系统组件模块化（Modular System Components）。这些模块化的系统组件打包到一起，可以通过OTA方式推送给终端用户进行升级。模块升级不会引入新的API ，仅使用CTS验证过的SDK和系统API，以及稳定的C API或稳定的AIDL接口。">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android10 系统组件模块化">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/08/17/Other/Android10_系统组件模块化/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="Android 10模块化了一些Android系统组件，使其能在Android大版本升级之外进行独立升级，即系统组件模块化（Modular System Components）。这些模块化的系统组件打包到一起，可以通过OTA方式推送给终端用户进行升级。模块升级不会引入新的API ，仅使用CTS验证过的SDK和系统API，以及稳定的C API或稳定的AIDL接口。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/msc_structure.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/media_update.png">
+<meta property="og:updated_time" content="2019-12-08T07:03:51.024Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android10 系统组件模块化">
+<meta name="twitter:description" content="Android 10模块化了一些Android系统组件，使其能在Android大版本升级之外进行独立升级，即系统组件模块化（Modular System Components）。这些模块化的系统组件打包到一起，可以通过OTA方式推送给终端用户进行升级。模块升级不会引入新的API ，仅使用CTS验证过的SDK和系统API，以及稳定的C API或稳定的AIDL接口。">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/msc_structure.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/08/17/Other/Android10_系统组件模块化/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android10 系统组件模块化 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/08/17/Other/Android10_系统组件模块化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android10 系统组件模块化
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-17 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-17T00:00:00+08:00">2019-08-17</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Android 10模块化了一些Android系统组件，使其能在Android大版本升级之外进行独立升级，即系统组件模块化（Modular System Components）。这些模块化的系统组件打包到一起，可以通过OTA方式推送给终端用户进行升级。模块升级不会引入新的API ，仅使用CTS验证过的SDK和系统API，以及稳定的C API或稳定的AIDL接口。</p>
+<p><img src="/images/msc_structure.png" alt></p>
+<a id="more"></a>
+<p>模块化的系统组件主要有：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">模块名</th>
+<th style="text-align:center">包名</th>
+<th style="text-align:center">类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Runtime</td>
+<td style="text-align:center">com.android.runtime.release.apex</td>
+<td style="text-align:center">APEX</td>
+</tr>
+<tr>
+<td style="text-align:center">Captive</td>
+<td style="text-align:center">Portal Login</td>
+<td style="text-align:center">com.android.captiveportallogin</td>
+<td>APK</td>
+</tr>
+<tr>
+<td style="text-align:center">Conscrypt</td>
+<td style="text-align:center">com.android.conscrypt</td>
+<td style="text-align:center">APEX</td>
+</tr>
+<tr>
+<td style="text-align:center">DNS Resolver</td>
+<td style="text-align:center">com.android.resolv</td>
+<td style="text-align:center">APEX</td>
+</tr>
+<tr>
+<td style="text-align:center">DocumentsUI</td>
+<td style="text-align:center">com.android.documentsui</td>
+<td style="text-align:center">APK</td>
+</tr>
+<tr>
+<td style="text-align:center">ExtServices</td>
+<td style="text-align:center">com.android.ext.services</td>
+<td style="text-align:center">APK</td>
+</tr>
+<tr>
+<td style="text-align:center">Media Codecs</td>
+<td style="text-align:center">com.android.media.swcodec</td>
+<td style="text-align:center">APEX</td>
+</tr>
+<tr>
+<td style="text-align:center">Media Extractors and MediaPlayer2</td>
+<td style="text-align:center">com.android.media</td>
+<td style="text-align:center">APEX</td>
+</tr>
+<tr>
+<td style="text-align:center">ModuleMetadata</td>
+<td style="text-align:center">com.android.modulemetadata</td>
+<td style="text-align:center">APK</td>
+</tr>
+<tr>
+<td style="text-align:center">Network Stack Permission Configuration</td>
+<td style="text-align:center">com.android.networkstack.permissionconfig</td>
+<td style="text-align:center">APK</td>
+</tr>
+<tr>
+<td style="text-align:center">Network Components</td>
+<td style="text-align:center">com.android.networkstack</td>
+<td style="text-align:center">APK</td>
+</tr>
+<tr>
+<td style="text-align:center">PermissionController</td>
+<td style="text-align:center">com.android.permissioncontroller</td>
+<td style="text-align:center">APK</td>
+</tr>
+<tr>
+<td style="text-align:center">Time Zone Data</td>
+<td style="text-align:center">com.android.tzdata</td>
+<td style="text-align:center">APEX</td>
+</tr>
+</tbody>
+</table>
+<h4 id="1-Android-Runtime"><a href="#1-Android-Runtime" class="headerlink" title="1. Android Runtime"></a>1. Android Runtime</h4><p>Runtime（com.android.runtime.release.apex）是用于原生和托管Android runtime的APEX模块。该模块包括以下组件：</p>
+<p>(1)ART</p>
+<p>构建Android时会生成Runtime模块和其它编译组件。它与Conscrypt（com.android.conscrypt.apex）和时区数据（com.android.tzdata.apex）紧密结合，也是Android 10中的新功能。</p>
+<p>在Android 10中，ART编译系统以两种变体创建Runtime模块：发布和调试。发行版本安装在user版本上，调试版本安装在userdebug和eng版本上。当设备启动时，apexd将runtime模块安装在/apex/com.android.runtime下。在该模块中，启动类路径分为托管核心库类，其他模块中的类（如Conscrypt和Media）以及系统分区中的类（如framework.jar）之间进行拆分。如果更新模块，dex2oat JIT将编译模块中的引导类。</p>
+<p>Android 10 中的API变化有：DEX文件支持的新API提供了系统代码和ART之间的稳定接口。新API用作系统的ART特定平台抽象层（PAL）。系统元素（libartpalette-system.so）提供了ART所依赖的系统功能，可通过客户端库（libartpalette.so）进行访问，该库可加载设备上安装的系统库。</p>
+<p>Android 10还重构了一些ART二进制文件的路径，将以下二进制文件从/system/bin移动到Runtime模块：dalvikvm，dalvikvm32，dalvikvm64，dex2oat，dexdiag，dexdump，dexlist，dexoptanalyzer，oatdump和profman。为了兼容性，重构包括/system/bin中的符号链接。</p>
+<p>(2)Bionic</p>
+<p>libc的tzcode使用Runtime（/apex/com.android.runtime/etc/tz/）和时区数据（/apex/com.android.tzdata/etc/tz/）提供的时区数据。tzcode通过基于APEX的时区更新（由时区数据提供）对来自基于APK的时区更新的数据进行优先级排序，并回退到/system数据。libc使用新库（libandroidicu）而不是libicuuc / libicui18n。另外，Bionic共享库和动态链接器路径现在是符号链接（适用于64位变体）。如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/system/lib/libc.so	- &gt; 	/apex/com.android.runtime/lib/bionic/libc.so</span><br><span class="line">/system/lib/libm.so	- &gt; 	/apex/com.android.runtime/lib/bionic/libm.so</span><br><span class="line">/system/lib/libdl.so	- &gt; 	/apex/com.android.runtime/lib/bionic/libdl.so</span><br><span class="line">/system/bin/linker	- &gt; 	/apex/com.android.runtime/bin/linker</span><br></pre></td></tr></table></figure>
+<p>(3)托管核心库（Android 10新功能）</p>
+<p>托管核心库是一个低层级，可更新，托管式（由Android Runtiem执行的dex）代码的集合，以前称为libcore。在Android 10中，托管核心库包括多个Git项目（除了platform/libcore/），指的是代码集合。</p>
+<p>托管核心库由Runtime，Time Zone Data和Conscrypt提供，并依赖于Runtime中存在的本机库，例如libjavacore和libandroidicu。收集的代码来自多个Git项目，如libcore，apache-xml，boringssl，bouncycastle，conscrypt，expat，fdlibm，icu，okhttp，ziparchive和zlib。该库在引导类路径上的多个.jar文件之间分开（例如core-oj.jar，core-libart.jar，conscrypt.jar，okhttp.jar，bouncycastle.jar和apache-xml.jar）；但是，它不包括framework.jar或ext.jar。</p>
+<p>Android 10重新打包了以前使用字节码操作在android.<em>和com.android.</em>下打包的几个组件（bouncycastle /，conscrypt /，okhttp /）。这些组件使用源代码转换重新打包，使得Java注释能够用于API元数据。</p>
+<p>核心平台API提供了一个稳定的托管代码API供Android框架使用，通过确保清楚地理解所有framework依赖关系来更新托管核心库。核心平台API：表示除公共SDK API之外的依赖项。如libcore/mmodules/core_platform_api/。使用@ libcore.api.CorePlatformApi显式标注托管代码。如libcore/ojluni/annotations/mmodule/中的注释。</p>
+<p>编译系统默认在编译Java源代码平台目标时使用核心平台API（即在.bp文件中没有“sdk_version：”或.mk文件中没有“LOCAL_SDK_VERSION =”）。此默认行为可确保Android框架代码仅限于使用公共API和核心平台 API（无实现类）。其他sdk_version值（如“core_current”和“current”）正常工作（它们仅允许使用公共SDK API）。编译系统还报告对核心平台API表面的更改，并防止目标（少数情况例外）依赖于托管核心库内部。</p>
+<p>Runtime对核心平台API涵盖的字段和方法执行访问检查。当平台代码访问核心平台API中的方法时，将执行检查。系统属性persist.debug.dalvik.vm.core_platform_api_policy控制这些检查遵循的策略。有效的策略值enabled，disabled和just-warn。对于debug和eng版本，标准策略just-warn，它会在检测到策略违规时记录警告。对于user版本，默认disabled并且不执行任何操作。当本机代码通过Java本机接口（JNI）解析字段和方法时，Runtime模块还会执行核心平台API检查。</p>
+<p>Android 10还包含许多更改，以简化Android框架和托管核心库之间的API，运行时依赖项和编译时依赖项。Android 10重新打包com.android.org.kxml2下的org.kxml2解析器。</p>
+<p>(4)Native库</p>
+<p>Android 10重构支持管理核心库的本机库。之前与平台其他部分共享的几个动态链接库（例如，libcrypto，libexpat和zlib）现在已复制，因此Runtime模块将自己的副本加载到运行时链接程序命名空间中。 Runtime模块提供的动态链接本机库位于/apex/com.android.runtime/{lib,lib64}中。</p>
+<p>(5)ICU库</p>
+<p>Runtime包括ICU库（ICU4C和ICU4J）和相关数据。</p>
+<p>Android 10包括libandroidicu，这是一个新的动态库，可以为框架代码提供ICU4C函数。libandroidicu的链接器符号在ICU版本中是稳定的（符号以_android结尾，而不是libicuuc和libicui18n中使用的_icu-version-number结尾）。但为了兼容应用程序，libicuuc和libicui18n符号仍然可用。此外，为了应用程序兼容性，链接器将dlopen（）调用中的绝对路径重定向到ICU库，即dlopen（“/system/lib/libicuuc.so”，…）和dlopen（“/system/lib/libicui18n.so”），重定向到/apex/com.android.runtime/lib/中相应的库，用于targetSdkVersion &lt;29的应用程序。</p>
+<p>在运行时，ICU数据文件安装到/apex/com.android.runtime/etc/icu/。为了应用程序兼容性，Android 10包含从先前ICU数据文件位置（/system/usr/icu/）到/apex/com.android.runtime/etc/icu的符号链接。</p>
+<p>(6)libnativebridge</p>
+<p>Android 10将libnativebridge库移到了Runtime模块，因为该库与libnativeloader和作为Runtime模块一部分的Bionic C库紧密耦合。</p>
+<p>(7)libnativehelper</p>
+<p>在Android 10中，Runtime模块使libnativehelper可用于系统和框架代码，而Runtime模块之外的代码则链接到libnativehelper的存根API（仅限C）。libnativehelper库包括：</p>
+<p>a. 减少了一组缓存的JNI类，方法和字段。</p>
+<p>b. 改进了platform_include/jni_macros.h中的JNI宏。</p>
+<p>c.用于从本机代码访问java.nio.Buffer类内部的新JNI帮助器方法（libnativehelper/include/nativehelper/JNIHelp.h中以jniGetNio开头的方法）。框架代码使用这些方法。</p>
+<p>(8)libnativeloader</p>
+<p>在Android 10中，Runtime模块包含libnativeloader库，该库负责为Java类加载器创建链接器名称空间。链接器名称空间适用于由托管代码编写的Android应用程序加载的本机库。该库与Bionic链接器紧密耦合，Bionic链接器也在模块中。</p>
+<p>(9)链接器配置更改</p>
+<p>在Android 10中，链接器命名空间用于将Runtime模块中的内部动态本机库依赖项与平台和其他APEX模块分开。运行时链接程序命名空间是为运行时模块库设置的，具有与外部依赖项的其他命名空间之间的适当链接。</p>
+<p>链接器配置驻留在/system/etc/ld.config.txt中，用于/vendor和/system中的二进制文件，以及/etx/com.android.runtime/etc/ld.config.txt中的二进制文件，用于运行时模块本身中的二进制文件（ /apex/com.android.runtime/bin）。</p>
+<p>(10)SystemServer和框架更改</p>
+<p>在Android 10中，SystemServer管理一个新的RuntimeService，用于报告来自Runtime模块的信息。使用ADB命令：adb shell dumpsys runtimeinfo查看此信息。</p>
+<p>RuntimeService管理的信息是可扩展的。服务源代码可参考frameworks/base/services/core/java/com/android/server/RuntimeService.java;如客户端代码，可参考libcore/luni/src/main/java/libcore/util/CoreLibraryDebug.java。</p>
+<p>Android 10还更新了OTA升级流程，以使用dex2oat和Runtime模块中的其他工具。</p>
+<p>(11)启动顺序更改</p>
+<p>为了支持Runtime模块，Android 10将启动顺序更新为以下内容：</p>
+<p>a. init准备引导程序和默认的mount命名空间。tmpfs挂载在/apex上，挂载点的传播类型设置为private。</p>
+<p>b. apexd在任何其他进程之前以引导模式启动。它激活/system/apex中的APEX文件，并将它们挂载在bootstrap mount命名空间中。</p>
+<p>c. 其他pre-apexd流程开始。这些进程位于引导程序挂载命名空间中，并提供有来自系统APEX文件的库。</p>
+<p>d. /data挂载。init切换到默认的mount命名空间并启动apexd作为守护进程。</p>
+<p>e. apexd扫描/data/ape和/system/apex并激活这些目录中的最新APEX文件。在此阶段激活的APEX文件仅挂载在默认命名空间中，并且对于pre-apexd进程不可见。</p>
+<h4 id="2-Conscrypt"><a href="#2-Conscrypt" class="headerlink" title="2. Conscrypt"></a>2. Conscrypt</h4><p>Conscrypt可以加速安全性改进并提高设备安全性，而无需依赖OTA升级。它使用Java代码和本机库来提供Android TLS实现以及大部分Android加密功能，如密钥生成器，密码和消息摘要。Conscrypt作为开源库提供，但它包含在Android平台中时有一些特殊化。</p>
+<p>Conscrypt使用BoringSSL，是OpenSSL的Google分支本地库，在许多Google产品中用于加密和TLS。BoringSSL没有正式版本（所有用户都是从头部构建的）并且不保证API或ABI的稳定性。</p>
+<p>Android 9不包含针对Conscrypt的特定于Android的公共API，而是使用实现Java加密体系结构（JCA）标准类的安全提供程序，包括Cipher和MessageDigest，以及Java安全套接字扩展（JSSE），包括SSLSocket和SSLEngine。用户与这些类交互，libcore或框架代码使用一些非公开的Conscrypt API。</p>
+<p>Android 10在android.net.ssl中添加了少量公共API方法，以访问未在javax.net.ssl下的类公开的Conscrypt功能。Android 10还包括一个精简的Bouncy Castle副本，作为Android Runtime的一部分提供较低流行度的加密工具（未包含在Conscrypt模块中）。</p>
+<p>Conscrypt最终以APEX形式分发，其中包含Conscrypt Java代码和动态链接到Android NDK库（如liblog）的Conscrypt本机库。本机库还包括一个BoringSSL副本，该副本在AArch64上具有加密算法验证程序（CAVP）认证。此副本尚未通过NIST的认证测量和验证专业人员（CMVP）进行验证。</p>
+<p>Conscrypt模块包括/external/onscrypt和/external/boringssl，但不包括/external/bouncycastle。</p>
+<p>Conscrypt模块公开以下API：</p>
+<p>(1)公共API，是java.<em>和javax.</em>下的包中的类和接口的扩展，以及android.net.ssl.*下的类。外部应用程序代码不直接调用Conscrypt。平台API标准确保这些API保持向后兼容。</p>
+<p>(2)核心平台API，是框架用于访问非公共功能的隐藏API。这些相对有限;最大的用户是NetworkSecurityConfig，它扩展了Conscrypt信任管理器（验证证书的组件）以实现网络安全配置功能。</p>
+<p>(3)内核API，仅限于由JCA和JSEE机制反射调用的零参数构造函数。</p>
+<h4 id="3-DNS解析器（DNS-Resolver）"><a href="#3-DNS解析器（DNS-Resolver）" class="headerlink" title="3. DNS解析器（DNS Resolver）"></a>3. DNS解析器（DNS Resolver）</h4><p>DNS解析器为DNS拦截、配置更新攻击提供保护，能提高DNS解析的网络性能。该模块包含实现DNS存根解析器的代码，该解析器将诸如<a href="http://www.google.com之类的域名转换为IP地址，例如2001：db8" target="_blank" rel="noopener">www.google.com之类的域名转换为IP地址，例如2001：db8</a> :: 1。 DNS存根解析器支持Java API元素，如InetAddress＃getAllByName和Network＃getAllByName，以及本机网络功能，并实现发送和接收DNS查询以及缓存结果。</p>
+<p>DNS解析器最终以APEX文件形式呈现，并由netd动态链接，直接为本地套接字/dev/socket/dnsproxyd提供服务。解析器配置的Binder端点从netd移到解析器，这意味着系统服务可以直接调用解析器模块而无需通过netd。DNS解析器模块依赖于libc（Bionic）并静态链接其依赖关系，不需要其他库。</p>
+<p>在Android 9之前，DNS解析器代码分布在Bionic和netd上。DNS查找集中在netd守护程序中以允许系统范围的缓存，而应用程序在Bionic中调用函数（例如getaddrinfo）。查询通过UNIX套接字发送到/dev/socket/dnsproxyd到netd守护程序，netd守护程序解析请求并再次调用getaddrinfo以发出DNS查找，然后缓存结果以便其他应用程序可以使用它们。DNS解析器实现主要包含在bionic/libc/dns/中，部分包含在system/netd/server/dns中。</p>
+<p>Android 10将DNS解析器代码移动到system/netd/resolv，将其转换为C ++，然后对代码进行了重构。Bionic中的代码因应用程序兼容性原因继续存在，但系统不再调用。下面这些源码路径受到影响：</p>
+<p>(1)bionic/libc/dns</p>
+<p>(2)system/netd/client</p>
+<p>(3)system/netd/server/dns</p>
+<p>(4)system/netd/server/DnsProxyListener.*</p>
+<p>(5)system/netd/resolv</p>
+<h4 id="4-DocumentsUI"><a href="#4-DocumentsUI" class="headerlink" title="4. DocumentsUI"></a>4. DocumentsUI</h4><p>DocumentsUI控制对处理文档权限的组件（例如将文件附加到电子邮件）的特定文件的访问。使存储访问和权限进入可更新模块可以增加用户的隐私和安全性，同时允许Android partner通过RRO（Runtime Resource Overlay）自定义应用的功能和主题。DocumentsUI最终以APK形式呈现，它依赖于受签名权限保护的MANAGE_DOCUMENTS权限。</p>
+<p>Android 10中，DocumentsUI实现了GET_CONTENT操作，该操作使app能够请求访问用户的其他数据。作为可更新的模块，DocumentsUI：</p>
+<p>(1)仅通过稳定的@SystemApi API（不使用@hide API）与framework进行交互。</p>
+<p>(2)公开了一种机制，使Android partner能够自定义功能和主题。</p>
+<p>(3)使用签名权限保护MANAGE_DOCUMENTS权限。</p>
+<h4 id="5-ExtServices"><a href="#5-ExtServices" class="headerlink" title="5. ExtServices"></a>5. ExtServices</h4><p>ExtServices模块更新framework组件，例如存储，自动填充，通知助手和其他不断运行的服务。该模块与DocumentsUI和PermissionController一起，确保最终用户获得一致的权限UI，同时启用迭代以响应不断变化的隐私环境和政府法规。</p>
+<p>com.android.ext.services APK包含以下服务：</p>
+<p>(1)AutofillFieldClassificationService</p>
+<p>(2)NotificationAssistantService</p>
+<p>(3)ResolverRankerService</p>
+<p>(4)CacheQuotaService</p>
+<h4 id="6-Media-Codecs"><a href="#6-Media-Codecs" class="headerlink" title="6. Media Codecs"></a>6. Media Codecs</h4><p>Media更新机制如下：</p>
+<p><img src="/images/media_update.png" alt></p>
+<p>现有的OMX编解码器API不可更新，但OEM仍然可以在10中vendor分区中使用它。在10中，SW Codec2组件是可更新的。</p>
+<p>对于媒体编解码器，partner需要设置vendor编解码器服务。框架/av/media/codec2/hidl/services/提供了服务的框架实现。该服务需要使用frameworks/av/media/codec2/core/中定义的Codec 2.0接口来调用其组件的实现。 该库的入口点是C2ComponentStore接口，可以在frameworks/av/media/codec2/vndk/C2Store.cpp中引用Android的默认软件编解码器存储实现。</p>
+<p>partner可以使用类似于mediaswcodec服务的APEX加载行为。vendor编解码器服务流程的结构与mediaswcodec类似。可以定义和打包负责注册所有C2组件的顶级共享库（具有传递依赖性）到驻留在vendor分区上的APEX包。然后vendor编解码器服务进程可以在启动时加载此顶级入口点。</p>
+<h4 id="7-Media-Extractors-and-MediaPlayer2"><a href="#7-Media-Extractors-and-MediaPlayer2" class="headerlink" title="7. Media Extractors and MediaPlayer2"></a>7. Media Extractors and MediaPlayer2</h4><p>(1)Media Extractors</p>
+<p>为了准备可更新性，媒体提取器Media Extractors已经被制作成单独的组件（而不是编译成libstagefright.so）。它们进一步更新为仅依赖于NDK API。</p>
+<p>每个提取器都有自己的.so文件。.so有一个入口点，它提供一个sniffer函数来确定提取器是否可以处理给定的媒体文件，以及一个factory函数，它为给定的媒体文件创建一个提取器实例。每个提取器都被命名和版本化。命名有助于调试，而版本控制指示哪个提取器是最新的。因为Android加载所有可用的提取器.so文件，OEM只需添加新的.so文件即可添加自己的提取器，而无需修改libstagefright或其他媒体框架库。如果OEM更新提取器，那么Google会找到并使用它们（如果需要，有多种方法可以确保OEM提取器优于Google提供的提取器）。</p>
+<p>对于媒体提取器，如果Google的默认提取器不符合要求，partner可以使用自己的提取器插件。自定义提取器插件可以放在/system/lib [64]/extractors/下，并且提取器进程从Google APEX包和/system/lib [64]/extractors/加载提取器插件。</p>
+<p>(2)MediaPlayer2</p>
+<p>Android 10中添加的MediaSession2 API使用一个过程，允许媒体应用程序向其他进程（包括Android框架和其他应用程序）公开其传输控件和回放信息。</p>
+<p>对于MediaSession2，在代码为AOSP设备开源时，不允许进行vendor修改。对于传统MediaPlayer和MediaSession API的现有修改，vendor应尽可能向其上游进行更改。当无法进行上游时，Google会考虑通过逐个审核来提供扩展。</p>
+<h4 id="8-ModuleMetadata"><a href="#8-ModuleMetadata" class="headerlink" title="8. ModuleMetadata"></a>8. ModuleMetadata</h4><p>ModuleMetadata包含设备上的模块列表的元数据。一旦系统服务器启动，就会解析和缓存元数据。ModuleMetadata APK包含ModuleInfoProvider，它实现PackageManager API中的getModuleInfo和getInstalledModules方法。这些方法由从模块元数据提供程序包解析的XML元数据支持。模块元数据包的包名称存储config_defaultModuleMetadataProvider配置值中。</p>
+<p>模块元数据提供程序必须包含<application>标记的<metadata>条目。元数据条目必须包含单个键（android.content.pm.MODULE_METADATA），其值是对XML资源的引用，该XML资源包含设备上的模块列表的元数据。</metadata></application></p>
+<p>ModuleMetadata模块作为APK文件，在XML文档中，元数据包括具有一个或多个子元素的单个顶级<module-metadata>元素。每个子节点都是<module>元素，包含以下属性：</module></module-metadata></p>
+<p>(1)name是对用户可见包名称的资源引用。映射到ModuleInfo＃getName。</p>
+<p>(2)packageName是模块的包名称。映射到ModuleInfo＃getPackageName。</p>
+<p>(3)isHidden表示模块是否被隐藏。映射到ModuleInfo＃isHidden。</p>
+<p>例如：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">module-metadata</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">module</span> <span class="attr">name</span>=<span class="string">"@string/resource"</span> <span class="attr">packageName</span>=<span class="string">"package_name"</span> <span class="attr">isHidden</span>=<span class="string">"false|true"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">module</span> <span class="attr">....</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">module-metadata</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="9-网络堆栈权限配置Network-Stack-Permission-Configuration"><a href="#9-网络堆栈权限配置Network-Stack-Permission-Configuration" class="headerlink" title="9. 网络堆栈权限配置Network Stack Permission Configuration"></a>9. 网络堆栈权限配置Network Stack Permission Configuration</h4><p>网络堆栈权限配置不包含代码，而是定义了供网络堆栈和强制网络门户登录模块使用的权限。系统允许获得此权限的模块在设备上执行相关的网络配置任务。</p>
+<h4 id="10-网络组件Network-Components"><a href="#10-网络组件Network-Components" class="headerlink" title="10. 网络组件Network Components"></a>10. 网络组件Network Components</h4><p>网络组件可确保Android能够适应不断发展的网络标准，并允许与新实施的互操作性。例如，对强制门户检测和登录代码的更新允许Android通过更改强制门户模型保持最新，并且高级策略防火墙（APF）的更新允许Android在新类型的数据包变得普遍时节省Wi-Fi的电力。</p>
+<p>网络组件模块包含以下组件：</p>
+<p>(1)IP服务。 IpClient（以前称为IpManager）组件处理IP层配置和维护。在Android 9中，它被蓝牙等组件交叉处理，并通过Wi-Fi等组件进行处理。 DhcpClient组件从DHCP服务器获取IP地址，以便将它们分配给接口。</p>
+<p>(2)NetworkMonitor。 NetworkMonitor组件在连接到新网络或网络故障时，检测强制网络门户以及验证网络时测试互联网可达性。</p>
+<p>(3)强制门户登录应用程序。Captive门户登录应用程序是一个预装的应用程序，负责管理强制门户网站的登录。这是自Android 5.0以来的一个单独的应用程序，但它与NetworkMonitor交互以将一些用户选择转发到系统。</p>
+<p>在使用“网络组件”模块的设备上，上述服务将重构为不同的进程，并使用稳定的AIDL接口进行访问。重构路径如下表所示。</p>
+<p>IP服务重构路径：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Android 9及之前版本</th>
+<th style="text-align:center">frameworks/base/services/net/java/android/net/: apf,dhcp,ip,netlink,util (partly)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Android 10</td>
+<td style="text-align:center">packages/modules/NetworkStack</td>
+</tr>
+</tbody>
+</table>
+<p>强制门户登录重构路径：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Android 9及之前版本</th>
+<th style="text-align:center">在frameworks/base/:core/java/android/net/captiveportal/,services/core/java/com/android/server/connectivity/NetworkMonitor.java,packages/CaptivePortalLogin/<em> (where </em> = wildcard)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Android 10</td>
+<td style="text-align:center">packages/modules/CaptivePortalLogin</td>
+</tr>
+</tbody>
+</table>
+<p>网络组件模块作为三个APK提供：一个用于IP服务，一个用于强制门户登录，一个用于网络堆栈权限配置。网络组件取决于以下内容：</p>
+<p>(1)系统服务器中的特权@hide方法（如在IConnectivityManager.aidl中）。 这些API已使用@SystemApi注释并受到适当保护，以便模块可以访问它们，但不能访问其他特权应用程序（例如，使用新的签名权限）。</p>
+<p>(2)在INetd.aidl中定义的Binder IPC至netd。 此接口已转换为稳定的AIDL，并且需要进行一致性测试。</p>
+<h4 id="11-PermissionController"><a href="#11-PermissionController" class="headerlink" title="11. PermissionController"></a>11. PermissionController</h4><p>PermissionController模块启用可更新的隐私策略和UI元素（例如，围绕授予和管理权限的策略和UI）。此模块处理与权限相关的UI和逻辑（它是从Package Installer重构的）和角色（允许为特定目的访问应用程序）。</p>
+<p>com.android.permissioncontroller APK处理与权限相关的UI，逻辑和角色，以允许为特定目的访问应用程序，主要控制内容有：</p>
+<p>(1)运行时权限授予（包括授予系统应用程序）。<br>(2)运行时权限管理（包括权限分组）。<br>(3)运行时权限使用情况跟踪（Android 10新功能）。<br>(4)角色（Android 10新功能）。</p>
+<p>在Android 9中，此类权限是com.android.packageinstaller的一部分。在Android 10及更高版本中，Package Installer应用程序将被拆分以启用权限逻辑更新。作为可更新的Android模块，PermissionController：</p>
+<p>(1)仅通过稳定的@SystemApi API（不使用@hide API）与framework进行交互。<br>(2)处理优先级大于0的权限相关intent。<br>(3)公开了一种机制，使Android partner能够自定义主题。<br>(4)提供系统和应用程序可以绑定的服务，包括角色管理，权限撤销和基本权限信息（对于“设置”）。</p>
+<h4 id="12-Time-Zone-Data"><a href="#12-Time-Zone-Data" class="headerlink" title="12. Time Zone Data"></a>12. Time Zone Data</h4><p>时区数据更新Android设备上的夏令时（DST）和时区，标准化数据（可以根据宗教，政治和地缘政治原因频繁更改）和整个生态系统的更新机制。</p>
+<p>Android 10弃用了基于APK的时区数据更新机制（在Android 8.1和Android 9中使用），并将其替换为基于APEX的模块更新机制。AOSP继续包含基于APK的更新所需的平台代码，因此升级到Android 10的设备仍然可以通过APK接收partner提供的时区数据更新。但是，不应在同时接收模块更新的生产设备上使用APK更新机制，因为基于APK的更新会取代基于APEX的更新（即接收APK更新的设备会忽略基于APEX的更新）。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/14/Boot/开机时间优化总结/" rel="next" title="开机时间优化总结">
+                <i class="fa fa-chevron-left"></i> 开机时间优化总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/24/Filesystem/Android10_动态分区/" rel="prev" title="Android10 动态分区">
+                Android10 动态分区 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">85</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Android-Runtime"><span class="nav-text">1. Android Runtime</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Conscrypt"><span class="nav-text">2. Conscrypt</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-DNS解析器（DNS-Resolver）"><span class="nav-text">3. DNS解析器（DNS Resolver）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-DocumentsUI"><span class="nav-text">4. DocumentsUI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-ExtServices"><span class="nav-text">5. ExtServices</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-Media-Codecs"><span class="nav-text">6. Media Codecs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-Media-Extractors-and-MediaPlayer2"><span class="nav-text">7. Media Extractors and MediaPlayer2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-ModuleMetadata"><span class="nav-text">8. ModuleMetadata</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-网络堆栈权限配置Network-Stack-Permission-Configuration"><span class="nav-text">9. 网络堆栈权限配置Network Stack Permission Configuration</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-网络组件Network-Components"><span class="nav-text">10. 网络组件Network Components</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-PermissionController"><span class="nav-text">11. PermissionController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-Time-Zone-Data"><span class="nav-text">12. Time Zone Data</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
