@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、使能Verified Boot 1.01.1 QCT平台使能配置(1)在kernel/msm-4.4/arch/arm64/configs/$project_defconfig中打开dm-verity功能： 12CONFIG_DM_VERITY=yCONFIG_DM_VERITY_FEC=y">
+<meta name="keywords" content="Boot,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Verified Boot使能方式">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/11/10/Security/AndroidVerifiedBoot使能方式/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、使能Verified Boot 1.01.1 QCT平台使能配置(1)在kernel/msm-4.4/arch/arm64/configs/$project_defconfig中打开dm-verity功能： 12CONFIG_DM_VERITY=yCONFIG_DM_VERITY_FEC=y">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-08T06:22:07.547Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Verified Boot使能方式">
+<meta name="twitter:description" content="一、使能Verified Boot 1.01.1 QCT平台使能配置(1)在kernel/msm-4.4/arch/arm64/configs/$project_defconfig中打开dm-verity功能： 12CONFIG_DM_VERITY=yCONFIG_DM_VERITY_FEC=y">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/11/10/Security/AndroidVerifiedBoot使能方式/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android Verified Boot使能方式 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/10/Security/AndroidVerifiedBoot使能方式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android Verified Boot使能方式
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-10 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-10T00:00:00+08:00">2019-11-10</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、使能Verified-Boot-1-0"><a href="#一、使能Verified-Boot-1-0" class="headerlink" title="一、使能Verified Boot 1.0"></a>一、使能Verified Boot 1.0</h3><h4 id="1-1-QCT平台使能配置"><a href="#1-1-QCT平台使能配置" class="headerlink" title="1.1 QCT平台使能配置"></a>1.1 QCT平台使能配置</h4><p>(1)在kernel/msm-4.4/arch/arm64/configs/$project_defconfig中打开dm-verity功能：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_DM_VERITY=y</span><br><span class="line">CONFIG_DM_VERITY_FEC=y</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>(2)在device/qcom/common/base.mk中启用system/vendor签名：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifneq</span> (<span class="variable">$(BOARD_AVB_ENABLE)</span>, true)</span><br><span class="line">   PRODUCT_SYSTEM_VERITY_PARTITION=/dev/block/bootdevice/by-name/system</span><br><span class="line">   <span class="keyword">ifeq</span> (<span class="variable">$(ENABLE_VENDOR_IMAGE)</span>, true)</span><br><span class="line">      PRODUCT_VENDOR_VERITY_PARTITION=/dev/block/bootdevice/by-name/vendor</span><br><span class="line">   <span class="keyword">endif</span></span><br><span class="line">   <span class="variable">$(<span class="built_in">call</span> inherit-product, build/target/product/verity.mk)</span></span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<p>(3)在device/$manufacturer/$project/$project.mk中启用PRODUCT_SUPPORTS_VERITY：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ifneq</span> (<span class="variable">$(BOARD_AVB_ENABLE)</span>, true)</span><br><span class="line">    PRODUCT_SUPPORTS_VERITY := true</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+<p>(4)在device/$manufacturer/$project/fstab.qti中为system/vendor添加verify flag：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/dev/block/bootdevice/by-name/system  /   ext4   ro,barrier=1,discard   wait,verify</span><br><span class="line">/dev/block/bootdevice/by-name/vendor  /vendor   ext4   ro,barrier=1,discard   wait,verify</span><br></pre></td></tr></table></figure>
+<p>(5)在kernel/msm-4.4/arch/arm64/boot/dts/qcom/$platform.dtsi中为system/vendor添加verify flag：</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">firmware:</span> <span class="class">firmware </span>&#123;</span><br><span class="line">	<span class="class">android </span>&#123;</span><br><span class="line">		compatible = <span class="string">"android,firmware"</span>;</span><br><span class="line">		<span class="class">fstab </span>&#123;</span><br><span class="line">			compatible = <span class="string">"android,fstab"</span>;</span><br><span class="line">			<span class="class">vendor </span>&#123;</span><br><span class="line">				compatible = <span class="string">"android,vendor"</span>;</span><br><span class="line">				dev = <span class="string">"/dev/block/platform/soc/7824900.sdhci/by-name/vendor"</span>;</span><br><span class="line">				type = <span class="string">"ext4"</span>;</span><br><span class="line">				mnt_flags = <span class="string">"ro,barrier=1,discard"</span>;</span><br><span class="line">				fsmgr_flags = <span class="string">"wait,verify"</span>;</span><br><span class="line">				status = <span class="string">"ok"</span>;</span><br><span class="line">			&#125;;</span><br><span class="line">			<span class="class">system </span>&#123;</span><br><span class="line">				compatible = <span class="string">"android,system"</span>;</span><br><span class="line">				dev = <span class="string">"/dev/block/platform/soc/7824900.sdhci/by-name/system"</span>;</span><br><span class="line">				type = <span class="string">"ext4"</span>;</span><br><span class="line">				mnt_flags = <span class="string">"ro,barrier=1,discard"</span>;</span><br><span class="line">				fsmgr_flags = <span class="string">"wait,verify"</span>;</span><br><span class="line">				status = <span class="string">"ok"</span>;</span><br><span class="line">			&#125;;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-MTK平台使能配置"><a href="#1-2-MTK平台使能配置" class="headerlink" title="1.2 MTK平台使能配置"></a>1.2 MTK平台使能配置</h4><p>(1)在kernel-4.4/arch/arm64/configs/${project}_defconfig中打开dm-verity功能：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_DM_VERITY=y</span><br><span class="line">CONFIG_DM_VERITY_FEC=y</span><br><span class="line"><span class="comment"># CONFIG_MTK_DM_VERITY_OFF is not set</span></span><br></pre></td></tr></table></figure>
+<p>(2)在device/mediatek/common/device.mk中启用system/vendor签名：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/platform/bootdevice/by-name/system</span><br><span class="line">PRODUCT_VENDOR_VERITY_PARTITION := /dev/block/platform/bootdevice/by-name/vendor</span><br></pre></td></tr></table></figure>
+<p>(3)在device/$manufacturer/$project/ProjectConfig.mk中关闭MTK_DM_VERITY_OFF宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_DM_VERITY_OFF=no</span><br></pre></td></tr></table></figure>
+<p>(4)在kernel-4.9/arch/arm64/boot/dts/mtxxxx.dts或kernel-4.9/arch/arm/boot/dts/mtxxxx.dts中在fsmgr_flag中添加verify。</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class">firmware </span>&#123;</span><br><span class="line">	<span class="class">android </span>&#123;</span><br><span class="line">		compatible=<span class="string">"android,firmware"</span>;</span><br><span class="line">		<span class="class">fstab </span>&#123;</span><br><span class="line">			compatible=<span class="string">"android,fstab"</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_AB_OTA_UPDATER</span></span><br><span class="line">			<span class="class">system </span>&#123;</span><br><span class="line">				compatible=<span class="string">"android,system"</span>;</span><br><span class="line">				dev=<span class="string">"/dev/block/platform/mtk-msdc.0/1123000.msdc0/by-name/system"</span></span><br><span class="line">				type=<span class="string">"ext4"</span></span><br><span class="line">				mnt_flags=<span class="string">"ro"</span></span><br><span class="line">				fsmgr_flags=<span class="string">"wait,verify"</span></span><br><span class="line">			&#125;;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_LATE_MOUNT</span></span><br><span class="line">			<span class="class">vendor </span>&#123;</span><br><span class="line">				compatible=<span class="string">"android,vendor"</span></span><br><span class="line">				dev=<span class="string">"/dev/block/platform/mtk-msdc.0/1123000.msdc0/by-name/vendor"</span></span><br><span class="line">				type=<span class="string">"ext4"</span></span><br><span class="line">				mnt_flags=<span class="string">"ro"</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_AB_OTA_UPDATER</span></span><br><span class="line">				fsmgr_flags=<span class="string">"wait,verify"</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> CONFIG_MTK_DM_VERITY_OFF</span></span><br><span class="line">				fsmgr_flags=<span class="string">"wait,slotselect,verify"</span></span><br></pre></td></tr></table></figure>
+<p>(5)在vendor/mediatek/proprietary/bootable/bootloader/lk/project/$project.mk中关闭MTK_DM_VERITY_OFF宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_DM_VERITY_OFF=no</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-生成verity-key的方式"><a href="#1-3-生成verity-key的方式" class="headerlink" title="1.3 生成verity key的方式"></a>1.3 生成verity key的方式</h4><p>(1)生成RSA密钥对</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out prvk.pem <span class="number">2048</span></span><br></pre></td></tr></table></figure>
+<p>(2)生成verity.pk8</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs8 -topk8 -inform PEM -outform DER -<span class="keyword">in</span> prvk.pem -out verity.pk8 -nocrypt</span><br></pre></td></tr></table></figure>
+<p>(3)生成verity.x509.pem和verity.x509</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openssl req -new -x509 -key prvk.pem -out verity.x509.pem -ha256</span><br><span class="line">openssl x509 -n verity.x509.pem -outform der -out verity.x509</span><br></pre></td></tr></table></figure>
+<p>(4)执行下面命令可以在out/host/linux-x86/bin目录生成generate_verity_key工具。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make generate_verity_key</span><br><span class="line">或</span><br><span class="line">mmm system/extras/verity</span><br></pre></td></tr></table></figure>
+<p>(5)通过generate_verity_key工具将verity.x509.pem转换为verity_key。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./out/host/linux-x86/bin/generate_verity_key -<span class="built_in">convert</span> verity.x509.pem verity_key</span><br><span class="line">mv verity_key.pub verity_key</span><br></pre></td></tr></table></figure>
+<p>(6)将key拷贝到指定目录。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cp verity.pk8/verity.x509.pem/verity_key to build/target/product/security/</span><br><span class="line">cp verity.x509.pem to build/target/product/security/</span><br><span class="line">cp verity_key to build/target/product/security/</span><br><span class="line">cp verity.x509.pem to kernel-<span class="number">4</span>.<span class="number">4</span>/certs/verity.x509.pem</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-验证DM-VERITY功能方式"><a href="#1-4-验证DM-VERITY功能方式" class="headerlink" title="1.4 验证DM-VERITY功能方式"></a>1.4 验证DM-VERITY功能方式</h4><p>(1)执行下面指令挂载分区后，若system分区中包含dm-x字样即表明dm-verity功能已启用</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$adb shell mount | grep system</span><br><span class="line">/dev/block/dm-<span class="number">0</span> /system ext4 ro, seclable, relatime, data=ordered <span class="number">0</span> <span class="number">0</span></span><br><span class="line">$adb shell mount -o rw,remount /system</span><br><span class="line">Buffer I/O error on device dm-<span class="number">0</span>, logical block <span class="number">0</span> Lost page write due to I/O error on dm-<span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>(2)从vendor/etc中导入fstab文件，检查是否包含verify flag。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#mediatek</span><br><span class="line">adb pull vendor/etc/fstab.mtxxxx .</span><br><span class="line">#qualcomm</span><br><span class="line">adb pull vendor/etc/fstab.qcom .</span><br></pre></td></tr></table></figure>
+<h3 id="二、使能AVB-2-0"><a href="#二、使能AVB-2-0" class="headerlink" title="二、使能AVB 2.0"></a>二、使能AVB 2.0</h3><p>注：如果平台使用的kernel版本大于等于4.9，并且是Android P版本，AVB2.0是必须要开启的。</p>
+<h4 id="2-1-QCT平台使能配置"><a href="#2-1-QCT平台使能配置" class="headerlink" title="2.1 QCT平台使能配置"></a>2.1 QCT平台使能配置</h4><p>(1)在device/$manufacturer/$project/$project.mk中打开BOARD_AVB_ENABLE宏，并做如下配置：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_ENABLE := true</span><br><span class="line">BOARD_AVB_SYSTEM_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem</span><br><span class="line">BOARD_AVB_SYSTEM_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_SYSTEM_ROLLBACK_INDEX := 0</span><br><span class="line">BOARD_AVB_SYSTEM_ROLLBACK_INDEX_LOCATION := 2</span><br></pre></td></tr></table></figure>
+<p>(2)还可以根据需要添加以下配置：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">配置</th>
+<th style="text-align:center">选项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS</td>
+<td style="text-align:center">–set_hashtree_disabled_flag</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_BOOT_ADD_HASH_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_SYSTEM_ADD_HASHTREE_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt –block_size –do_not_generate_fec</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_VENDOR_ADD_HASHTREE_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt –block_size –do_not_generate_fec</td>
+</tr>
+<tr>
+<td style="text-align:center">BOARD_AVB_VENDOR_ADD_HASHTREE_FOOTER_ARGS</td>
+<td style="text-align:center">–hash_algorithm –salt</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2-2-MTK平台使能配置"><a href="#2-2-MTK平台使能配置" class="headerlink" title="2.2 MTK平台使能配置"></a>2.2 MTK平台使能配置</h4><p>(1)在device/mediatek/common/device.mk中打开AVB宏，配置 key：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_ENABLE := true</span><br><span class="line">BOARD_AVB_ALGORITHM := SHA256_RSA2048</span><br><span class="line">BOARD_AVB_KEY_PATH := device/mediatek/common/oem_prvk.pem</span><br></pre></td></tr></table></figure>
+<p>(2)在vendor/mediatek/proprietary/bootable/bootloader/lk/target/$project/inc/avbkey.h中配置oem_prvk.pem对应的public key（用于校验vbmeta中的public key合法性） 。</p>
+<p>(3)在vendor/mediate/proprietary/bootable/bootloader/lk/platform/$platform/rules.mk打开AVB20宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_AVB20_SUPPORT=yes</span><br></pre></td></tr></table></figure>
+<p>(4)在kernel-4.9/arch/arm64/configs/$porject_defconfig打开AVB宏：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_MTK_AVB20_SUPPORT=y</span><br></pre></td></tr></table></figure>
+<p>(5)如有需要可在device/mediatek/common/device.mk中为recovery/system添加chain partition配置，否则默认为hash partition：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#ifeq ($(strip $(MAIN_VBMETA_IN_BOOT)),no)</span></span><br><span class="line">    <span class="comment">#settings for recovery, which is configured as chain partition</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_KEY_PATH := device/mediatek/common/recovery_prvk.pem</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_ALGORITHM := SHA256_RSA2048</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_ROLLBACK_INDEX := 0</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 1</span></span><br><span class="line"><span class="comment">#endif</span></span><br><span class="line">    <span class="comment">#settings for system, which is configured as chain partition</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_KEY_PATH := device/mediatek/common/system_prvk.pem</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_ALGORITHM := SHA256_RSA2048</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_ROLLBACK_INDEX := 0</span></span><br><span class="line"><span class="comment">#    BOARD_AVB_SYSTEM_ROLLBACK_INDEX_LOCATION := 2</span></span><br></pre></td></tr></table></figure>
+<p>注：MTK默认会调用自己的脚本将dtbo改为mtk签名方式，即不受AVB 2.0保护。但是如果编译OTA包，又会改用AVB签名方式。</p>
+<h4 id="2-3-分区签名文件存储位置"><a href="#2-3-分区签名文件存储位置" class="headerlink" title="2.3 分区签名文件存储位置"></a>2.3 分区签名文件存储位置</h4><table>
+<thead>
+<tr>
+<th style="text-align:center">partition</th>
+<th style="text-align:center">meta verifier</th>
+<th style="text-align:center">verify key</th>
+<th style="text-align:center">enable dm-verity</th>
+<th style="text-align:center">mount partition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vbmeta</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">oem_pubk</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+<tr>
+<td style="text-align:center">boot</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">boot_pubk</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+<tr>
+<td style="text-align:center">dtbo</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">dtbo_pubk</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+<tr>
+<td style="text-align:center">system</td>
+<td style="text-align:center">bootloader</td>
+<td style="text-align:center">system_pubk</td>
+<td style="text-align:center">kernel</td>
+<td style="text-align:center">kernel</td>
+</tr>
+<tr>
+<td style="text-align:center">vendor</td>
+<td style="text-align:center">bootloader and fs_mgr</td>
+<td style="text-align:center">vendor_pubk</td>
+<td style="text-align:center">fs_mgr</td>
+<td style="text-align:center">fs_mgr</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2-4-command-line中vbmeta信息"><a href="#2-4-command-line中vbmeta信息" class="headerlink" title="2.4 command line中vbmeta信息"></a>2.4 command line中vbmeta信息</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">androidboot.vbmeta.device=PARTUUID=9c1520f3-c2c5-4b89-8284-fe4c61208a9e</span><br><span class="line">androidboot.vbmeta.avb_version=1.0</span><br><span class="line">androidboot.vbmeta.device_state=locked</span><br><span class="line">androidboot.vbmeta.hash_alg=sha256</span><br><span class="line">androidboot.vbmeta.size=1792</span><br><span class="line">androidboot.vbmeta.digest=20cddc43f2e23ba5b55f5e4179a1bc1a8dc07be48d83f0bc94587c42c1b140e</span><br><span class="line">androidboot.vbmeta.invalidate_on_error=yes</span><br></pre></td></tr></table></figure>
+<h4 id="2-5-自定义密钥方式"><a href="#2-5-自定义密钥方式" class="headerlink" title="2.5 自定义密钥方式"></a>2.5 自定义密钥方式</h4><p>默认情况下，算法”SHA256_RSA4096”与”external / avb / test / data”目录中的测试密钥一起使用。可以使用BOARD_AVB_ALGORITHM<code>和</code>BOARD_AVB_KEY_PATH变量来覆盖它以使用例如4096位RSA密钥和SHA-512：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">BOARD_AVB_ALGORITHM：= SHA512_RSA4096</span><br><span class="line">BOARD_AVB_KEY_PATH：=  device/qcom/common/rsa_key_4096.pem</span><br></pre></td></tr></table></figure>
+<p>该密钥的公共部分必须可用于设备的bootloader，以验证image。使用avbtool extract_public_key以预期格式提取密钥avbpubkey。</p>
+<p>(1)生成oem.key</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out oem.key -f4 <span class="number">4096</span></span><br></pre></td></tr></table></figure>
+<p>(2)用oem.key替换external/avb/test/data/testkey_rsa4096.pem</p>
+<p>(3)在bootable/bootloader/edk2/QcomModulePkg/Include/Library/DeviceInfo.h中保存该key。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">device_info</span> &#123;</span></span><br><span class="line">&lt;snip&gt;</span><br><span class="line">UINT32 user_public_key_length;</span><br><span class="line">CHAR8 user_public_key[MAX_USER_KEY_SIZE]; &lt;snip&gt;</span><br><span class="line">&#125;DeviceInfo;</span><br></pre></td></tr></table></figure>
+<p>(4)在bootable/bootloader/edk2/QcomModulePkg/Library/avb/OEMPublicKey.h或<br>bootable/bootloader/lk/platform/msm_shared/avb/OEMPublicKey.h中保存key</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Internal builds use TestKeyRSA4096Public</span></span><br><span class="line"><span class="comment">* OEM should replace this Array with public key used to sign boot.img * avbtool extract_public_key --key KEY --output OUTPUT</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> OEMPublicKey[] = &#123;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs8 -inform DER -nocrypt -<span class="keyword">in</span> &lt;PRODUCT_VERITY_SIGNING_KEY&gt; -out &lt;RSA_PUBLIC_KEY_PEM&gt;</span><br><span class="line">openssl rsa –<span class="keyword">in</span> &lt;RSA_PUBLIC_KEY_PEM&gt; -pubout –outform DER –out &lt;RSA_PUBLIC_KEY_DER&gt;</span><br><span class="line">keystore_signer &lt;PRODUCT_VERITY_SIGNING_KEY&gt; &lt;verity.x509.pem&gt; &lt;KEYSTORE_IMG&gt; &lt;RSA_PUBLIC_KEY_DER&gt;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/02/Security/AndroidVerifiedBootVBMeta简介/" rel="next" title="Android Verified Boot VBMeta简介">
+                <i class="fa fa-chevron-left"></i> Android Verified Boot VBMeta简介
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/17/Security/AndroidVerifiedBoot相关工具/" rel="prev" title="Android Verified Boot相关工具">
+                Android Verified Boot相关工具 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">83</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、使能Verified-Boot-1-0"><span class="nav-text">一、使能Verified Boot 1.0</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-QCT平台使能配置"><span class="nav-text">1.1 QCT平台使能配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-MTK平台使能配置"><span class="nav-text">1.2 MTK平台使能配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-生成verity-key的方式"><span class="nav-text">1.3 生成verity key的方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-验证DM-VERITY功能方式"><span class="nav-text">1.4 验证DM-VERITY功能方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、使能AVB-2-0"><span class="nav-text">二、使能AVB 2.0</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-QCT平台使能配置"><span class="nav-text">2.1 QCT平台使能配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-MTK平台使能配置"><span class="nav-text">2.2 MTK平台使能配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-分区签名文件存储位置"><span class="nav-text">2.3 分区签名文件存储位置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-command-line中vbmeta信息"><span class="nav-text">2.4 command line中vbmeta信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-自定义密钥方式"><span class="nav-text">2.5 自定义密钥方式</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

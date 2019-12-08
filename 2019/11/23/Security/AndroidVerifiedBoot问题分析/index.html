@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、问题处理思路1.1 dm-verity问题处理流程(1)回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。 (2)将mmc / ufs寄给供应商，以检查物理块是否损坏。  (3)擦除分区并下载软件。 (4)做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快">
+<meta name="keywords" content="Boot,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Verified Boot 问题分析">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/11/23/Security/AndroidVerifiedBoot问题分析/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、问题处理思路1.1 dm-verity问题处理流程(1)回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。 (2)将mmc / ufs寄给供应商，以检查物理块是否损坏。  (3)擦除分区并下载软件。 (4)做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/avb_ops_changed.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/avb_slot_verify_changed1.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/defconfig_changed.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/load_vfy_boot_ab_changed.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/avb_slot_verify_changed2.png">
+<meta property="og:updated_time" content="2019-12-08T06:30:20.742Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Verified Boot 问题分析">
+<meta name="twitter:description" content="一、问题处理思路1.1 dm-verity问题处理流程(1)回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。 (2)将mmc / ufs寄给供应商，以检查物理块是否损坏。  (3)擦除分区并下载软件。 (4)做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/avb_ops_changed.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/11/23/Security/AndroidVerifiedBoot问题分析/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android Verified Boot 问题分析 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/23/Security/AndroidVerifiedBoot问题分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android Verified Boot 问题分析
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-23T00:00:00+08:00">2019-11-23</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、问题处理思路"><a href="#一、问题处理思路" class="headerlink" title="一、问题处理思路"></a>一、问题处理思路</h3><h4 id="1-1-dm-verity问题处理流程"><a href="#1-1-dm-verity问题处理流程" class="headerlink" title="1.1 dm-verity问题处理流程"></a>1.1 dm-verity问题处理流程</h4><p>(1)回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。</p>
+<p>(2)将mmc / ufs寄给供应商，以检查物理块是否损坏。 </p>
+<p>(3)擦除分区并下载软件。</p>
+<p>(4)做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快复制速度。若可以复现该问题，则删除损坏的物理块，请转到步骤3。若不能复现问题，则重复步骤4，或继续观察设备。如果复现问题并重复执行步骤3和步骤4超过 3次，且物理块始终相同，请返回到步骤2。如果物理块并不总是相同，则转到步骤5。</p>
+<p>(5)检查dmesg日志，看是否有任何mmc驱动程序/UFS驱动程序故障。如果有，则向mmc/ufs team提交case协助分析。否则执行步骤6。</p>
+<p>(6)mmc/ufs硬件/驱动程序基本被排除嫌疑，此时可以从DDR角度进行检查。在此设备上进行Qblizzard压力测试。如果测试结果良好，则执行步骤7。如果测试fail，则向DDR team提交case协助分析。</p>
+<a id="more"></a>
+<p>(7)观察损坏时，在第一次使设备崩溃后收集ramdump信息。添加以下debug信息：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">static int verity_handle_err()</span><br><span class="line"><span class="keyword">if</span> (v-&gt;<span class="built_in">mode</span> == DM_VERITY_MODE_LOGGING) return <span class="number">0</span>;</span><br><span class="line"><span class="keyword">if</span> (v-&gt;<span class="built_in">mode</span> == DM_VERITY_MODE_RESTART)</span><br><span class="line">-kernel_restart("dm-verity device corrupted");</span><br><span class="line">+BUG_ON("dm-verity device corrupted");)</span><br></pre></td></tr></table></figure>
+<p>通过ramdump，可以从稳定性的角度进行一些完整性检查，例如任务列表遍历，与vmlinux进行只读区域比较，cache/ ddr比较，vma列表和rbtree比较等等。如果发现有问题，则在完成步骤6的情况下，转到步骤9。如果没有发现任何错误，转到步骤8。</p>
+<p>(8)与硬件团队进行交换测试。</p>
+<p>(9)尝试禁用CPR，提高APC电压，提高vdd-mx，以确保AP缓存稳定运行。</p>
+<p>(10)如果烧录GSI时出现下方开机异常，则需要烧录禁用avb的vbmeta。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">avb_slot_verify.c:432: DEBUG: Loading vbmeta struct from partition &apos;system&apos;.</span><br><span class="line">avb_footer.c:41: ERROR: Footer magic is incorrect.</span><br><span class="line">avb_slot_verify.c:464: ERROR: system: Error validating footer.</span><br><span class="line">Non Multi-slot: Unbootable entering fastboot mode</span><br><span class="line">VB2: boot state: red(3)</span><br></pre></td></tr></table></figure>
+<p>参考指令如下：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot --disable-verification flash vbmeta[_a/b] vbmeta.img</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-处理dm-verity错误"><a href="#1-2-处理dm-verity错误" class="headerlink" title="1.2 处理dm-verity错误"></a>1.2 处理dm-verity错误</h4><p>通过设计，哈希树验证错误是由HLOS而非引导程序检测到的。AVB提供了一种方法，该方法通过avb_slot_verify()函数中的hashtree_error_mode参数指定应如何处理错误。可能的值包括:</p>
+<p>AVB_HASHTREE_ERROR_MODE_RESTART_AND_INVALIDATE表示HLOS将使当前插槽无效并重新启动。在具有A / B的设备上，这将导致尝试引导另一个插槽（如果标记为可引导），或者导致无法引导任何操作系统的模式（例如某种形式的修复模式）。在Linux中，这需要使用CONFIG_DM_VERITY_AVB构建的内核。</p>
+<p>AVB_HASHTREE_ERROR_MODE_RESTART表示操作系统将在不使当前插槽无效的情况下重新启动。请谨慎使用此模式，因为如果每次启动都遇到相同的哈希树验证错误，则可能会导致启动循环。</p>
+<p>AVB_HASHTREE_ERROR_MODE_EIO表示将向应用程序返回EIO错误。</p>
+<p>AVB_HASHTREE_ERROR_MODE_MANAGED_RESTART_AND_EIO表示使用RESTART或EIO模式，具体取决于状态。此模式实现状态机，默认情况下使用RESTART，并且将AVB_SLOT_VERIFY_FLAGS_RESTART_CAUSED_BY_HASHTREE_CORRUPTION传递给avb_slot_verify()时，该模式会转换为EIO。当检测到新的操作系统时，设备将转换回重新启动模式。</p>
+<p>为此，需要持久存储-特别是这意味着传递的AvbOps将需要实现read_persistent_value（）和write_persistent_value()操作。使用的持久值的名称为avb.managed_verity_mode，并且需要32个字节的存储空间。</p>
+<p>AVB_HASHTREE_ERROR_MODE_LOGGING意味着将记录错误，并且损坏的数据可能返回给应用程序。此模式仅应用于诊断和调试。除非允许验证错误，否则不能使用它。</p>
+<p>在hashtree_error_mode中传递的值实际上是通过androidboot.veritymode，androidboot.veritymode.managed和androidboot.vbmeta.invalidate_on_error内核命令行参数通过以下方式传递给HLOS的：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">-</th>
+<th style="text-align:center">androidboot.veritymode</th>
+<th style="text-align:center">androidboot.veritymode.managed</th>
+<th style="text-align:center">androidboot.vbmeta.invalidate_on_error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_RESTART_AND_INVALIDATE</td>
+<td style="text-align:center">enforcing</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">yes</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_RESTART</td>
+<td style="text-align:center">enforcing</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_EIO</td>
+<td style="text-align:center">eio</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_MANAGED_RESTART_AND_EIO</td>
+<td style="text-align:center">eio or enforcing</td>
+<td style="text-align:center">yes</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+<tr>
+<td style="text-align:center">AVB_HASHTREE_ERROR_MODE_LOGGING</td>
+<td style="text-align:center">ignore_corruption</td>
+<td style="text-align:center">(unset)</td>
+<td style="text-align:center">(unset)</td>
+</tr>
+</tbody>
+</table>
+<p>该表的唯一例外是，如果在顶级vbmeta中设置了AVB_VBMETA_IMAGE_FLAGS_HASHTREE_DISABLED标志，则将androidboot.veritymode设置为disable，并取消设置androidboot.veritymode.managed和androidboot.vbmeta.invalidate_on_error。</p>
+<h3 id="二、一些问题"><a href="#二、一些问题" class="headerlink" title="二、一些问题"></a>二、一些问题</h3><h4 id="2-1-分区位置读取错乱导致-Verified-Error"><a href="#2-1-分区位置读取错乱导致-Verified-Error" class="headerlink" title="2.1 分区位置读取错乱导致 Verified Error"></a>2.1 分区位置读取错乱导致 Verified Error</h4><p>(1)异常uart日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[3830] read from system_a, 0x40 bytes at Offset 0x12b7fffc0, partition size 1696096256</span><br><span class="line">[3840] StartBlock 0x12b7ff, ReadOffset 0xfc0, read_size 0x40</span><br><span class="line">[3850] Data segment length: 14</span><br><span class="line">[3860] SCSI Request failed and we have sense data</span><br><span class="line">[3880] =================== Dumping SCSI COMMAND ==========================</span><br><span class="line">[3890] req-&gt;lun (4)</span><br><span class="line">[3890] data_buffer_Addr (0x91e36c00)</span><br><span class="line">[3890] data_length (4096)</span><br><span class="line">[3890] scsi_upiu_flags (64)</span><br><span class="line">[3900] upiu_dd_type (2)</span><br><span class="line">[3900] =============================================</span><br><span class="line">[3900] ucs_do_scsi_cmd failed status = 2</span><br><span class="line">[3910] ucs_do_scsi_read: failed</span><br><span class="line">[3910] UFS read failed.</span><br><span class="line">[3930] Error: UFS read failed writing to block: 6720868352</span><br><span class="line">[3940] ReadBlocks failed -1</span><br><span class="line">[3950] avb_slot_verify.c[3950] :[3950] 465[3950] : FATAL: [3950] assert fail: footer_num_read == AVB_FOOTER_SIZE</span><br><span class="line">[3960] avb_abort![3960] panic (frame 0x91e10ba0): </span><br><span class="line">[3970] HALT: reboot into dload mode...</span><br></pre></td></tr></table></figure>
+<p>partition.xml内容如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- This is LUN 0 - HLOS LUN" --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">physical_partition</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">"system_a"</span> <span class="attr">size_in_kb</span>=<span class="string">"3809280"</span> <span class="attr">...</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">"system_b"</span> <span class="attr">size_in_kb</span>=<span class="string">"3809280"</span> <span class="attr">...</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">physical_partition</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(2)解决方案：</p>
+<p>验证分区前从分区表中获取分区位置，重新设置index。</p>
+<p>kernel/lk/platform/msm_shared/avb/libavb/avb_ops.c</p>
+<p><img src="/images/avb_ops_changed.png" alt></p>
+<h4 id="2-2-32位系统中system分区过大导致越界"><a href="#2-2-32位系统中system分区过大导致越界" class="headerlink" title="2.2 32位系统中system分区过大导致越界"></a>2.2 32位系统中system分区过大导致越界</h4><p>(1)uart异常日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[    6.561417] device-mapper: uevent: version 1.0.3</span><br><span class="line">[    6.561765] device-mapper: ioctl: 4.35.0-ioctl (2016-06-23) initialised: dm-devel@redhat.com</span><br><span class="line">[    6.562038] device-mapper: req-crypt: dm-req-crypt successfully initalized.</span><br><span class="line">[   10.358500] device-mapper: init: attempting early device configuration.</span><br><span class="line">[   10.360507] device-mapper: init: adding target &apos;0 9288120 verity 1 PARTUUID=a4c4c338-1495-cf9b-7e73-c0ddf7c9bc48 PARTUUID=a4c4c338-1495-cf9b-7e73-c0ddf7c9bc48 4096 4096 1161015 1161015 sha1 b85c7febdfcd40528289d73d6fba83ef622fe25f 863e5389bbfb951324f892a712a696fe166ca70a 10 restart_on_corruption ignore_zero_blocks use_fec_from_device PARTUUID=a4c4c338-1495-cf9b-7e73-c0ddf7c9bc48 fec_roots 2 fec_blocks 1170158 fec_start 1170158&apos;</span><br><span class="line">[   10.405240] device-mapper: init: dm-0 is ready</span><br><span class="line">[   10.589628] init: [libfs_mgr]fs_mgr_read_fstab_default(): failed to find device default fstab</span><br><span class="line">[   10.774647] system_a : Error verifying vbmeta image: invalid vbmeta header</span><br><span class="line">[   10.774738] init: [libfs_mgr]avb_slot_verify failed, result: 6</span><br><span class="line">[   10.780513] init: Failed to open FsManagerAvbHandle: No such file or directory</span><br><span class="line">[   10.786246] init: Failed to setup verity for &apos;/vendor&apos;: No such file or directory</span><br><span class="line">[   10.793601] init: Failed to mount required partitions early ...</span><br><span class="line">[   10.801039] init: Reboot start, reason: reboot, rebootTarget: bootloader</span><br><span class="line">[   10.806753] pgd = e77ec000</span><br><span class="line">[   10.813678] [00000014] *pgd=f1dcc835</span><br></pre></td></tr></table></figure>
+<p>(2)解决方案：</p>
+<p>修改vbmeta_offset的类型（size_t -&gt; uint64_t）</p>
+<p>external/avb/libavb/avb_slot_verify.c</p>
+<p><img src="/images/avb_slot_verify_changed1.png" alt></p>
+<h4 id="2-3-未打开FEC宏导致dm-verity找不到参数"><a href="#2-3-未打开FEC宏导致dm-verity找不到参数" class="headerlink" title="2.3 未打开FEC宏导致dm-verity找不到参数"></a>2.3 未打开FEC宏导致dm-verity找不到参数</h4><p>(1)uart异常日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[    0.000000] device-mapper: init: will configure 1 devices</span><br><span class="line">[   21.089662] device-mapper: uevent: version 1.0.3</span><br><span class="line">[   21.091550] device-mapper: ioctl: 4.34.0-ioctl (2015-10-28) initialised: dm-devel@redhat.com</span><br><span class="line">[   21.093822] device-mapper: req-crypt: dm-req-crypt successfully initalized.</span><br><span class="line">[   23.798681] device-mapper: init: attempting early device configuration.</span><br><span class="line">[   23.803076] device-mapper: init: adding target &apos;0 9659008 verity 1 PARTUUID=bbfd550b-e7cb-04b5-a67f-85ae9774d6a7 PARTUUID=bbfd550b-e7cb-04b5-a67f-85ae9774d6a7 4096 4096 1207376 1207376 sha1 86951e16e496e7d1453ad9e2915ab9cd1e18e19a 05f694baa36f322ce668ce91ed3140a972e378a4 10 restart_on_corruption ignore_zero_blocks use_fec_from_device PARTUUID=bbfd550b-e7cb-04b5-a67f-85ae9774d6a7 fec_roots 2 fec_blocks 1216884 fec_start 1216884&apos;</span><br><span class="line">[   23.821562] device-mapper: table: 253:0: verity: Invalid number of feature args</span><br><span class="line">[   23.841996] device-mapper: init: starting dm-0 (vroot) failed</span><br><span class="line">[   23.850903] Unable to handle kernel NULL pointer dereference at virtual address 00000000</span><br><span class="line">[   23.855158] pgd = ffffff800a13e000</span><br><span class="line">[   23.863585] [00000000] *pgd=000000017e3be003, *pud=000000017e3be003, *pmd=0000000000000000</span><br></pre></td></tr></table></figure>
+<p>(2)解决方案：</p>
+<p>在kernel config中打开CONFIG_DM_VERITY_FEC宏</p>
+<p>kernel/msm-4.4/arch/arm64/configs/project_defconfig</p>
+<p><img src="/images/defconfig_changed.png" alt></p>
+<h4 id="2-4-boot分区超过heap-size加载失败"><a href="#2-4-boot分区超过heap-size加载失败" class="headerlink" title="2.4 boot分区超过heap size加载失败"></a>2.4 boot分区超过heap size加载失败</h4><p>(1)uart异常日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[partition_get_index]find boot_b index 38</span><br><span class="line">[AVB20]malloc: heap size not enough</span><br><span class="line">avbutil.c[2701] 199[2701]: ERROR: [2701] Failed to allocate memory.</span><br></pre></td></tr></table></figure>
+<p>(2)解决方案：</p>
+<p>修改boot分区大小时同步修改AVB_HEAP_SZ</p>
+<p>vendor/mediatek/proprietary/bootable/bootloader/lk/platform/common/boot/avb20/load_vfy_boot_ab.c</p>
+<p><img src="/images/load_vfy_boot_ab_changed.png" alt></p>
+<h4 id="2-5-分区slot后缀未过滤导致无法加载"><a href="#2-5-分区slot后缀未过滤导致无法加载" class="headerlink" title="2.5 分区slot后缀未过滤导致无法加载"></a>2.5 分区slot后缀未过滤导致无法加载</h4><p>(1)uart异常日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[3590] Loading image system_a</span><br><span class="line">[3610] read from system_a, 0x740 bytes at Offset 0xfff2a000, partition size 3011510272</span><br><span class="line">[3630] LastBlock 0x7ff953, ReadOffset 0x0, read_size 0x140</span><br><span class="line">[3630] FullBlock 0x7ff950, ReadOffset 0x0, read_size 0x600 outside range. StartPageReadSize 0x0 PageSize 512 ptn 0xb3800000 Buffer 0x8f7aedc0</span><br><span class="line">[3670] ReadRollbackIndex Location 2, RollbackIndex 0</span><br><span class="line">[3690] avb_slot_verify.c: dtbo_a : Loading entire partition.</span><br><span class="line">[3690] avb_slot_verify.c: load_and_verify_hash_partition.</span><br><span class="line">[3720] Loaded image [boot|22044672]</span><br><span class="line">[3720] Loaded image [dtbo|8388608]</span><br><span class="line">[3720] Loaded image [vbmeta|65536]</span><br><span class="line">[3730] Loading image dtbo_a</span><br><span class="line">[3750] read from dtbo_a, 0x800000 bytes at Offset 0x0, partition size 260046848</span><br><span class="line">[3770] FullBlock 0x0, ReadOffset 0x0, read_size 0x800000 outside range. StartPageReadSize 0x0 PageSize 512 ptn 0xf800000 Buffer 0x8f77b428</span><br><span class="line">[3780] Error: ADMA error</span><br><span class="line">[3780] MMC card is not in TRAN state</span><br><span class="line">[3790] Failed Reading block @ 7c000</span><br><span class="line">[3790] ReadBlocks failed 1</span><br><span class="line">[3790] data abort, halting</span><br></pre></td></tr></table></figure>
+<p>(2)解决方案：</p>
+<p>验证分区时移除slot后缀，兼容a/b和non-a/b系统。</p>
+<p>kernel/lk/platform/msm_shared/avb/libavb/avb_slot_verify.c</p>
+<p><img src="/images/avb_slot_verify_changed2.png" alt></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/17/Security/AndroidVerifiedBoot相关工具/" rel="next" title="Android Verified Boot相关工具">
+                <i class="fa fa-chevron-left"></i> Android Verified Boot相关工具
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/08/Tool/img文件解包及类型转换方法/" rel="prev" title="img文件解包及类型转换方法">
+                img文件解包及类型转换方法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">83</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、问题处理思路"><span class="nav-text">一、问题处理思路</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-dm-verity问题处理流程"><span class="nav-text">1.1 dm-verity问题处理流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-处理dm-verity错误"><span class="nav-text">1.2 处理dm-verity错误</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、一些问题"><span class="nav-text">二、一些问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-分区位置读取错乱导致-Verified-Error"><span class="nav-text">2.1 分区位置读取错乱导致 Verified Error</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-32位系统中system分区过大导致越界"><span class="nav-text">2.2 32位系统中system分区过大导致越界</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-未打开FEC宏导致dm-verity找不到参数"><span class="nav-text">2.3 未打开FEC宏导致dm-verity找不到参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-boot分区超过heap-size加载失败"><span class="nav-text">2.4 boot分区超过heap size加载失败</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-分区slot后缀未过滤导致无法加载"><span class="nav-text">2.5 分区slot后缀未过滤导致无法加载</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

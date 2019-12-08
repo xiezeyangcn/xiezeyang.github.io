@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、Verified Boot简介Verified Boot是Google为Android启动定义的一种安全机制。它建立了一条从受硬件保护的Root of trust到booloader，再到boot和其它验证分区（包括system、vendor、product、odm等）的完整信任链。在设备启动的过程中，无论处于哪个阶段，都会在进入下一个阶段前先验证下一个阶段的完整性和真实性。除了确保设备运行的">
+<meta name="keywords" content="Boot,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Verified Boot 概述">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/10/20/Security/AndroidVerifiedBoot概述/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、Verified Boot简介Verified Boot是Google为Android启动定义的一种安全机制。它建立了一条从受硬件保护的Root of trust到booloader，再到boot和其它验证分区（包括system、vendor、product、odm等）的完整信任链。在设备启动的过程中，无论处于哪个阶段，都会在进入下一个阶段前先验证下一个阶段的完整性和真实性。除了确保设备运行的">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/fastboot_orange.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/fastboot_yellow.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/fastboot_red1.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/fastboot_red2.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/fastboot_red3.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/fastboot_red4.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/avb_boot_flow1.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/ab_vb10.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/nonab_vb10.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/ab_avb20.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/avb_vbmeta_structure.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/dm_verity_layer.png">
+<meta property="og:updated_time" content="2019-12-08T06:14:41.241Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Verified Boot 概述">
+<meta name="twitter:description" content="一、Verified Boot简介Verified Boot是Google为Android启动定义的一种安全机制。它建立了一条从受硬件保护的Root of trust到booloader，再到boot和其它验证分区（包括system、vendor、product、odm等）的完整信任链。在设备启动的过程中，无论处于哪个阶段，都会在进入下一个阶段前先验证下一个阶段的完整性和真实性。除了确保设备运行的">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/fastboot_orange.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/10/20/Security/AndroidVerifiedBoot概述/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android Verified Boot 概述 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/10/20/Security/AndroidVerifiedBoot概述/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android Verified Boot 概述
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-20 00:00:00" itemprop="dateCreated datePublished" datetime="2019-10-20T00:00:00+08:00">2019-10-20</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="一、Verified-Boot简介"><a href="#一、Verified-Boot简介" class="headerlink" title="一、Verified Boot简介"></a>一、Verified Boot简介</h4><p>Verified Boot是Google为Android启动定义的一种安全机制。它建立了一条从受硬件保护的Root of trust到booloader，再到boot和其它验证分区（包括system、vendor、product、odm等）的完整信任链。在设备启动的过程中，无论处于哪个阶段，都会在进入下一个阶段前先验证下一个阶段的完整性和真实性。除了确保设备运行的是安全的Android系统以外，verified boot还支持回滚保护（anti-roll back），它可以保证设备只会更新到更高版本，以避免可能的漏洞持续存在。另外，verified boot还允许设备将其完整性传到给终端用户。</p>
+<p>要想使能verified boot，需要在编译系统中启用dm-verity功能。Android 4.4就增加了对验证启动和 dm-verity 内核功能的支持。以前的Android版本会在发现设备损坏时向用户发出警告，但仍允许他们启动设备。从Android 7.0 开始，系统会严格强制执行verified boot，从而使得遭到入侵的设备无法启动，与此同时还增加了对向前纠错功能的支持，能更可靠地防范非恶意数据损坏。Android 8.0及更高版本包含了 Android Verified Boot (AVB)功能。其实AVB就是验证启动的一个参考实现，可与 Project Treble 配合使用。除此之外，AVB 还对分区脚本格式进行了标准化处理，并增添了回滚保护功能。为了便于区分，我们一般将此之前的verified boot称为1.0版，而AVB专指verified boot 2.0版。</p>
+<a id="more"></a>
+<h3 id="二、Verified-Boot的状态"><a href="#二、Verified-Boot的状态" class="headerlink" title="二、Verified Boot的状态"></a>二、Verified Boot的状态</h3><p>Verified boot支持两个设备状态（LOCKED和UNLOCKED）和四个启动状态（GREEN、YELLOW、RED和ORANGE）。设备开机后，bootloader会首先检查设备是LOCKED还是UNLOCKED。如果设备是UNLOCKED的，则bootloader会向用户显示警告，然后继续引导，即使加载的操作系统未由信任根签名也是如此。UNLOCKED的设备允许进行修改。如果设备是LOCKED，则bootloader将通过verified boot的步骤来验证设备的软件，仅当加载的操作系统已由信任根正确签名时，锁定设备才会启动。如果设备是LOCKED，则引导加载程序将通过“验证引导”中的步骤来验证设备的软件。LOCKED的设备禁止将新软件下载到设备上。</p>
+<p>要更改设备状态，可使用 fastboot flashing [unlock | lock] 命令。另外，为了保护用户数据，只要设备状态发生变化，都会先擦除数据分区中的数据，并会在删除数据之前要求用户确认。锁定设备后，只要没有警告，用户应该就会确信设备处于设备制造商开发的状态。如果开发者出于开发目的停用设备上的验证功能，应该将设备状态从 LOCKED 改为 UNLOCKED。</p>
+<p>确定设备的启动状态后，需要将该状态传达给用户。bootloader必须在kernel cmdline上设置androidboot.verifiedbootstate参数来标识引导状态。下面介绍一下这几种引导状态：</p>
+<p>(1)green：设备处于LOCKED状态，使用OEM密钥（嵌入在bootloader中）成功验证了boot分区后，设备会引导进入green状态。</p>
+<p>(2)yellow：设备处于LOCKED状态，当只能使用分区中证书所包含的密钥来验证设备时，设备将以yellow状态启动。换句话说就是，在yellow状态下，使用OEM密钥的验证未成功，但是已通过附加到image的密钥成功验证了分区。</p>
+<p>(3)red：如果boot分区没有OEM密钥或分区中的密钥无法成功验证，则将设置为red状态并关闭设备。</p>
+<p>(4)orange：设备处于UNLOCKED状态，未执行image验证。</p>
+<p>下面来看看yellow，orange，red三种状态下的警告界面：</p>
+<p>(1)yellow警告界面</p>
+<p>每次启动时都会显示一个黄色界面。十秒钟后，黄色界面消失，设备继续启动。如果用户按下电源按钮，则“按电源按钮暂停”文本将变为“按电源按钮继续”，并且从不关闭屏幕，尽管设备可能会变暗或关闭屏幕。如果再按一次，则屏幕消失，手机继续启动。该界面中通常包含以下文字内容：你的设备已加载其他操作系统。在其他设备上访问此链接以了解更多信息：g.co/ABH。</p>
+<p>(2)orange警告界面</p>
+<p>每次启动时显示一个orange屏幕。十秒钟后，“橙色”屏幕将关闭，设备将继续启动。如果用户按下电源按钮，“按电源按钮暂停”文本将变为“按电源按钮继续”，并且屏幕永远不会关闭。如果再按一次，则屏幕消失，手机继续启动。该界面中通常包含以下文字内容：引导加载程序已解锁，无法保证软件的完整性。设备上存储的任何数据都可能对攻击者可用。不要在设备上存储任何敏感数据。</p>
+<p>(3)red警告界面</p>
+<p>如果找到有效版本的Android，并且设备当前处于eio dm-verity模式，则显示RED eio屏幕。如果找不到有效的Android版本，也会显示红色屏幕。用户需要单击电源按钮才能继续。如果用户在30秒内未确认警告屏幕，则设备将关闭电源。该界面中通常包含以下文字内容：你的设备已损坏。 它不能被信任并且可能无法正常工作。在其他设备上访问此链接以了解更多信息：g.co/ABH。或（找不到有效的操作系统。设备将无法启动。在其他设备上访问此链接以了解更多信息：g.co/ABH）。</p>
+<p><img src="/images/fastboot_orange.png" alt><img src="/images/fastboot_yellow.png" alt><img src="/images/fastboot_red1.png" alt><img src="/images/fastboot_red2.png" alt></p>
+<p>在fastboot界面执行fastboot flashing unlock命令，通常会显示一个请用户确认的界面。如果用户在30秒内未与警告屏幕进行交互，则该屏幕将消失并且命令失败。该界面包含以下内容：</p>
+<p>(1)如果解锁引导加载程序，则可以在此手机上安装自定义操作系统软件。自定义操作系统的测试级别与原始操作系统不同，并且可能导致手机和已安装的应用程序停止正常运行。使用自定义操作系统无法保证软件的完整性，因此在解锁引导加载程序时在手机上存储的任何数据都可能会受到威胁。为防止未经授权访问的个人数据，解锁引导加载程序也会删除手机上的所有个人数据。</p>
+<p>(2)按增大音量/减小音量选择是否解锁引导加载程序，然后按电源按钮继续。</p>
+<p>(3)开锁：解锁引导加载程序。不要解锁：请勿解锁引导加载程序并重启手机。锁确认。</p>
+<p>在fastboot界面执行fastboot flashing lock命令，显示一个锁定确认屏幕。如果用户在30秒内未与警告屏幕进行交互，则该屏幕将消失并且命令失败。该界面包含以下内容：</p>
+<p>(1)如果锁定引导加载程序，则将无法在此手机上安装自定义操作系统软件。为防止未经授权访问的个人数据，锁定引导加载程序还将删除手机上的所有个人数据。</p>
+<p>(2)按增大音量/减小音量选择是否锁定引导加载程序，然后按电源按钮继续。</p>
+<p>(3)锁：锁定引导加载程序。不要锁：请勿锁定引导程序并重启手机。</p>
+<p><img src="/images/fastboot_red3.png" alt><img src="/images/fastboot_red4.png" alt></p>
+<h3 id="三、信任根"><a href="#三、信任根" class="headerlink" title="三、信任根"></a>三、信任根</h3><p>信任根（Root of trust）是用于对存储在设备上的Android副本进行签名的加密密钥。信任根的private部分只有设备制造商才知道，用于为分发的每个Android版本签名。信任根的public部分嵌入在设备中，并存储在一个不能被篡改（通常为只读存储）位置中。加载Android时，bootloader会使用信任根来验证真实性。设备可能具有多个bootloader，因此可能正在使用多个加密密钥。设备可以选择允许用户配置信任根（例如公钥）。设备可以将此用户可设置的信任根用于verified boot，而不是内置的信任根。这使用户可以安装和使用Android的自定义版本，而无需牺牲经过验证的启动的安全性。</p>
+<p>如果实现了可由用户设置的信任根，则应满足以下要求：</p>
+<p>(1)需要进行物理确认才能设置/清除可由用户设置的信任根。</p>
+<p>(2)可由用户设置的信任根只能由终端用户设置。在终端用户获得设备之前，不能在工厂或任何中间点进行设置。</p>
+<p>(3)可由用户设置的信任根存储在防篡改存储中。防篡改可以检测Android是否篡改了数据，例如，数据是否已被覆盖或更改。</p>
+<p>(4)如果设置了可由用户设置的信任根，则设备应允许启动带有内置信任根或可由用户设置的信任根签名的Android版本。</p>
+<p>(5)每次设备使用可由用户设置的信任根启动时，系统应通知用户设备正在加载自定义版本的Android。例如，警告屏幕。</p>
+<p>实现用户可设置的信任根的一种方法是：将虚拟分区设置为仅在设备处于UNLOCKED状态时才能被刷写或清除。虚拟分区常称为avb_custom_key。该分区中数据的格式是avbtool extract_public_key命令输出的。下面是如何设置可由用户设置的信任根的示例：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">avbtool extract_public_key --key key.pem --output pkmd.bin</span><br><span class="line">fastboot flash avb_custom_key pkmd.bin</span><br></pre></td></tr></table></figure>
+<p>另外，可以通过发出”fastboot erase avb_custom_key”命令清除用户可设置的信任根。</p>
+<h3 id="四、Verified-Boot的流程"><a href="#四、Verified-Boot的流程" class="headerlink" title="四、Verified Boot的流程"></a>四、Verified Boot的流程</h3><p>经过验证的启动要求在使用前以密码方式验证作为正在启动的Android版本一部分的所有可执行代码和数据。这包括kernel（从boot分区加载），device tree（从dtbo分区加载），system分区，vendor分区等。通常仅将一次读取的小分区（例如boot和dtbo）通过将整个内容加载到内存中，然后计算其哈希值来进行验证。然后将该计算出的哈希值与预期哈希值进行比较。如果该值不匹配，则不会加载Android。无法容纳到内存中的较大分区（例如文件系统）可能会使用哈希树，在哈希树中，验证是在将数据加载到内存时发生的连续过程。在这种情况下，将在运行时计算哈希树的根哈希，并对照预期的根哈希值进行检查。 Android包含dm-verity驱动程序以验证更大的分区。如果在某些时候计算出的根哈希值与预期的根哈希值不匹配，则不使用数据，Android进入错误状态。预期的哈希通常存储在每个已验证分区的末尾或开始，专用分区或两者中。至关重要的是，这些哈希值是由信任根签名的（直接或间接）。</p>
+<p>即使具有完全安全的升级过程，非持久性Android内核漏洞也有可能手动安装较旧的，更易受攻击的Android版本，重新启动易受攻击的版本，然后使用该Android版本安装持久性漏洞。 攻击者从那里永久拥有该设备，并且可以执行任何操作，包括禁用更新。针对此类攻击的防护称为回滚防护。回滚保护通常是通过使用防篡改存储来记录最新版本的Android并在其低于所记录版本的情况下拒绝启动Android来实现的。通常按分区跟踪版本。</p>
+<p>验证可能在启动时（例如如果启动分区上计算出的哈希值与预期的哈希值不匹配）或运行时（例如，dm-verity在系统分区上遇到验证错误）失败。如果启动时验证失败，则设备无法启动，最终用户需要执行步骤来恢复设备。</p>
+<p>如果在运行时验证失败，则流程会更加复杂。如果设备使用dm-verity，则应将其配置为重启模式。在重新启动模式下，如果遇到验证错误，则会立即通过设置特定标志以指示原因的方式重新启动设备。引导加载程序应注意此标志，并切换dm-verity以使用I / O错误（eio）模式，并保持此模式，直到安装了新更新。</p>
+<p>在eio模式下启动时，设备显示错误屏幕，通知用户已检测到损坏，并且设备可能无法正常运行。屏幕显示直到用户将其关闭为止。在eio模式下，如果遇到验证错误，dm-verity驱动程序将不会重新启动设备，而是返回EIO错误，并且应用程序需要处理该错误。</p>
+<p>目的是运行系统更新程序（以便可以安装没有损坏错误的新操作系统），或者用户可以从设备中获取尽可能多的数据。一旦安装了新的操作系统，引导加载程序就会注意到新安装的操作系统，并切换回重启模式。</p>
+<p><img src="/images/avb_boot_flow1.png" alt></p>
+<p>设备的建议启动流程如下：如果设备使用的是A / B，则引导流程会略有不同。 在更新回滚保护元数据之前，必须首先使用引导控制HAL将要引导的插槽标记为SUCCESSFUL。如果平台更新失败（未标记为SUCCESSFUL），则A / B堆栈会退回到另一个插槽，该插槽中仍装有Android的早期版本。 但是，如果设置了”回滚保护”元数据，则由于”回滚保护”而无法启动以前的版本。</p>
+<p>下面三张图分别是VB 1.0 在A/B和Non-A/B系统中的流程和AVB 2.0的流程：</p>
+<p><img src="/images/ab_vb10.png" alt><img src="/images/nonab_vb10.png" alt><img src="/images/ab_avb20.png" alt></p>
+<h3 id="五、Verified-Boot的实现"><a href="#五、Verified-Boot的实现" class="headerlink" title="五、Verified Boot的实现"></a>五、Verified Boot的实现</h3><p>实现步骤：</p>
+<p>(1)生成 EXT4 系统映像。</p>
+<p>(2)为该映像生成哈希树。</p>
+<p>(3)为该哈希树构建 dm-verity 表。</p>
+<p>(4)为该 dm-verity 表签名以生成表签名。</p>
+<p>(5)将表签名和 dm-verity 表绑定到 Verity 元数据。</p>
+<p>(6)将系统映像、Verity 元数据和哈希树连接起来。</p>
+<p>哈希树是 dm-verity 不可或缺的一部分。cryptsetup 工具将生成哈希树。也可以使用下面定义的兼容方式：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;your block device name&gt; &lt;your block device name&gt; &lt;block size&gt; &lt;block size&gt; &lt;image size <span class="keyword">in</span> blocks&gt; &lt;image size <span class="keyword">in</span> blocks + <span class="number">8</span>&gt; &lt;root hash&gt; &lt;salt&gt;</span><br></pre></td></tr></table></figure>
+<p>为了形成哈希，该工具会将系统映像在第 0 层拆分成 4k 大小的块，并为每个块分配一个 SHA256 哈希。然后，通过仅将这些 SHA256 哈希组合成 4k 大小的块来形成第 1 层，从而产生一个小得多的映像。接下来再使用第 1 层的 SHA256 哈希以相同的方式形成第 2 层。直到前一层的 SHA256 哈希可以放到一个块中，该过程就完成了。获得该块的 SHA256 哈希后，就相当于获得了树的根哈希。</p>
+<p>哈希树的大小（以及相应的磁盘空间使用量）会因已验证分区的大小而异。在实际中，哈希树一般都比较小，通常不到 30 MB。如果某个层中的某个块无法由前一层的哈希正好填满，应在其中填充 0 来获得所需的 4k 大小。这样一来，就知道哈希树没有被移除，而是填入了空白数据。为了生成哈希树，需要将第 2 层哈希组合到第 1 层哈希的上方，将第 3 层哈希组合到第 2 层哈希的上方，依次类推。然后将所有这些数据写入到磁盘中。请注意，这种方式不会引用根哈希的第 0 层。</p>
+<p>总而言之，构建哈希树的一般算法如下：</p>
+<p>(1)选择一个随机盐（十六进制编码）。</p>
+<p>(2)将系统映像拆分成 4k 大小的块。</p>
+<p>(3)获取每个块的加盐 SHA256 哈希。</p>
+<p>(4)组合这些哈希以形成层。</p>
+<p>(5)在层中填充 0，直至达到 4k 块的边界。</p>
+<p>(6)将层组合到哈希树中。</p>
+<p>(7)重复第 2-6 步（使用前一层作为下一层的来源），直到最后只有一个哈希。</p>
+<p>该过程的结果是一个哈希，也就是根哈希。在构建 dm-verity 映射表时会用到该哈希和选择的盐。构建 dm-verity 映射表，该映射表会标明内核的块设备（或目标）以及哈希树的位置（是同一个值）。在生成 fstab 和设备启动时会用到此映射。该映射表还会标明块的大小和 hash_start，即哈希树的起始位置（具体来说，就是哈希树在映像开头处的块编号）。为 dm-verity 表签名以生成表签名。在验证分区时，会首先验证表签名。该验证是对照位于启动映像上某个固定位置的密钥来完成的。密钥通常包含在制造商的编译系统中，以便自动添加到设备上的固定位置。要使用这种签名和密钥的组合来验证分区，请执行以下操作：</p>
+<p>将一个格式与 libmincrypt 兼容的 RSA-2048 密钥添加到 /boot 分区的 /verity_key 中。确定用于验证哈希树的密钥所在的位置。在相关条目的 fstab 中，将 verify 添加到 fs_mgr 标记。将表签名和 dm-verity 表绑定到 Verity 元数据。为整个元数据块添加版本号，以便它可以进行扩展，例如添加第二种签名或更改某些顺序。</p>
+<p>一个magic（作为一个健全性检查项目）会与每组表元数据相关联，以协助标识表。由于长度包含在 EXT4 系统映像标头中，因此这为提供了一种在不知道数据本身内容的情况下搜索元数据的方式。这可确保未选择验证未验证的分区。如果是这样，缺少此magic将会导致验证流程中断。该数字类似于：0xb001b001</p>
+<p>十六进制的字节值为：第一字节 = b0, 第二字节 = 01, 第三字节 = b0, 第四字节 = 01</p>
+<p>下图展示了 Verity 元数据的细分：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;magic number&gt;|&lt;version&gt;|&lt;signature&gt;|&lt;table length&gt;|&lt;table&gt;|&lt;padding&gt;</span><br><span class="line">\-------------------------------------------------------------------/</span><br><span class="line">\----------------------------------------------------------/   |</span><br><span class="line">                            |                                  |</span><br><span class="line">                            |                                 32K</span><br><span class="line">                       block content</span><br></pre></td></tr></table></figure>
+<p>下表介绍了这些元数据字段。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">字段</th>
+<th style="text-align:center">用途</th>
+<th style="text-align:center">大小</th>
+<th style="text-align:center">值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">magic</td>
+<td style="text-align:center">供 fs_mgr 用作一个健全性检查项目</td>
+<td style="text-align:center">4 个字节</td>
+<td style="text-align:center">0xb001b001</td>
+</tr>
+<tr>
+<td style="text-align:center">版本</td>
+<td style="text-align:center">用于为元数据块添加版本号</td>
+<td style="text-align:center">4 个字节</td>
+<td style="text-align:center">目前为 0</td>
+<td>-</td>
+</tr>
+<tr>
+<td style="text-align:center">签名</td>
+<td style="text-align:center">PKCS1.5 填充形式的表签名</td>
+<td style="text-align:center">256 个字节</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">表长度</td>
+<td style="text-align:center">dm-verity 表的长度（以字节数计）</td>
+<td style="text-align:center">4 个字节</td>
+<td style="text-align:center">-    </td>
+</tr>
+<tr>
+<td style="text-align:center">表</td>
+<td style="text-align:center">上文介绍的 dm-verity 表</td>
+<td style="text-align:center">字节数与表长度相同</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">填充</td>
+<td style="text-align:center">此结构会通过填充 0 达到 32k 长度</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+<p>为了充分发挥 dm-verity 的最佳性能，应该：在内核中开启 NEON SHA-2（如果是 ARMv7）或 SHA-2 扩展程序（如果是 ARMv8）。使用不同的预读设置和 prefetch_cluster 设置进行实验，找出适合设备的最佳配置。</p>
+<p><img src="/images/avb_vbmeta_structure.png" alt></p>
+<h4 id="六、dm-verity介绍"><a href="#六、dm-verity介绍" class="headerlink" title="六、dm-verity介绍"></a>六、dm-verity介绍</h4><p>Android 4.4 及更高版本支持通过可选的 device-mapper-verity (dm-verity) 内核功能进行的验证启动，以便对块设备进行透明的完整性检查。dm-verity 有助于阻止可以持续保有 Root 权限并入侵设备的持续性Rootkit。验证启动功能有助于 Android 用户在启动设备时确定设备状态与上次使用时是否相同。具有 Root 权限的可能有害的应用 (PHA) 可以躲开检测程序的检测，并以其他方式掩蔽自己。可以获取 Root 权限的软件就能够做到这一点，因为它通常比检测程序的权限更高，从而能够“欺骗”检测程序。</p>
+<p>通过 dm-verity 功能，可以查看块设备（文件系统的底部存储层），并确定它是否与预期配置一致。该功能是利用加密哈希树做到这一点的。对于每个块（通常为 4k），都有一个 SHA256 哈希。由于哈希值存储在页面树中，因此顶级“根”哈希必须可信，才能验证树的其余部分。能够修改任何块相当于能够破坏加密哈希。下图描绘了此结构。</p>
+<p><img src="/images/dm_verity_layer.png" alt></p>
+<p>启动分区中包含一个公钥，该公钥必须已由设备制造商在外部进行验证。该密钥用于验证相应哈希的签名，并用于确认设备的系统分区是否受到保护且未被更改。</p>
+<p>dm-verity 保护机制位于内核中。因此，如果获取 Root 权限的软件在内核启动之前入侵系统，它将会一直拥有该权限。为了降低这种风险，大多数制造商都会使用烧录到设备的密钥来验证内核。该密钥在设备出厂后将无法被更改。制造商会使用该密钥来验证第一级引导加载程序中的签名，而该引导加载程序会依次验证后续级别引导加载程序、应用引导加载程序和内核中的签名。希望利用验证启动功能的每个制造商都应该有验证内核完整性的方法。内核经过验证后，可以在块设备装载时对其进行检查和验证。</p>
+<p>验证块设备的一种方法是直接对其内容进行哈希处理，然后将其与存储的值进行比较。不过，尝试验证整个块设备可能会需要较长的时间，并且会消耗设备的大量电量。设备将需要很长时间来启动，从而在可供使用之前便消耗了大量电量。而 dm-verity 只有在各个块被访问时才会对其进行单独验证。将块读入内存时，会以并行方式对其进行哈希处理。然后，会从第一级开始逐级验证整个哈希树的哈希。由于读取块是一项耗时又耗电的操作，因此这种块级验证带来的延时相对而言就有些微不足道了。</p>
+<p>注：作为针对 Android Go 和类似的低 RAM 设备进行的优化，dm-verity 可以配置为仅在首次（而不是每次）从数据设备读取页面时验证这些页面。首次验证之后，它会设置一个位以指示验证成功。由于此项优化可提供级别略低的完整性保证，因此不应将其用于 RAM 更高的设备。要了解详情，请参阅这些内核补丁程序。</p>
+<p>如果验证失败，设备会生成 I/O 错误，指明无法读取相应块。设备看起来与文件系统损坏时一样，也与预期相同。应用可以选择在没有结果数据的情况下继续运行，例如，当这些结果并不是应用执行主要功能所必需的数据时。不过，如果应用在没有这些数据的情况下无法继续运行，则会失败。</p>
+<p>Android 7.0 及更高版本通过前向纠错 (FEC) 功能提高了 dm-verity 的稳健性。AOSP 实现首先使用常用的 Reed-Solomon 纠错码，并应用一种称为交错的技术来减少空间开销并增加可以恢复的损坏块的数量。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/15/Security/Android10_用户数据检查点/" rel="next" title="Android10 用户数据检查点">
+                <i class="fa fa-chevron-left"></i> Android10 用户数据检查点
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/02/Security/AndroidVerifiedBootVBMeta简介/" rel="prev" title="Android Verified Boot VBMeta简介">
+                Android Verified Boot VBMeta简介 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">83</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、Verified-Boot简介"><span class="nav-text">一、Verified Boot简介</span></a></li></ol><li class="nav-item nav-level-3"><a class="nav-link" href="#二、Verified-Boot的状态"><span class="nav-text">二、Verified Boot的状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、信任根"><span class="nav-text">三、信任根</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、Verified-Boot的流程"><span class="nav-text">四、Verified Boot的流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、Verified-Boot的实现"><span class="nav-text">五、Verified Boot的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#六、dm-verity介绍"><span class="nav-text">六、dm-verity介绍</span></a></li></ol></li></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
