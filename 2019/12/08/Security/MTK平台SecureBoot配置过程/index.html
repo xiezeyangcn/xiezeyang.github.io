@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、生成root key用于cert1的签名和验证1.1 生成private key12345#生成root_prvk.pemopenssl genrsa -out cert_chain/root_prvk.pem 2048cp cert_chain/root_prvk.pem vendor/mediatek/proprietary/bootable/bootloader/preloader/cu">
+<meta name="keywords" content="Boot,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MTK 平台 Secure Boot 配置过程">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/12/08/Security/MTK平台SecureBoot配置过程/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="一、生成root key用于cert1的签名和验证1.1 生成private key12345#生成root_prvk.pemopenssl genrsa -out cert_chain/root_prvk.pem 2048cp cert_chain/root_prvk.pem vendor/mediatek/proprietary/bootable/bootloader/preloader/cu">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-15T10:46:00.329Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MTK 平台 Secure Boot 配置过程">
+<meta name="twitter:description" content="一、生成root key用于cert1的签名和验证1.1 生成private key12345#生成root_prvk.pemopenssl genrsa -out cert_chain/root_prvk.pem 2048cp cert_chain/root_prvk.pem vendor/mediatek/proprietary/bootable/bootloader/preloader/cu">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/12/08/Security/MTK平台SecureBoot配置过程/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>MTK 平台 Secure Boot 配置过程 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/12/08/Security/MTK平台SecureBoot配置过程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MTK 平台 Secure Boot 配置过程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-08 00:00:00" itemprop="dateCreated datePublished" datetime="2019-12-08T00:00:00+08:00">2019-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、生成root-key用于cert1的签名和验证"><a href="#一、生成root-key用于cert1的签名和验证" class="headerlink" title="一、生成root key用于cert1的签名和验证"></a>一、生成root key用于cert1的签名和验证</h3><h4 id="1-1-生成private-key"><a href="#1-1-生成private-key" class="headerlink" title="1.1 生成private key"></a>1.1 生成private key</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#生成root_prvk.pem</span><br><span class="line">openssl genrsa -out cert_chain/root_prvk.pem 2048</span><br><span class="line">cp cert_chain/root_prvk.pem vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/key/root_prvk.pem</span><br><span class="line">#将root_prvk.pem转换为root_prvk.der</span><br><span class="line">python der_extractor/pem_to_der.py cert_chain/root_prvk.pem cert_chain/root_prvk.der</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-生成public-key"><a href="#1-2-生成public-key" class="headerlink" title="1.2 生成public key"></a>1.2 生成public key</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#生成root_pubk.pem</span><br><span class="line">openssl rsa -in cert_chain/root_prvk.pem -pubout &gt; cert_chain/root_pubk.pem</span><br><span class="line">#将root_pubk.pem转换为root_pubk.der</span><br><span class="line">python der_extractor/pem_to_der.py cert_chain/root_pubk.pem cert_chain/root_pubk.der</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h4 id="1-3-生成oemkey-h"><a href="#1-3-生成oemkey-h" class="headerlink" title="1.3 生成oemkey.h"></a>1.3 生成oemkey.h</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">chmod 777 der_extractor/der_extractor</span><br><span class="line">#将root_pubk.der拷贝到oemkey.h中</span><br><span class="line">./der_extractor/der_extractor cert_chain/root_pubk.der cert_chain/oemkey.h ANDROID_SBC</span><br><span class="line">cp cert_chain/oemkey.h Customization_Kit_buildspec/Raphael-da/custom/$PLATFORM/oemkey.h</span><br><span class="line">cp cert_chain/oemkey.h vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/inc/oemkey.h</span><br><span class="line">cp cert_chain/oemkey.h vendor/mediatek/proprietary/bootable/bootloader/lk/target/$PROJECT/inc/oemkey.h</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-生成dakey-h"><a href="#1-4-生成dakey-h" class="headerlink" title="1.4 生成dakey.h"></a>1.4 生成dakey.h</h4><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#将root_pubk.der拷贝到dakey.h中</span><br><span class="line">./der_extractor/der_extractor cert_chain/root_pubk.der cert_chain/dakey.h ANDROID_SBC</span><br><span class="line">#将dakey.h中'OEM'替换成'DA'</span><br><span class="line">sed -i 's/OEM/DA/g' cert_chain/dakey.h</span><br><span class="line">cp cert_chain/dakey.h vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/inc/dakey.h</span><br></pre></td></tr></table></figure>
+<h3 id="二、生成img-key用于cert2的签名和验证"><a href="#二、生成img-key用于cert2的签名和验证" class="headerlink" title="二、生成img key用于cert2的签名和验证"></a>二、生成img key用于cert2的签名和验证</h3><h4 id="2-1-生成img-private-key"><a href="#2-1-生成img-private-key" class="headerlink" title="2.1 生成img private key"></a>2.1 生成img private key</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#生成img_prvk.pem</span><br><span class="line">openssl genrsa -out cert_chain/img_prvk.pem 2048</span><br><span class="line">cp cert_chain/img_prvk.pem vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/key/img_prvk.pem</span><br><span class="line">#将img_prvk.pem转换为img_prvk.der</span><br><span class="line">python der_extractor/pem_to_der.py cert_chain/img_prvk.pem cert_chain/img_prvk.der</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-生成img-public-key"><a href="#2-2-生成img-public-key" class="headerlink" title="2.2 生成img public key"></a>2.2 生成img public key</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#生成img_pubk.pem</span><br><span class="line">openssl rsa -in cert_chain/img_prvk.pem -pubout &gt; cert_chain/img_pubk.pem</span><br><span class="line">#将img_pubk.pem转换为img_pubk.der</span><br><span class="line">python der_extractor/pem_to_der.py cert_chain/img_pubk.pem cert_chain/img_pubk.der</span><br></pre></td></tr></table></figure>
+<h3 id="三、打开Secure-Boot相关功能宏"><a href="#三、打开Secure-Boot相关功能宏" class="headerlink" title="三、打开Secure Boot相关功能宏"></a>三、打开Secure Boot相关功能宏</h3><h4 id="3-1-preloader部分"><a href="#3-1-preloader部分" class="headerlink" title="3.1 preloader部分"></a>3.1 preloader部分</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/$project.mk</span></span><br><span class="line">MTK_SECURITY_SW_SUPPORT=yes</span><br></pre></td></tr></table></figure>
+<p>(1)sw root of trust：不烧efuse，实现secure boot/security download</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MTK_SEC_BOOT=ATTR_SBOOT_ENABLE</span><br><span class="line">MTK_SEC_USBDL=ATTR_SUSBDL_ENABLE</span><br></pre></td></tr></table></figure>
+<p>(2)hw root of trust：烧efuse，实现secure boot/security download</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">MTK_SEC_BOOT=ATTR_SBOOT_ENABLE</span><br><span class="line">MTK_SEC_USBDL=ATTR_SUSBDL_ENABLE</span><br><span class="line"><span class="comment">#或</span></span><br><span class="line">MTK_SEC_BOOT=ATTR_SBOOT_ONLY_ENABLE_ON_SCHIP</span><br><span class="line"> MTK_SEC_USBDL=ATTR_SUSBDL_ONLY_ENABLE_ON_SCHIP</span><br></pre></td></tr></table></figure>
+<h3 id="3-2-lk部分"><a href="#3-2-lk部分" class="headerlink" title="3.2 lk部分"></a>3.2 lk部分</h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#vendor/mediatek/proprietary/bootable/bootloader/lk/target/$PROJECT/$project.mk</span></span><br><span class="line">MTK_SECURITY_SW_SUPPORT=yes</span><br></pre></td></tr></table></figure>
+<p>(1)支持fastboot指令</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_SEC_FASTBOOT_UNLOCK_SUPPORT=yes</span><br></pre></td></tr></table></figure>
+<p>(2)支持fastboot指令同时需要key的校验</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MTK_SEC_FASTBOOT_UNLOCK_KEY_SUPPORT=yes</span><br></pre></td></tr></table></figure>
+<h4 id="3-3-kernel部分"><a href="#3-3-kernel部分" class="headerlink" title="3.3 kernel部分"></a>3.3 kernel部分</h4><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#kernel-4.9/arch/arm64/configs/$project_defconfig</span></span><br><span class="line"><span class="comment">#kernel-4.9/arch/arm64/configs/$project_debug_defconfig</span></span><br><span class="line">CONFIG_MTK_SECURITY_SW_SUPPORT=y</span><br></pre></td></tr></table></figure>
+<h3 id="四、签名配置"><a href="#四、签名配置" class="headerlink" title="四、签名配置"></a>四、签名配置</h3><h4 id="4-1-给preloader签名的流程"><a href="#4-1-给preloader签名的流程" class="headerlink" title="4.1 给preloader签名的流程"></a>4.1 给preloader签名的流程</h4><p>(1)将root key(root_prvk.pem及img_prvk.pem)拷贝至 vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/key/目录</p>
+<p>(2)在vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/key/pl_key.ini中配置’rootkey’及’imgkey’路径</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">rootkey</span>=<span class="string">"root_prvk.pem"</span></span><br><span class="line"><span class="attr">imgkey</span>=<span class="string">"img_prvk.pem"</span></span><br></pre></td></tr></table></figure>
+<p>(3)在vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/key/pl_content.ini中配置’imgkey’路径</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">imgkey</span>=<span class="string">"img_prvk.pem"</span></span><br><span class="line"><span class="comment">#sw_ver需同pl_key.ini中保持一致，以保证preloader最终支持回滚</span></span><br></pre></td></tr></table></figure>
+<p>(4)vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/gfh/pl_gfh_config_cert_chain.ini配置</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">flash_dev</span>=<span class="string">"emmc"</span></span><br><span class="line"><span class="attr">sig_type</span>=<span class="string">"CERT_CHAIN"</span></span><br><span class="line"><span class="attr">pad_type</span>=<span class="string">"pss"</span></span><br><span class="line"><span class="attr">max_size</span>=<span class="string">"0x00040000"</span></span><br><span class="line"><span class="attr">sig_ver</span>=<span class="string">"2"</span></span><br></pre></td></tr></table></figure>
+<p>(5)python tool配置（存在即支持preloader的证书链格式签名）</p>
+<p>vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/cfg/PBP_BY_SUPPORT</p>
+<p>(6)padding type配置（存在即支持preloader的证书链格式签名）</p>
+<p>vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/cfg/PADDING_TYPE.ini cert_chain</p>
+<p>(7)build resign</p>
+<p>secure_chip_tools=./vendor/mediatek/proprietary/scrips/secure_chip_tools/<br>将preloader.bin放到$secure_chip_tools/prebuilts/pbp目录下；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp out/target/product/$PROJECT/preloader.bin ./vendor/mediatek/proprietary/scrips/secure_chip_tools/</span><br></pre></td></tr></table></figure>
+<p>将上述配置的pl_key.ini、pl_content.ini、pl_gfh_config_cert_chain.ini拷贝到$secure_chip_tools/settings/pbp目录下；<br>将vendor/mediatek/proprietary/scripts/sign-image_v2/cert_chain/中root_prvk.pem和img_prvk.pem拷贝到vendor/mediatek/proprietary/scrips/secure_chip_tools/keys/pbp目录中。<br>执行命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd secure_chip_tools/</span><br><span class="line">python pbp.py -i settings/pbp/pl_key.ini -k out/pbp/key_cert.bin -g settings/pbp/pl_gfh_config_cert_chain.ini -c settings/pbp/pl_content.ini -func sign -o out/pbp/preloader-signed.bin prebuilt/pbp/preloader.bin</span><br></pre></td></tr></table></figure>
+<p>检查out目录会生成key_cert.bin、signed.bin及sig_size.txt文件；<br>由于img private key不包含root private key，所以key_cert.bin需要通过上述指令用root private key来生成。<br>将生成的key_cert.bin放置到prebuilt/pbp路径下，执行指令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp out/pbp/key_cert.bin prebuilt/pbp/key_cert.bin</span><br><span class="line">python pbp.py -k prebuilt/pbp/key_cert.bin -g settings/pbp/pl_gfh_config_cert_chain.ini -c settings/pbp/pl_content.ini -func sign -o out/pbp/preloader-signed.bin prebuilt/pbp/preloader.bin</span><br></pre></td></tr></table></figure>
+<h4 id="4-2-给img签名的流程"><a href="#4-2-给img签名的流程" class="headerlink" title="4.2 给img签名的流程"></a>4.2 给img签名的流程</h4><p>(1)生成cert1和cert2 key</p>
+<p>(2)检查vendor/mediatek/proprietary/scrips/sign-image_v2/img_key_deploy.py文件中是否包含以下内容：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">genCert1</span><span class="params">(binList)</span>:</span></span><br><span class="line">...</span><br><span class="line"><span class="keyword">if</span> (isMD == <span class="number">0</span>):</span><br><span class="line">+   <span class="keyword">if</span> (argDict[<span class="string">"root_key_padding"</span>]):</span><br><span class="line">+   sh_command = <span class="string">"python +"</span>+resign_tool_path+<span class="string">" type=cert1 privk="</span>+argDict[<span class="string">"cert1_key_path"</span>]+<span class="string">"pubk="</span>+cert2_pubk_path+<span class="string">"ver="</span>+str(img_ver)+<span class="string">" group="</span>+str(img_group)+<span class="string">"root_key_padding="</span>+str(argDict[<span class="string">"root_key_padding"</span>])</span><br><span class="line">...</span><br><span class="line"><span class="keyword">if</span> (os.path.isfile(mdBin)):</span><br><span class="line">+   <span class="keyword">if</span> (argDict[<span class="string">"root_key_padding"</span>]):</span><br><span class="line">+   sh_command = <span class="string">"python +"</span>+resign_tool_path+<span class="string">" type=cert1md img="</span>+mdBin+<span class="string">"privk="</span>+argDict[<span class="string">"cert1_key_path"</span>]+<span class="string">"pubk="</span>+cert2_pubk_path+<span class="string">"ver="</span>+str(img_ver)+<span class="string">" group="</span>+str(img_group)+<span class="string">"root_key_padding="</span>+str(argDict[<span class="string">"root_key_padding"</span>])</span><br></pre></td></tr></table></figure>
+<p>(3)执行指令生成cert1和cert2：</p>
+<p>(Android O是SecureGen.py，Android P是img_key_deploy.py)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./vendor/mediatek/proprietary/scripts/sign-image_v2/img_key_deploy.py $PLATFORM cert1_key_path=$KEY_PATH/root_prvk.pem cert2_key_path=$KEY_PATH/img_prvk.pem root_key_padding=pss | tee SecureGen.log</span><br></pre></td></tr></table></figure>
+<p>(KEY_PATH=./vendor/mediatek/proprietary/scripts/sign-image_v2/cert_chain)</p>
+<p>(4)检查cert1及cert2：</p>
+<p>vendor/mediatek/proprietary/custom/$PLATFORM/security/cert_config/cer1_key<br>vendor/mediatek/proprietary/custom/$PLATFORM/security/cert_config/cer2_key</p>
+<p>(5)签名image</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">python vendor/mediatek/proprietary/scripts/sign-image_v2/sign_flow.py $PLATFORM $PROJECT | tee sign_flow.log</span><br><span class="line">./vendor/mediatek/proprietary/scripts/sign-image/sign_image.sh</span><br><span class="line">export BOARD_AVB_ENABLE=$(BOARD_AVB_ENABLE)</span><br><span class="line">python vendor/mediatek/proprietary/scripts/sign-image_v2/sign_flow.py -env_cfg vendor/mediatek/proprietary/scripts/sign-image_v2/env.cfg $PLATFORM $PROJECT</span><br></pre></td></tr></table></figure>
+<h4 id="4-3-com-port设置"><a href="#4-3-com-port设置" class="headerlink" title="4.3 com port设置"></a>4.3 com port设置</h4><p>(1)disable brom com port</p>
+<p>./vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_configs/s/gfh/pl_ghf_config_cert_chain.ini<br>./vendor/mediatek/proprietary/scripts/secure_chip_tools/settings/pbp/pl_ghf_config_cert_chain.ini</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brom_magic_cmd_mode_permanent_dis</span> = <span class="string">"1"</span></span><br></pre></td></tr></table></figure>
+<p>(2)disable preloader com port</p>
+<p>./vendor/mediatek/proprietary/bootable/bootloader/preloader/$PLATFORM/default.mak</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CFG_USB_TOOL_HANDSHAKE := 0</span><br><span class="line">CFG_UART_TOOL_HANDSHAKE := 0</span><br></pre></td></tr></table></figure>
+<h3 id="五、DA配置"><a href="#五、DA配置" class="headerlink" title="五、DA配置"></a>五、DA配置</h3><h4 id="5-1-环境配置"><a href="#5-1-环境配置" class="headerlink" title="5.1 环境配置"></a>5.1 环境配置</h4><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">gcc_path: <span class="title">http</span>://<span class="title">launchpad.ent</span>/<span class="title">gcc</span>-<span class="title">arm</span>-<span class="title">embendded</span>/+<span class="title">download</span></span></span><br><span class="line"><span class="function"><span class="title">gcc_version</span>: <span class="title">gcc</span>-<span class="title">arm</span>-<span class="title">none</span>-<span class="title">eabi</span>-4<span class="title">_9</span>-20150306-<span class="title">win32.zip</span></span></span><br><span class="line"><span class="function"><span class="title">gcc_install_path</span>: <span class="title">Customization_Kit_buildspec</span>\<span class="title">Raphael</span>-<span class="title">da</span>\<span class="title">make</span>\<span class="title">base.mk</span></span></span><br><span class="line"><span class="function">~<span class="title">GCCDIR</span> := <span class="title">C</span>://<span class="title">progra</span>~1/<span class="title">GCC</span>/<span class="title">arm</span>-2015<span class="title">q1</span>/<span class="title">bin</span></span></span><br></pre></td></tr></table></figure>
+<h4 id="5-2-编译DA"><a href="#5-2-编译DA" class="headerlink" title="5.2 编译DA"></a>5.2 编译DA</h4><p>(1)DA_BR：MTK_AllInOne_DA.bin</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make BBCHIP=$PLATFORM</span><br></pre></td></tr></table></figure>
+<p>(2)DA_PL：DA_PL.bin</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make BBCHIP=$PLATFORM DA_PL=yes</span><br></pre></td></tr></table></figure>
+<h4 id="5-3-签名DA"><a href="#5-3-签名DA" class="headerlink" title="5.3 签名DA"></a>5.3 签名DA</h4><p>(1)oemkey.h</p>
+<p>Customization_Kit_buildspec/Raphael-da/custom/$PLATFORM/oemkey.h</p>
+<p>(2)da_prvk.pem同epp_prvk.pem一样</p>
+<p>(3)da_prvk.pem需与preloader的dakey.h中key匹配，另外还需与authfile中的DAA key匹配</p>
+<p>(4)bbchip_pss.ini配置</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#从下载日志中获取chip相关信息：</span></span><br><span class="line"><span class="attr">hw_code</span>=<span class="number">0</span>x6799</span><br><span class="line"><span class="attr">hw_sub_code</span>=<span class="number">0</span>x8a00</span><br><span class="line"></span><br><span class="line"><span class="attr">hw_ver</span>=<span class="number">0</span>xca00</span><br><span class="line"><span class="attr">sw_ver</span>=<span class="number">0</span>x0：</span><br><span class="line"></span><br><span class="line"><span class="comment">#配置key路径</span></span><br><span class="line"><span class="attr">load_region0_sigtype</span>=epp</span><br><span class="line"><span class="attr">load_region0_sigpad</span>=pss</span><br><span class="line"><span class="attr">load_region0_key</span>=keys/resignda/epp_prvk.pem</span><br><span class="line"><span class="attr">load_region1_sigtype</span>=da</span><br><span class="line"><span class="attr">load_region1_sigpad</span>=pss</span><br><span class="line"><span class="attr">load_region1_key</span>=keys/resignda/da_prvk.pem</span><br><span class="line"><span class="attr">load_region2_sigtype</span>=da</span><br><span class="line"><span class="attr">load_region2_sigpad</span>=pss</span><br><span class="line"><span class="attr">load_region2_key</span>=keys/resignda/da_prvk.pem</span><br></pre></td></tr></table></figure>
+<p>(5)将需要签名的DA放入prebuilt/resignda目录下，执行指令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python resign_da.py prebuilt/resignda/MTK_AllInOne_DA.bin $PLATFORM settings/resignda/bbchip_pss.ini all out/resignda/MTK_AllInOne_DA.bin-resign</span><br></pre></td></tr></table></figure>
+<h3 id="六、efuse-xml配置"><a href="#六、efuse-xml配置" class="headerlink" title="六、efuse.xml配置"></a>六、efuse.xml配置</h3><p>配置key-type栏位<br>cert_chain格式preload对应的key_type是”pss”，Pub-key-e需设置为01001<br>(key-type设置不同则key hash也会不同)</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">sbc-pub-key</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">key-type</span>&gt;</span>pss<span class="tag">&lt;/<span class="name">key-type</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">pub-key-e</span>&gt;</span>01001<span class="tag">&lt;/<span class="name">pub-key-e</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">pub-key-n</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="七、AuthFile"><a href="#七、AuthFile" class="headerlink" title="七、AuthFile"></a>七、AuthFile</h3><h4 id="7-1-authfile-key的配置"><a href="#7-1-authfile-key的配置" class="headerlink" title="7.1 authfile key的配置"></a>7.1 authfile key的配置</h4><p>在vendor/mediatek/proprietary/scrips/secure_chip_tools/settings/toolauth/toolauth_key.ini中配置rootkey的路径</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">sw_ver</span>=<span class="string">"1"</span></span><br><span class="line"><span class="attr">rootkey</span>=<span class="string">"keys/toolauth/root_prvk.pem"</span></span><br><span class="line"><span class="attr">img_key</span>=<span class="string">"keys/toolauth/img_prvk.pem"</span></span><br></pre></td></tr></table></figure>
+<h4 id="7-2-daa和sla-prvk的配置-RSA2048"><a href="#7-2-daa和sla-prvk的配置-RSA2048" class="headerlink" title="7.2 daa和sla prvk的配置(RSA2048)"></a>7.2 daa和sla prvk的配置(RSA2048)</h4><p>vendor/mediatek/proprietary/scrips/secure_chip_tools/keys/toolauth</p>
+<h4 id="7-3-toolauth-gfh-config-pss-ini的配置"><a href="#7-3-toolauth-gfh-config-pss-ini的配置" class="headerlink" title="7.3 toolauth_gfh_config_pss.ini的配置"></a>7.3 toolauth_gfh_config_pss.ini的配置</h4><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[CHIP]</span></span><br><span class="line"><span class="attr">version</span>=<span class="string">"mt6799"</span></span><br><span class="line"><span class="section">[GFH_FILE_INFO]</span></span><br><span class="line"><span class="attr">version</span>=<span class="string">"1"</span></span><br><span class="line"><span class="attr">file_type</span>=<span class="string">"5"</span></span><br><span class="line"><span class="attr">start_addr</span>=<span class="string">"0x00201000"</span></span><br><span class="line"><span class="attr">flash_dev</span>=<span class="string">"ufs"</span></span><br><span class="line"><span class="attr">sig_type</span>=<span class="string">"SINGLE"</span></span><br><span class="line"><span class="attr">pad_type</span>=<span class="string">"pss"</span></span><br><span class="line"><span class="attr">max_size</span>=<span class="string">"0x0040000"</span></span><br><span class="line"><span class="section">[CFH_TOOL_AUTH]</span></span><br><span class="line"><span class="attr">version</span>=<span class="string">"1"</span></span><br><span class="line"><span class="attr">cust_name</span>=<span class="string">"MTK"</span></span><br><span class="line"><span class="attr">attr</span>=<span class="string">"0x0"</span></span><br><span class="line"><span class="attr">sla_public_key</span>=<span class="string">"key/toolauth/sla_prvk.pem"</span></span><br><span class="line"><span class="attr">sla_pad_type</span>=<span class="string">"pkcs1"</span></span><br><span class="line"><span class="attr">daa_public_key</span>=<span class="string">"key/toolauth/daa_prvk.pem"</span></span><br><span class="line"><span class="attr">daa_pad_type</span>=<span class="string">"pss"</span></span><br></pre></td></tr></table></figure>
+<p>(sla_pad_type需同sla_challenge.dll中pad type一致，daa_pad_type需与签名DA配置的padding type一致)</p>
+<h4 id="7-4-生成authfile指令"><a href="#7-4-生成authfile指令" class="headerlink" title="7.4 生成authfile指令"></a>7.4 生成authfile指令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python toolauth.py -i settings/toolauth/toolauth_key.ini -g settings/toolauth/toolauth_gfh_config_pss.ini out/toolauth/auth_sv5.auth_sv5</span><br></pre></td></tr></table></figure>
+<h3 id="八、ScertFile"><a href="#八、ScertFile" class="headerlink" title="八、ScertFile"></a>八、ScertFile</h3><h4 id="8-1-Scertfile-key的配置"><a href="#8-1-Scertfile-key的配置" class="headerlink" title="8.1 Scertfile key的配置"></a>8.1 Scertfile key的配置</h4><p>生成primary_dbg_prvk及secondary_dbg.prvk(RSA2048)<br>vendor/mediatek/proprietary/scrips/secure_chip_tools/keys/sctrlcert</p>
+<h4 id="8-2-ini的配置"><a href="#8-2-ini的配置" class="headerlink" title="8.2 ini的配置"></a>8.2 ini的配置</h4><p>(1)settings/sctrlcert/scc_key.ini</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[KEY]</span></span><br><span class="line"><span class="attr">sw_ver</span>=<span class="string">"1"</span></span><br><span class="line"><span class="attr">rootkey</span>=<span class="string">"keys/sctrlcert/root_prvk.pem"</span></span><br><span class="line"><span class="attr">imgkey</span>=<span class="string">"keys/sctrlcert/primary_dbg_prvk.pem"</span></span><br><span class="line"><span class="attr">ac_key</span>=<span class="string">"0X112233445566778899aabbccddeeff"</span></span><br></pre></td></tr></table></figure>
+<p>(2)settings/sctrlcert/scc_gfh_config_cert_chain.ini</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[CHIP]</span></span><br><span class="line"><span class="attr">version</span>=<span class="string">"mt6799"</span></span><br><span class="line"><span class="section">[CFH_FILE_INFO]</span></span><br><span class="line"><span class="attr">version</span>=<span class="string">"1"</span></span><br><span class="line"><span class="attr">file_type</span>=<span class="string">"4"</span></span><br><span class="line"><span class="attr">start_addr</span>=<span class="string">"0x00201000"</span></span><br><span class="line"><span class="attr">flash_dev</span>=<span class="string">"emmc"</span></span><br><span class="line"><span class="attr">sig_type</span>=<span class="string">"CERT_CHAIN"</span></span><br><span class="line"><span class="attr">pad_type</span>=<span class="string">"pss"</span></span><br><span class="line"><span class="attr">max_size</span>=<span class="string">"0x00040000"</span></span><br><span class="line"><span class="attr">sig_ver</span>=<span class="string">"5"</span></span><br><span class="line"><span class="attr">arrt</span>=<span class="string">"0"</span></span><br><span class="line"><span class="section">[GFH_SCTRL_CERT]</span></span><br><span class="line"><span class="attr">version</span>=<span class="string">"2"</span></span><br><span class="line"><span class="attr">cust_name</span>=<span class="string">"MTK"</span></span><br><span class="line"><span class="attr">attr</span>=<span class="string">"0x00000001"</span></span><br></pre></td></tr></table></figure>
+<p>(3)settings/sctrlcert/scc_primary_dbg.ini</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[PRIMARY_DBG]</span></span><br><span class="line"><span class="attr">primary_dbg_prvk</span>=<span class="string">"keys/sctrlcert/primary_dbg_prvk.pem"</span></span><br><span class="line"><span class="attr">secondary_dbg_prvk</span>=<span class="string">"keys/sctrlcert/secondary_dbg_prvk.pem"</span></span><br><span class="line"><span class="attr">dbg_cap0</span>=<span class="string">"0x0"</span></span><br><span class="line"><span class="attr">dbg_cap1</span>=<span class="string">"0x0"</span></span><br><span class="line"><span class="attr">sla_dis</span>=<span class="string">"yes"</span></span><br><span class="line"><span class="attr">daa_dis</span>=<span class="string">"yes"</span></span><br><span class="line"><span class="attr">sbc_dis</span>=<span class="string">"yes"</span></span><br></pre></td></tr></table></figure>
+<p>(4)settings/sctrlcert/scc_secondary_dbg.ini</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">secondary_dbg_prvk</span>=<span class="string">"keys/sctrlcert/secondary_dbg_prvk.pem"</span></span><br><span class="line"><span class="attr">soc_id</span>=<span class="string">"70 61 3c 50 6f d2 4e c0 82 a6 62 5d c3 16 70 9b db 50 56 ea 96 8b 75 22 f1 56 b6 9d f4 63 a1 25"</span></span><br><span class="line"><span class="attr">dbg_cap0</span>=<span class="string">"0x0"</span></span><br><span class="line"><span class="attr">dbg_cap1</span>=<span class="string">"0x0"</span></span><br><span class="line"><span class="attr">sla_dis</span>=<span class="string">"yes"</span></span><br><span class="line"><span class="attr">daa_dis</span>=<span class="string">"yes"</span></span><br><span class="line"><span class="attr">sbc_dis</span>=<span class="string">"yes"</span></span><br></pre></td></tr></table></figure>
+<p>(用flashtool进行BROM下载，从GLB.log中搜索soc_id)</p>
+<h4 id="8-3-生成cert-chain格式的scertFile"><a href="#8-3-生成cert-chain格式的scertFile" class="headerlink" title="8.3 生成cert_chain格式的scertFile"></a>8.3 生成cert_chain格式的scertFile</h4><p>(1)root private key owner：将配置的ini放到settings/sctrlcert目录下执行指令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sctrlcert.py -i settings/sctrlcert/scc_key.ini -k out/sctrlcert/key_cert.bin -g settings/sctrlcert/scc_gfh_config_cert_chain.ini -q settings/sctrlcert/scc_primary_dbg.ini -p out/sctrlcert/primary_dbg_cert.bin -s settings/sctrlcert/scc_secondary_dbg.ini out/sctrlcert/scc_sv5.cert</span><br></pre></td></tr></table></figure>
+<p>(2)service center：将key_cert.bin和primary_dbg_cert.bin放到prebuilt/sctrlcert目录下执行指令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sctrlcert.py -k prebuilt/sctrlcert/key_cert.bin -g settings/sctrlcert/scc_gfh_config_cert_chain.ini -p prebuilt/sctrlcert/primary_dbg_cert.bin -s settings/sctrlcert/scc_secondary_dbg.ini out/sctrlcert/scc_sv5.cert</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/05/Tool/img文件解包及类型转换方法/" rel="next" title="img文件解包及类型转换方法">
+                <i class="fa fa-chevron-left"></i> img文件解包及类型转换方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">86</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、生成root-key用于cert1的签名和验证"><span class="nav-text">一、生成root key用于cert1的签名和验证</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-生成private-key"><span class="nav-text">1.1 生成private key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-生成public-key"><span class="nav-text">1.2 生成public key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-生成oemkey-h"><span class="nav-text">1.3 生成oemkey.h</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-生成dakey-h"><span class="nav-text">1.4 生成dakey.h</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、生成img-key用于cert2的签名和验证"><span class="nav-text">二、生成img key用于cert2的签名和验证</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-生成img-private-key"><span class="nav-text">2.1 生成img private key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-生成img-public-key"><span class="nav-text">2.2 生成img public key</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、打开Secure-Boot相关功能宏"><span class="nav-text">三、打开Secure Boot相关功能宏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-preloader部分"><span class="nav-text">3.1 preloader部分</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-lk部分"><span class="nav-text">3.2 lk部分</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-kernel部分"><span class="nav-text">3.3 kernel部分</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、签名配置"><span class="nav-text">四、签名配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-给preloader签名的流程"><span class="nav-text">4.1 给preloader签名的流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-给img签名的流程"><span class="nav-text">4.2 给img签名的流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-com-port设置"><span class="nav-text">4.3 com port设置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、DA配置"><span class="nav-text">五、DA配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-环境配置"><span class="nav-text">5.1 环境配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-编译DA"><span class="nav-text">5.2 编译DA</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-签名DA"><span class="nav-text">5.3 签名DA</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#六、efuse-xml配置"><span class="nav-text">六、efuse.xml配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#七、AuthFile"><span class="nav-text">七、AuthFile</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#7-1-authfile-key的配置"><span class="nav-text">7.1 authfile key的配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-2-daa和sla-prvk的配置-RSA2048"><span class="nav-text">7.2 daa和sla prvk的配置(RSA2048)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-3-toolauth-gfh-config-pss-ini的配置"><span class="nav-text">7.3 toolauth_gfh_config_pss.ini的配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-4-生成authfile指令"><span class="nav-text">7.4 生成authfile指令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#八、ScertFile"><span class="nav-text">八、ScertFile</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#8-1-Scertfile-key的配置"><span class="nav-text">8.1 Scertfile key的配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-2-ini的配置"><span class="nav-text">8.2 ini的配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-3-生成cert-chain格式的scertFile"><span class="nav-text">8.3 生成cert_chain格式的scertFile</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

@@ -329,7 +329,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/12/08/Tool/img文件解包及类型转换方法/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/12/08/Security/MTK平台SecureBoot配置过程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -349,7 +349,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/12/08/Tool/img文件解包及类型转换方法/" class="post-title-link" itemprop="url">img文件解包及类型转换方法</a>
+                <a href="/2019/12/08/Security/MTK平台SecureBoot配置过程/" class="post-title-link" itemprop="url">MTK 平台 Secure Boot 配置过程</a>
               
             
           </h1>
@@ -375,6 +375,170 @@
               
 
               <time title="创建时间：2019-12-08 00:00:00" itemprop="dateCreated datePublished" datetime="2019-12-08T00:00:00+08:00">2019-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、生成root-key用于cert1的签名和验证"><a href="#一、生成root-key用于cert1的签名和验证" class="headerlink" title="一、生成root key用于cert1的签名和验证"></a>一、生成root key用于cert1的签名和验证</h3><h4 id="1-1-生成private-key"><a href="#1-1-生成private-key" class="headerlink" title="1.1 生成private key"></a>1.1 生成private key</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#生成root_prvk.pem</span><br><span class="line">openssl genrsa -out cert_chain/root_prvk.pem 2048</span><br><span class="line">cp cert_chain/root_prvk.pem vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$PROJECT/security/chip_config/s/key/root_prvk.pem</span><br><span class="line">#将root_prvk.pem转换为root_prvk.der</span><br><span class="line">python der_extractor/pem_to_der.py cert_chain/root_prvk.pem cert_chain/root_prvk.der</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-生成public-key"><a href="#1-2-生成public-key" class="headerlink" title="1.2 生成public key"></a>1.2 生成public key</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#生成root_pubk.pem</span><br><span class="line">openssl rsa -in cert_chain/root_prvk.pem -pubout &gt; cert_chain/root_pubk.pem</span><br><span class="line">#将root_pubk.pem转换为root_pubk.der</span><br><span class="line">python der_extractor/pem_to_der.py cert_chain/root_pubk.pem cert_chain/root_pubk.der</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/12/08/Security/MTK平台SecureBoot配置过程/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/12/05/Tool/img文件解包及类型转换方法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/12/05/Tool/img文件解包及类型转换方法/" class="post-title-link" itemprop="url">img文件解包及类型转换方法</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-05 00:00:00" itemprop="dateCreated datePublished" datetime="2019-12-05T00:00:00+08:00">2019-12-05</time>
             
 
             
@@ -434,7 +598,7 @@
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2019/12/08/Tool/img文件解包及类型转换方法/#more" rel="contents">
+              <a class="btn" href="/2019/12/05/Tool/img文件解包及类型转换方法/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1798,169 +1962,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/08/24/Filesystem/Android10_动态分区/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/08/24/Filesystem/Android10_动态分区/" class="post-title-link" itemprop="url">Android10 动态分区</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-08-24 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-24T00:00:00+08:00">2019-08-24</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Android10/" itemprop="url" rel="index"><span itemprop="name">Android10</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>动态分区（Dynamic Partition）是Android的用户空间分区系统。使用此分区系统，可以在OTA升级期间创建、调整分区大小或删除分区。使用动态分区，厂商不需要再担心分区的单个大小，如system，vendor和product。相反，设备会被分配一个super分区，并且可以在其中动态调整子分区的大小。各个分区映像不再需要为将来的OTA升级预留空间。相反，super中的剩余可用空间可用于所有动态分区。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/08/24/Filesystem/Android10_动态分区/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2009,7 +2010,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">85</span>
+                    <span class="site-state-item-count">86</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

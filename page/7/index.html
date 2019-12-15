@@ -329,6 +329,169 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/28/Power/ProximitySensor工作原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/04/28/Power/ProximitySensor工作原理/" class="post-title-link" itemprop="url">ProximitySensor工作原理</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-28 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-28T00:00:00+08:00">2018-04-28</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Power/" itemprop="url" rel="index"><span itemprop="name">Power</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1、DisplayPowerController构造函数"><a href="#1、DisplayPowerController构造函数" class="headerlink" title="1、DisplayPowerController构造函数"></a>1、DisplayPowerController构造函数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DisplayPowerController</span><span class="params">(Context context,</span></span></span><br><span class="line"><span class="function"><span class="params">        DisplayPowerCallbacks callbacks, Handler handler,</span></span></span><br><span class="line"><span class="function"><span class="params">        SensorManager sensorManager, DisplayBlanker blanker)</span> </span>&#123;</span><br><span class="line">    mHandler = <span class="keyword">new</span> DisplayControllerHandler(handler.getLooper());</span><br><span class="line">    mCallbacks = callbacks;</span><br><span class="line">    <span class="comment">// 获取电池统计服务</span></span><br><span class="line">    mBatteryStats = BatteryStatsService.getService();</span><br><span class="line">    <span class="comment">// 初始化传感器</span></span><br><span class="line">    mSensorManager = sensorManager;</span><br><span class="line">    <span class="comment">// 窗口管理策略</span></span><br><span class="line">    mWindowManagerPolicy = LocalServices.getService(WindowManagerPolicy.class);</span><br><span class="line">    <span class="comment">// 显示屏</span></span><br><span class="line">    mBlanker = blanker;</span><br><span class="line">    mContext = context;</span><br><span class="line">    <span class="keyword">final</span> Resources resources = context.getResources();</span><br><span class="line">    <span class="comment">// 最低屏幕亮度：10</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> screenBrightnessSettingMinimum = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessSettingMinimum));</span><br><span class="line">    <span class="comment">// Doze状态最低屏幕亮度：1</span></span><br><span class="line">    mScreenBrightnessDozeConfig = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessDoze));</span><br><span class="line">    <span class="comment">// Dim状态屏幕亮度：10</span></span><br><span class="line">    mScreenBrightnessDimConfig = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessDim));</span><br><span class="line">    <span class="comment">// 暗间中最低屏幕亮度：1</span></span><br><span class="line">    mScreenBrightnessDarkConfig = clampAbsoluteBrightness(resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_screenBrightnessDark));</span><br><span class="line">    <span class="keyword">if</span> (mScreenBrightnessDarkConfig &gt; mScreenBrightnessDimConfig) &#123;</span><br><span class="line">        Slog.w(TAG, <span class="string">"Expected config_screenBrightnessDark ("</span></span><br><span class="line">                + mScreenBrightnessDarkConfig + <span class="string">") to be less than or equal to "</span></span><br><span class="line">                + <span class="string">"config_screenBrightnessDim ("</span> + mScreenBrightnessDimConfig + <span class="string">")."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mScreenBrightnessDarkConfig &gt; mScreenBrightnessDimConfig) &#123;</span><br><span class="line">        Slog.w(TAG, <span class="string">"Expected config_screenBrightnessDark ("</span></span><br><span class="line">                + mScreenBrightnessDarkConfig + <span class="string">") to be less than or equal to "</span></span><br><span class="line">                + <span class="string">"config_screenBrightnessSettingMinimum ("</span></span><br><span class="line">                + screenBrightnessSettingMinimum + <span class="string">")."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 取Min、Dim、Dark中最小值</span></span><br><span class="line">    <span class="keyword">int</span> screenBrightnessRangeMinimum = Math.min(Math.min(</span><br><span class="line">            screenBrightnessSettingMinimum, mScreenBrightnessDimConfig),</span><br><span class="line">            mScreenBrightnessDarkConfig);</span><br><span class="line">    <span class="comment">// 亮度最大值：255</span></span><br><span class="line">    mScreenBrightnessRangeMaximum = PowerManager.BRIGHTNESS_ON;</span><br><span class="line">    <span class="comment">// 软件自动调节亮度：false</span></span><br><span class="line">    mUseSoftwareAutoBrightnessConfig = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_automatic_brightness_available);</span><br><span class="line">    <span class="comment">// Doze模式自动调节亮度：false</span></span><br><span class="line">    mAllowAutoBrightnessWhileDozingConfig = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_allowAutoBrightnessWhileDozing);</span><br><span class="line">    <span class="comment">// 快速动画亮度每秒缓变率：200</span></span><br><span class="line">    mBrightnessRampRateFast = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_brightness_ramp_rate_fast);</span><br><span class="line">    <span class="comment">// 慢速动画亮度每秒缓变率：40</span></span><br><span class="line">    mBrightnessRampRateSlow = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_brightness_ramp_rate_slow);</span><br><span class="line">    <span class="comment">// 亮度传感器事件传输速率：250ms</span></span><br><span class="line">    <span class="keyword">int</span> lightSensorRate = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessLightSensorRate);</span><br><span class="line">    <span class="comment">// 设备退出Doze模式时用于获取首次亮度，该值为0即禁用该功能</span></span><br><span class="line">    <span class="keyword">int</span> initialLightSensorRate = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessInitialLightSensorRate);</span><br><span class="line">    <span class="keyword">if</span> (initialLightSensorRate == -<span class="number">1</span>) &#123;</span><br><span class="line">      initialLightSensorRate = lightSensorRate;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialLightSensorRate &gt; lightSensorRate) &#123;</span><br><span class="line">      Slog.w(TAG, <span class="string">"Expected config_autoBrightnessInitialLightSensorRate ("</span></span><br><span class="line">              + initialLightSensorRate + <span class="string">") to be less than or equal to "</span></span><br><span class="line">              + <span class="string">"config_autoBrightnessLightSensorRate ("</span> + lightSensorRate + <span class="string">")."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 亮光度抖动值：8000ms</span></span><br><span class="line">    <span class="keyword">long</span> brighteningLightDebounce = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessBrighteningLightDebounce);</span><br><span class="line">    <span class="comment">// 暗光度抖动值：4000ms</span></span><br><span class="line">    <span class="keyword">long</span> darkeningLightDebounce = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessDarkeningLightDebounce);</span><br><span class="line">    <span class="comment">// 默认为true，计算发现光度变化后立即重置屏幕亮度；否则会很慢根据光度变化屏幕亮度（适用于手表）</span></span><br><span class="line">    <span class="keyword">boolean</span> autoBrightnessResetAmbientLuxAfterWarmUp = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_autoBrightnessResetAmbientLuxAfterWarmUp);</span><br><span class="line">    <span class="comment">// 毫秒计算亮度，10000</span></span><br><span class="line">    <span class="keyword">int</span> ambientLightHorizon = resources.getInteger(</span><br><span class="line">            com.android.internal.R.integer.config_autoBrightnessAmbientLightHorizon);</span><br><span class="line">    <span class="comment">// 自动调整gamma的范围：300%</span></span><br><span class="line">    <span class="keyword">float</span> autoBrightnessAdjustmentMaxGamma = resources.getFraction(</span><br><span class="line">            com.android.internal.R.fraction.config_autoBrightnessAdjustmentMaxGamma,</span><br><span class="line">            <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (mUseSoftwareAutoBrightnessConfig) &#123;</span><br><span class="line">        <span class="comment">// 自动亮度级别</span></span><br><span class="line">        <span class="keyword">int</span>[] lux = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_autoBrightnessLevels);</span><br><span class="line">        <span class="comment">// 自动亮度lcd背光灯亮度</span></span><br><span class="line">        <span class="keyword">int</span>[] screenBrightness = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_autoBrightnessLcdBacklightValues);</span><br><span class="line">        <span class="comment">// 光感预估时间：0</span></span><br><span class="line">        <span class="keyword">int</span> lightSensorWarmUpTimeConfig = resources.getInteger(</span><br><span class="line">                com.android.internal.R.integer.config_lightSensorWarmupTime);</span><br><span class="line">        <span class="comment">// doze状态允许自动调节亮度值的规模：100%</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">float</span> dozeScaleFactor = resources.getFraction(</span><br><span class="line">                com.android.internal.R.fraction.config_screenAutoBrightnessDozeScaleFactor,</span><br><span class="line">                <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// 亮度滞后level配置</span></span><br><span class="line">        <span class="keyword">int</span>[] brightHysteresisLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dynamicHysteresisBrightLevels);</span><br><span class="line">        <span class="keyword">int</span>[] darkHysteresisLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dynamicHysteresisDarkLevels);</span><br><span class="line">        <span class="keyword">int</span>[] luxHysteresisLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dynamicHysteresisLuxLevels);</span><br><span class="line">        <span class="comment">// Doze模式亮度level配置</span></span><br><span class="line">        <span class="keyword">int</span>[] dozeSensorLuxLevels = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dozeSensorLuxLevels);</span><br><span class="line">        <span class="keyword">int</span>[] dozeBrightnessBacklightValues = resources.getIntArray(</span><br><span class="line">                com.android.internal.R.array.config_dozeBrightnessBacklightValues);</span><br><span class="line">        <span class="keyword">boolean</span> useNewSensorSamplesForDoze = resources.getBoolean(</span><br><span class="line">                com.android.internal.R.bool.config_useNewSensorSamplesForDoze);</span><br><span class="line">        mUseActiveDozeLightSensorConfig = resources.getBoolean(</span><br><span class="line">                com.android.internal.R.bool.config_allowAutoBrightnessActiveDozeLightSensor);</span><br><span class="line">        LuxLevels luxLevels = <span class="keyword">new</span> LuxLevels(brightHysteresisLevels, darkHysteresisLevels,</span><br><span class="line">                luxHysteresisLevels, dozeSensorLuxLevels, dozeBrightnessBacklightValues);</span><br><span class="line">        Spline screenAutoBrightnessSpline = createAutoBrightnessSpline(lux, screenBrightness);</span><br><span class="line">        <span class="keyword">if</span> (screenAutoBrightnessSpline == <span class="keyword">null</span>) &#123;</span><br><span class="line">            Slog.e(TAG, <span class="string">"Error in config.xml.  config_autoBrightnessLcdBacklightValues "</span></span><br><span class="line">                    + <span class="string">"(size "</span> + screenBrightness.length + <span class="string">") "</span></span><br><span class="line">                    + <span class="string">"must be monotic and have exactly one more entry than "</span></span><br><span class="line">                    + <span class="string">"config_autoBrightnessLevels (size "</span> + lux.length + <span class="string">") "</span></span><br><span class="line">                    + <span class="string">"which must be strictly increasing.  "</span></span><br><span class="line">                    + <span class="string">"Auto-brightness will be disabled."</span>);</span><br><span class="line">            mUseSoftwareAutoBrightnessConfig = <span class="keyword">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">int</span> bottom = clampAbsoluteBrightness(screenBrightness[<span class="number">0</span>]);</span><br><span class="line">            <span class="keyword">if</span> (mScreenBrightnessDarkConfig &gt; bottom) &#123;</span><br><span class="line">                Slog.w(TAG, <span class="string">"config_screenBrightnessDark ("</span> + mScreenBrightnessDarkConfig</span><br><span class="line">                        + <span class="string">") should be less than or equal to the first value of "</span></span><br><span class="line">                        + <span class="string">"config_autoBrightnessLcdBacklightValues ("</span></span><br><span class="line">                        + bottom + <span class="string">")."</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (bottom &lt; screenBrightnessRangeMinimum) &#123;</span><br><span class="line">                screenBrightnessRangeMinimum = bottom;</span><br><span class="line">            &#125;</span><br><span class="line">            mAutomaticBrightnessController = <span class="keyword">new</span> AutomaticBrightnessController(<span class="keyword">this</span>,</span><br><span class="line">                    handler.getLooper(), sensorManager, screenAutoBrightnessSpline,</span><br><span class="line">                    lightSensorWarmUpTimeConfig, screenBrightnessRangeMinimum,</span><br><span class="line">                    mScreenBrightnessRangeMaximum, dozeScaleFactor, lightSensorRate,</span><br><span class="line">                    initialLightSensorRate, brighteningLightDebounce, darkeningLightDebounce,</span><br><span class="line">                    autoBrightnessResetAmbientLuxAfterWarmUp, ambientLightHorizon,</span><br><span class="line">                    autoBrightnessAdjustmentMaxGamma, mUseActiveDozeLightSensorConfig,</span><br><span class="line">                    useNewSensorSamplesForDoze, luxLevels);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    mScreenBrightnessRangeMinimum = screenBrightnessRangeMinimum;</span><br><span class="line">    <span class="comment">// 默认为false,屏幕不会淡出</span></span><br><span class="line">    mColorFadeFadesConfig = resources.getBoolean(</span><br><span class="line">            com.android.internal.R.bool.config_animateScreenLights);</span><br><span class="line">    <span class="comment">// 初始化接近传感器</span></span><br><span class="line">    <span class="keyword">if</span> (!DEBUG_PRETEND_PROXIMITY_SENSOR_ABSENT) &#123;</span><br><span class="line">        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);</span><br><span class="line">        <span class="keyword">if</span> (mProximitySensor != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mProximityThreshold = Math.min(mProximitySensor.getMaximumRange(),</span><br><span class="line">                    TYPICAL_PROXIMITY_THRESHOLD);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/04/28/Power/ProximitySensor工作原理/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/04/22/Power/PowerManagerService之核心updatePowerStateLocked/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1792,170 +1955,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/02/03/Other/Java基础知识点/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/02/03/Other/Java基础知识点/" class="post-title-link" itemprop="url">Java基础知识点</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-02-03 00:00:00" itemprop="dateCreated datePublished" datetime="2018-02-03T00:00:00+08:00">2018-02-03</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-面向对象的特征"><a href="#1-面向对象的特征" class="headerlink" title="1. 面向对象的特征"></a>1. 面向对象的特征</h3><p>(1)封装：把过程和数据包围起来，对数据的访问只能通过已定义的界面。即现实世界可以被描绘成一系列完全自治、封装的对象，这些对象通过一个受保护的接口访问其他对象；<br>(2)继承：是一种联结类的层次模型，并且允许和鼓励对类的重用，它提供了一种明确表述共性的方法。对象的一个新类可以从现有的类中派生，这个过程称为类继承。新类继承了原始类的特性，新类称为原始类的派生类（子类），而原始类称为新类的基类（父类）。派生类可以从它的基类那里继承方法和实例变量，并且类可以修改或增加新的方法使之更适合特殊的需要；<br>(3)多态：是指允许不同类的对象对同一消息作出响应。多态性包括参数化多态性和包含多态性。多态性语言具有灵活、抽象、行为共享、代码共享的优势，很好解决了应用程序函数同名问题；(4)抽象：忽略一个主题中与当前目标无关的那些方面，以便更充分地注意与当前目标有关的方面。抽象并不打算了解全部问题，而只是选择其中的一部分，暂时不用部分细节。抽象包括两个方面，一是过程抽象，二是数据抽象。</p>
-<h3 id="2-接口和抽象类的区别"><a href="#2-接口和抽象类的区别" class="headerlink" title="2. 接口和抽象类的区别"></a>2. 接口和抽象类的区别</h3><p>(1)接口是公开的，不能有私有方法及变量，而抽象类可以有私有方法及变量；<br>(2)抽象类表示一种继承关系，一个类只能继承一个抽象类，而一个类可以实现多个接口；<br>(3)抽象类是一种功能不全的类，接口只是一个抽象方法声明和静态不能被修改的数数据集合，两者均不能被实例化。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/02/03/Other/Java基础知识点/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2004,7 +2003,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">85</span>
+                    <span class="site-state-item-count">86</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

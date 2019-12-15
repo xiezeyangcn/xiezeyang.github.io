@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-27T15:01:43.649Z">
+<meta property="og:updated_time" content="2019-12-15T10:33:36.178Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android10 用户空间fastboot">
 <meta name="twitter:description" content="一、概述Android 10通过将fastboot从bootloader转移到用户空间，增加了对可调整大小分区的支持。此重定位使得可以将代码移动和烧录到可维护且可测试的公共位置，其中仅由HAL实现fastboot的vendor专属部分。">
@@ -446,7 +446,52 @@
 </tbody>
 </table>
 <p>2.新增的fastboot 命令：</p>
-<p>命令 ｜ 说明<br>:-: | :-:<br>reboot recovery | 在bootloader 模式下会重启进入recovery。在 fastboot 模式无需重启即可直接进入 recovery 模式。<br>reboot fastboot | 重启进入 fastboot 模式。<br>getvar is-userspace | 返回 yes 表示正处于fastboot 模式，返回 no 表示正处于bootloader 模式。<br>getvar is-logical:<partition> | 若给定分区是逻辑分区，则返回yes，否则返回no。<br>getvar super-partition-name | 返回super分区的名称。如果super分区是 A / B 分区，则该名称包括当前slot后缀。<br>create-logical-partition <partition> <size>  | 创建具有给定名称和大小的逻辑分区。该名称不得作为逻辑分区存在。<br>delete-logical-partition <partition> | 删除给定的逻辑分区（有效擦除分区）。<br>resize-logical-partition<partition> <size> | 将逻辑分区的大小调整为新大小而不更改其内容。<br>update-super <partition> | 合并对 super 分区元数据的更改。 如果无法进行合并，则此命令将失败。可选的“erase”参数会覆盖设备的元数据，而不是执行合并。</partition></size></partition></partition></size></partition></partition></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">命令</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">reboot recovery</td>
+<td style="text-align:center">在bootloader 模式下会重启进入recovery。在 fastboot 模式无需重启即可直接进入 recovery 模式。</td>
+</tr>
+<tr>
+<td style="text-align:center">reboot fastboot</td>
+<td style="text-align:center">重启进入 fastboot 模式。</td>
+</tr>
+<tr>
+<td style="text-align:center">getvar is-userspace</td>
+<td style="text-align:center">返回 yes 表示正处于fastboot 模式，返回 no 表示正处于bootloader 模式。</td>
+</tr>
+<tr>
+<td style="text-align:center">getvar is-logical:<partition></partition></td>
+<td style="text-align:center">若给定分区是逻辑分区，则返回yes，否则返回no。</td>
+</tr>
+<tr>
+<td style="text-align:center">getvar super-partition-name</td>
+<td style="text-align:center">返回super分区的名称。如果super分区是 A / B 分区，则该名称包括当前slot后缀。</td>
+</tr>
+<tr>
+<td style="text-align:center">create-logical-partition <partition> <size></size></partition></td>
+<td style="text-align:center">创建具有给定名称和大小的逻辑分区。该名称不得作为逻辑分区存在。</td>
+</tr>
+<tr>
+<td style="text-align:center">delete-logical-partition <partition></partition></td>
+<td style="text-align:center">删除给定的逻辑分区（有效擦除分区）。</td>
+</tr>
+<tr>
+<td style="text-align:center">resize-logical-partition<partition> <size></size></partition></td>
+<td style="text-align:center">将逻辑分区的大小调整为新大小而不更改其内容。</td>
+</tr>
+<tr>
+<td style="text-align:center">update-super <partition></partition></td>
+<td style="text-align:center">合并对 super 分区元数据的更改。 如果无法进行合并，则此命令将失败。可选的“erase”参数会覆盖设备的元数据，而不是执行合并。</td>
+</tr>
+</tbody>
+</table>
 <p>3.仍支持旧的fastboot指令：</p>
 <table>
 <thead>
@@ -647,7 +692,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">85</span>
+                    <span class="site-state-item-count">86</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
