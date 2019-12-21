@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1.Secure Boot概述Secure Boot是为安全程序建立可信平台的启动序列。为了确保仅执行授权的软件，Secure Boot使用加密身份验证来启动一个不可变的序列，以验证代码的来源。启动序列会将设备置于已知的安全状态，并保护其免受软件的二进制操作和下载攻击的影响。Secure Boot系统会在启动过程的每个阶段添加加密检查，以执行以下操作： (1)声明设备执行的所有安全软件images">
+<meta name="keywords" content="Boot,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QCOM 平台 Secure Boot 配置过程">
+<meta property="og:url" content="http://www.xiezeyang.com/2019/12/21/Security/QCOM平台SecureBoot配置过程/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1.Secure Boot概述Secure Boot是为安全程序建立可信平台的启动序列。为了确保仅执行授权的软件，Secure Boot使用加密身份验证来启动一个不可变的序列，以验证代码的来源。启动序列会将设备置于已知的安全状态，并保护其免受软件的二进制操作和下载攻击的影响。Secure Boot系统会在启动过程的每个阶段添加加密检查，以执行以下操作： (1)声明设备执行的所有安全软件images">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/sectools_sign_flow.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/secure_boot_key_certificate.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/generate_sec_file_flow.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/sectools_key_ceritificate.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/secure_boot_sign_flow.png">
+<meta property="og:image" content="http://www.xiezeyang.com/images/qfprom_ddr.png">
+<meta property="og:updated_time" content="2019-12-21T12:03:01.160Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="QCOM 平台 Secure Boot 配置过程">
+<meta name="twitter:description" content="1.Secure Boot概述Secure Boot是为安全程序建立可信平台的启动序列。为了确保仅执行授权的软件，Secure Boot使用加密身份验证来启动一个不可变的序列，以验证代码的来源。启动序列会将设备置于已知的安全状态，并保护其免受软件的二进制操作和下载攻击的影响。Secure Boot系统会在启动过程的每个阶段添加加密检查，以执行以下操作： (1)声明设备执行的所有安全软件images">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/sectools_sign_flow.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2019/12/21/Security/QCOM平台SecureBoot配置过程/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>QCOM 平台 Secure Boot 配置过程 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/12/21/Security/QCOM平台SecureBoot配置过程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">QCOM 平台 Secure Boot 配置过程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-12-21T00:00:00+08:00">2019-12-21</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-Secure-Boot概述"><a href="#1-Secure-Boot概述" class="headerlink" title="1.Secure Boot概述"></a>1.Secure Boot概述</h3><p>Secure Boot是为安全程序建立可信平台的启动序列。为了确保仅执行授权的软件，Secure Boot使用加密身份验证来启动一个不可变的序列，以验证代码的来源。启动序列会将设备置于已知的安全状态，并保护其免受软件的二进制操作和下载攻击的影响。Secure Boot系统会在启动过程的每个阶段添加加密检查，以执行以下操作：</p>
+<p>(1)声明设备执行的所有安全软件images的真实性；</p>
+<p>(2)防止任何未经授权或恶意修改的软件在设备上运行。</p>
+<p>通过一组HW Fuse启用Secure Boot。HW Fuse中标识的受信任实体必须对代码签名才能执行。如果不使用Qualcomm Fuse Programmable Read Only Memory（QFPROM），即Fuse，则无法保证Secure Boot。被许可方必须通过熔断Fuse才能启用Secure Boot。启用平台Secure Boot所需的Fuse配置包括以下内容：</p>
+<p>(1)启用了image认证；</p>
+<p>(2)禁用的JTAG访问；</p>
+<p>(3)本地签名的读写权限熔断，即可以从本地签名机访问的OEM签名密钥。</p>
+<a id="more"></a>
+<p>使用sectools和本地签名者对image（引导加载程序和外围二进制文件）进行签名，该签名接受在本地签名机上显示的签名证书和密钥。该密钥不安全，在运行sectools的本地计算机上签名期间和之后公开。QTI不提供有关保护密钥的指导。OEM必须通过从CA获取密钥/证书来遵循安全最佳实践，并保护HSM中的密钥。使用OpenSSL工具创建的自生成密钥和证书不会链接到任何证书颁发机构。sectools对image的签名流程大致如下图：</p>
+<p><img src="/images/sectools_sign_flow.png" alt></p>
+<p>启用Secure Boot的准备条件：</p>
+<p>(1)安装OpenSSL 1.0及以上版本（<a href="http://www.slproweb.com/products/Win32OpenSSL.html）。" target="_blank" rel="noopener">http://www.slproweb.com/products/Win32OpenSSL.html）。</a></p>
+<p>(2)OEM可以通过签署CASS许可证或通过在高通官网CreatePoint从QTI获得唯一的OEM_ID。</p>
+<p>(3)OEM可以选择任意16位值作为其product ID。OEM也可以保留默认值。</p>
+<h3 id="2-生成Secure-Boot-Keys"><a href="#2-生成Secure-Boot-Keys" class="headerlink" title="2.生成Secure Boot Keys"></a>2.生成Secure Boot Keys</h3><p>下图显示了Secure Boot key和certificate的生成：</p>
+<p><img src="/images/secure_boot_key_certificate.png" alt></p>
+<h4 id="2-1-生成自定义key前准备条件"><a href="#2-1-生成自定义key前准备条件" class="headerlink" title="2.1 生成自定义key前准备条件"></a>2.1 生成自定义key前准备条件</h4><p>(1)创建OEM-KEYS目录：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> $&#123;sectools_path&#125;/resources/data_prov_assets/Signing/Local/OEM-KEYS/</span><br></pre></td></tr></table></figure>
+<p>(2)将opensslroot.cfg拷贝到OEM-KEYS目录中：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp $&#123;sectools_path&#125;/resources/data_prov_assets/General_Assets/Signing/openssl/opensslroot.cfg $&#123;sectools_path&#125;/resources/data_prov_assets/Signing/Local/OEM-KEYS/opensslroot.cfg</span><br></pre></td></tr></table></figure>
+<p>(3)将v3.ext拷贝到OEM-KEYS目录中：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp $&#123;sectools_path&#125;/resources/data_prov_assets/General_Assets/Signing/openssl/v3.ext $&#123;sectools_path&#125;/resources/data_prov_assets/Signing/Local/OEM-KEYS/v3.ext</span><br></pre></td></tr></table></figure>
+<p>(4)将v3_attest.ext拷贝到OEM-KEYS目录中：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp $&#123;sectools_path&#125;/resources/data_prov_assets/General_Assets/Signing/openssl/v3_attest.ext $&#123;sectools_path&#125;/resources/data_prov_assets/Signing/Local/OEMKEYS/v3_attest.ext</span><br></pre></td></tr></table></figure>
+<p>(5)在OEM-KEYS目录中创建config.xml：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">METACONFIG</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">is_mrc</span>&gt;</span>False<span class="tag">&lt;/<span class="name">is_mrc</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">root_pre</span>&gt;</span>Ｔrue<span class="tag">&lt;/<span class="name">root_pre</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">attest_ca_pre</span>&gt;</span>True<span class="tag">&lt;/<span class="name">attest_ca_pre</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">attest_pre</span>&gt;</span>False<span class="tag">&lt;/<span class="name">attest_pre</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">root_cert</span>&gt;</span>qpsa_rootca.cer<span class="tag">&lt;/<span class="name">root_cert</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">root_private_key</span>&gt;</span>qpsa_rootca.key<span class="tag">&lt;/<span class="name">root_private_key</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">attest_ca_cert</span>&gt;</span>qpsa_attestca.cer<span class="tag">&lt;/<span class="name">attest_ca_cert</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">attest_ca_private_key</span>&gt;</span>qpsa_attestca.key<span class="tag">&lt;/<span class="name">attest_ca_private_key</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">root_cert_params</span>&gt;</span></span><br><span class="line">    C=US</span><br><span class="line">    ST=California</span><br><span class="line">    L=San Diego</span><br><span class="line">    OU=General Use Test Key (for testing only)</span><br><span class="line">    OU=CDMA Technologies</span><br><span class="line">    O=SecTools</span><br><span class="line">    CN=Generated Test Root CA</span><br><span class="line">    <span class="tag">&lt;/<span class="name">root_cert_params</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">attest_ca_cert_params</span>&gt;</span></span><br><span class="line">    C=US</span><br><span class="line">    ST=California</span><br><span class="line">    L=San Diego</span><br><span class="line">    O=SecTools</span><br><span class="line">    CN=Generated Test Attestation CA</span><br><span class="line">    <span class="tag">&lt;/<span class="name">attest_ca_cert_params</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">METACONFIG</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-2-生成root-key和certificate"><a href="#2-2-生成root-key和certificate" class="headerlink" title="2.2 生成root key和certificate"></a>2.2 生成root key和certificate</h4><p>(1)依次生成qpsa_rootca.key、rootca_pem.crt、qpsa_rootca.cer：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out qpsa_rootca.key <span class="number">2048</span></span><br><span class="line">openssl req -new -sha256 -key qpsa_rootca.key -x509 -out rootca_pem.crt \</span><br><span class="line">	-subj /C=US/ST=California/L="San Diego"/OU="General Use Test Key (<span class="keyword">for</span> testing <span class="number">13</span> only)"/OU="CDMA Technologies"/O=QUALCOMM/CN="QCT Root CA <span class="number">1</span>" \</span><br><span class="line">	-days <span class="number">7300</span> -set_serial <span class="number">1</span> -config opensslroot.cfg -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-<span class="number">1</span> -sigopt digest:sha256</span><br><span class="line">openssl x509 -<span class="keyword">in</span> rootca_pem.crt -inform PEM -out qpsa_rootca.cer -outform DER</span><br></pre></td></tr></table></figure>
+<p>(2)设置qpsa_rootca.cer中的signature，hash和mask算法，public key和指数值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">openssl x509 -text -inform DER -in qpsa_rootca.cer</span><br><span class="line">Certificate:</span><br><span class="line">    Data:</span><br><span class="line">        Version: 3 (0x2)</span><br><span class="line">        Serial Number: 1 (0x1)</span><br><span class="line">    Signature Algorithm: rsassaPss</span><br><span class="line">         Hash Algorithm: sha256</span><br><span class="line">         Mask Algorithm: mgf1 with sha256</span><br><span class="line">         Salt Length: 0x20</span><br><span class="line">         Trailer Field: 0xBC (default)</span><br><span class="line">        Issuer: C=US, ST=California, L=San Diego, OU=General Use Test Key (for testing 13 only), OU=CDMA Technologies, O=QUALCOMM, CN=QCT Root CA 1</span><br><span class="line">        Validity</span><br><span class="line">            Not Before: Oct  4 07:13:09 2019 GMT</span><br><span class="line">            Not After : Sep 29 07:13:09 2039 GMT</span><br><span class="line">        Subject: C=US, ST=California, L=San Diego, OU=General Use Test Key (for testing 13 only), OU=CDMA Technologies, O=QUALCOMM, CN=QCT Root CA 1</span><br><span class="line">        Subject Public Key Info:</span><br><span class="line">            Public Key Algorithm: rsaEncryption</span><br><span class="line">                Public-Key: (2048 bit)</span><br><span class="line">                Modulus:</span><br><span class="line">                    00:a7:83:de:9d:dd:f9:31:a9:ec:13:87:ba:69:5f:</span><br><span class="line">                    d0:ba:37:2c:13:00:55:76:09:27:09:d2:94:86:2b:</span><br><span class="line">                    64:80:31:e9:ac:14:0b:00:7d:1d:06:e1:95:8d:a9:</span><br><span class="line">                    69:59:f1:a1:c9:56:df:0f:db:8d:7d:bb:89:4f:aa:</span><br><span class="line">                    72:6a:6f:2b:ad:62:35:b3:51:8e:fd:e9:26:9a:bc:</span><br><span class="line">                    ab:bf:b4:a5:4c:a6:96:25:3a:4e:da:33:69:9e:5e:</span><br><span class="line">                    20:92:0c:8e:96:74:e0:6c:2b:07:b9:49:3b:20:f4:</span><br><span class="line">                    97:dd:cc:c1:39:23:ad:06:87:c0:47:70:16:e6:28:</span><br><span class="line">                    52:0f:0a:69:a6:27:fa:8d:57:94:0d:c8:8b:8b:95:</span><br><span class="line">                    d8:51:db:aa:d5:fc:ee:6d:8d:1f:57:7f:44:79:7e:</span><br><span class="line">                    8c:d0:37:22:9a:bc:83:bc:bc:20:13:fb:6e:72:49:</span><br><span class="line">                    09:d4:0e:2d:73:5d:70:60:2c:5a:41:91:64:a8:7a:</span><br><span class="line">                    8f:3c:8b:45:1f:14:01:31:00:25:a0:1c:30:b3:8a:</span><br><span class="line">                    09:1e:af:34:a2:12:2c:58:9c:6a:7e:f3:15:d5:9c:</span><br><span class="line">                    b9:83:23:47:68:f8:4d:ac:04:29:95:db:a4:ce:bf:</span><br><span class="line">                    8c:b9:92:d6:7b:4b:f1:7f:d7:9a:43:8f:da:ed:01:</span><br><span class="line">                    95:40:9d:f2:eb:7a:9f:13:16:25:8e:94:5c:5a:b2:</span><br><span class="line">                    91:1f</span><br><span class="line">                Exponent: 65537 (0x10001)</span><br><span class="line">        X509v3 extensions:</span><br><span class="line">            X509v3 Subject Key Identifier: </span><br><span class="line">                01:15:64:78:66:C1:87:23:99:4B:00:44:E1:4F:90:1F:93:8D:60:DF</span><br><span class="line">            X509v3 Basic Constraints: </span><br><span class="line">                CA:TRUE</span><br><span class="line">            X509v3 Key Usage: </span><br><span class="line">                Certificate Sign, CRL Sign</span><br><span class="line">    Signature Algorithm: rsassaPss</span><br><span class="line">         Hash Algorithm: sha256</span><br><span class="line">         Mask Algorithm: mgf1 with sha256</span><br><span class="line">         Salt Length: 0x20</span><br><span class="line">         Trailer Field: 0xBC (default)</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-生成attestation-CA-key和certificate"><a href="#2-3-生成attestation-CA-key和certificate" class="headerlink" title="2.3 生成attestation CA key和certificate"></a>2.3 生成attestation CA key和certificate</h4><p>依次生成qpsa_attestca.key、attestca.csr、attestca_pem.crt、attestca_pem.crt：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out qpsa_attestca.key <span class="number">2048</span></span><br><span class="line">openssl req -new -key qpsa_attestca.key -out attestca.csr \</span><br><span class="line">	-subj /C=US/ST=CA/L="San Diego"/OU="CDMA Technologies"/O=QUALCOMM/CN="QUALCOMM Attestation CA" \</span><br><span class="line">	-days <span class="number">7300</span> -config opensslroot.cfg</span><br><span class="line">openssl x509 -req -<span class="keyword">in</span> attestca.csr -CA rootca_pem.crt -CAkey qpsa_rootca.key \</span><br><span class="line">	-out attestca_pem.crt -set_serial <span class="number">5</span> -days <span class="number">7300</span> -extfile v3.ext  \</span><br><span class="line">	-sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-<span class="number">1</span> -sigopt digest:sha256</span><br><span class="line">openssl x509 -inform PEM -<span class="keyword">in</span> attestca_pem.crt -outform DER -out qpsa_attestca.cer</span><br></pre></td></tr></table></figure>
+<h3 id="3-将Root-of-Trust配置为QFPROM-Fuse"><a href="#3-将Root-of-Trust配置为QFPROM-Fuse" class="headerlink" title="3.将Root of Trust配置为QFPROM Fuse"></a>3.将Root of Trust配置为QFPROM Fuse</h3><p>运行下面命令生成sha256 root证书内容：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl dgst -sha256 qpsa_rootca.cer &gt; sha256rootcert.txt</span><br></pre></td></tr></table></figure>
+<h4 id="3-1-配置OEM-PK-HASH"><a href="#3-1-配置OEM-PK-HASH" class="headerlink" title="3.1 配置OEM PK HASH"></a>3.1 配置OEM PK HASH</h4><p>(1)将sha256rootcert.txt中root cert hash复制到${sectools_path}/config/sdm450/sdm450_fuseblower_USER.xml中：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">module</span> <span class="attr">id</span>=<span class="string">"SECURITY_CONTROL_CORE"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"false"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">description</span>&gt;</span>contains the OEM public key hash as set by OEM<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">name</span>&gt;</span>root_cert_hash<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">value</span>&gt;</span>a7de005f6f5c0284a1aa6c42300300426f983d38a10fe8a3089a459bcfde1974<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">description</span>&gt;</span>SHA-256 signed root cert to generate root hash<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">name</span>&gt;</span>root_cert_file<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">value</span>&gt;</span>./../../resources/OEM-KEYS/qpsa_rootca.cer<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>(2)将root certificate文件作为输入（不是root cert hash），sectools将自动生成OEM PK HASH：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">module</span> <span class="attr">id</span>=<span class="string">"SECURITY_CONTROL_CORE"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">description</span>&gt;</span>contains the OEM public key hash as set by OEM<span class="tag">&lt;/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">name</span>&gt;</span>root_cert_hash<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">value</span>&gt;</span>a7de005f6f5c0284a1aa6c42300300426f983d38a10fe8a3089a459bcfde1974<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"false"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">description</span>&gt;</span>SHA-256 signed root cert to generate root hash<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">name</span>&gt;</span>root_cert_file<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">value</span>&gt;</span>&gt;./../../resources/data_prov_assets/Signing/Local/OEM-KEYS/qpsa_rootca.cer<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-配置PK-HASH-IN-FUSE"><a href="#3-2-配置PK-HASH-IN-FUSE" class="headerlink" title="3.2 配置PK HASH IN FUSE"></a>3.2 配置PK HASH IN FUSE</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- SEC_BOOT1 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"false"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span>PK Hash is in Fuse for SEC_BOOT1: Apps<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>SEC_BOOT1_PK_Hash_in_Fuse<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- SEC_BOOT2 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"false"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span>PK Hash is in Fuse for SEC_BOOT2: MBA<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>SEC_BOOT2_PK_Hash_in_Fuse<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- SEC_BOOT3 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"false"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span>PK Hash is in Fuse for SEC_BOOT3: MPSS<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>SEC_BOOT3_PK_Hash_in_Fuse<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- OEM HW ID --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"false"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span>The OEM hardware ID<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>oem_hw_id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>0x0000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- OEM Product ID --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">entry</span> <span class="attr">ignore</span>=<span class="string">"false"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span>The OEM product ID<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>oem_product_id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>0x0000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="3-3-生成sec-dat"><a href="#3-3-生成sec-dat" class="headerlink" title="3.3 生成sec.dat"></a>3.3 生成sec.dat</h4><p>(1)运行Sectools生成sec.dat，该文件可用于将eFuse熔断到设备上：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sectools.py fuseblower -p sdm450 -g –d</span><br></pre></td></tr></table></figure>
+<p>(2)在fuseblower_output目录找到包含熔丝信息的sec.dat文件，并在fastboot模式下将其烧入sec分区：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot flash sec &lt;sectools&gt;\fuseblower_output\v2\sec.dat</span><br></pre></td></tr></table></figure>
+<p>(3)烧录后第一次启动中，SBL从设备中读取sec分区内容，并将其加载到TZ DDR区域。TZ通过读取QFPROM_RAW_WR_PERM_LSB的OEM_SEC_BOOT位判断其是否为空来确认是否熔断Fuse。Blown过程是不可逆的，即只要熔断一次，该机器将永远是Fuse机器。</p>
+<p><img src="/images/generate_sec_file_flow.png" alt></p>
+<p>默认无法用QFIL在fuse设备上进一步烧录。需要特殊配置，才能使用validated image programming （VIP）方法在安全设备上进行安全烧录。</p>
+<h4 id="3-4-为Root-of-trust签名image"><a href="#3-4-为Root-of-trust签名image" class="headerlink" title="3.4 为Root of trust签名image"></a>3.4 为Root of trust签名image</h4><p>(1)从手机中获取JTAG_ID、SOC_HW_VERSION信息：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">msm_part</span>&gt;</span>0x000910E1<span class="tag">&lt;/<span class="name">msm_part</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">soc_hw_version</span>&gt;</span>0x60040100<span class="tag">&lt;/<span class="name">soc_hw_version</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(2)将IN_USE_SOC_HW_VERSION设置为0表示使用MSM_PART，将其设置为1表示使用SOC_HW_VERSION：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">in_use_soc_hw_version</span>&gt;</span>1<span class="tag">&lt;/<span class="name">in_use_soc_hw_version</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(3)使用SN为不同启用Secure Boot的设备创建不同的签名images。当其设置为1时，SN用于验证签名，而不是OEM ID和MODEL ID：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">use_serial_number_in_signing</span>&gt;</span>0<span class="tag">&lt;/<span class="name">use_serial_number_in_signing</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(4)将OEM_ID_INDEPENDENT设置为0以进行客户签名：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">oem_id_independent</span>&gt;</span>0<span class="tag">&lt;/<span class="name">oem_id_independent</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(5)若将非零的OEM ID或OEM_HW_ID用于熔丝，需使用相同的值配置OEM_ID：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">oem_id</span>&gt;</span>0x0000<span class="tag">&lt;/<span class="name">oem_id</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(6)若将非零MODEM ID用于熔丝，需使用相同的值配置MODEL ID。MODEL ID或OEM Product ID是OEM所特有的：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">model_id</span>&gt;</span>0x0000<span class="tag">&lt;/<span class="name">model_id</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(7)将DEBUG OU字段的值设置为0x02以禁用Secure Boot调试：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">debug</span>&gt;</span>0x0000000000000002<span class="tag">&lt;/<span class="name">debug</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(8)使用SERIAL NUMBER将use_serial_number_in_signing设置为1，然后使用平台SN进行填充，如0x12345678：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">serial_number</span>&gt;</span>0x12345678<span class="tag">&lt;/<span class="name">serial_number</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(9)列出平台支持签名的images列表:</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python sectools.py secimage -h --chipset &lt;chipset&gt; --sign_id LIST</span><br><span class="line">xbl、pmic、abl、prog_emmc_ufs_lite、prog_emmc_ufs_ddr、vip、uefi、mba、modem、TZ、hyp、devcfg、rpm、aDSP、STI、venus、efs_tar、sampleapp32、sampleapp64、isdbtmm、Widevine、cppf、PlayReady、cmnlib、cmnlib64、keymaster、hdcp1、hdcp2p2、dxhdcp2、lksecapp、macchiato_sample、gfx_microcode、mcfg_hw、mcfg_sw、tz_tee、cdsp</span><br></pre></td></tr></table></figure>
+<p>(10)对单个image进行签名，如tz.mbn：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp out/target/product/aosp/tz.mbn $&#123;sectools_path&#125;/input/tz.mbn </span><br><span class="line">python sectools.py secimage -s -i "input/tz.mbn" -g tz -p &lt;chipset&gt; --cfg_selected_cert_config=OEM-KEYS</span><br></pre></td></tr></table></figure>
+<p><img src="/images/sectools_key_ceritificate.png" alt></p>
+<p>签名的image由代码签名和certificate chain组成。在certificate chain中，certificate 带有用于解密证书和image签名的公共密钥。</p>
+<p><img src="/images/secure_boot_sign_flow.png" alt></p>
+<p>要启用SFS（Secure File System），需要加密引擎（crypto engine）的硬件密钥（hardware key）访问权限。必须对SHK（Secondary Hardware Key） QFPROM进行烧写，并且必须根据JTAG可访问性对设备进行保护。在熔丝之前，debug key将用于加密SFS中的文件。从SFS访问文件时，相同的debug key将用于解密文件。在熔丝之后，将使用sec.dat将设备唯一的key熔接到设备的SHK，发送到KDF以生成唯一的加密key。该加密key用于加密和解密SFS中的文件。在熔丝之前创建的SFS的任何用户数据将不可访问，应予以删除。在安全设备上重新启用JTAG后，用户数据和SFS将变得不可用，应将其擦除以使设备成功启动。</p>
+<p>下图显示了QFPROM和DDR中Secure Boot相关信息：</p>
+<p><img src="/images/qfprom_ddr.png" alt></p>
+<h3 id="4-配置Debug-policy抓取dump"><a href="#4-配置Debug-policy抓取dump" class="headerlink" title="4.配置Debug policy抓取dump"></a>4.配置Debug policy抓取dump</h3><p>(1)在<meta build>/common/tools/sectools/config/sdm450/sdm450_fuseblower_QTI.xml中将ARB fuse、OEM_SEC_BOOT、ARB WR权限fuse配置移除，然后生成sec.dat烧录到sec分区：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="tag">&lt;<span class="name">fuse</span> <span class="attr">ignore</span>=<span class="string">"true"</span> <span class="attr">n</span>=<span class="string">"2"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">address</span>&gt;</span>0x00780198<span class="tag">&lt;/<span class="name">address</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">operation</span>&gt;</span>BLOW<span class="tag">&lt;/<span class="name">operation</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">field</span> <span class="attr">id</span>=<span class="string">"OEM_CONFIG_BIT_32-35"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span><span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">owner</span>&gt;</span>QC<span class="tag">&lt;/<span class="name">owner</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>0x0F<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">bits</span>&gt;</span>35:32<span class="tag">&lt;/<span class="name">bits</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">field</span>&gt;</span></span><br><span class="line">...</span><br><span class="line"><span class="tag">&lt;<span class="name">fuse_region</span> <span class="attr">id</span>=<span class="string">"QFPROM_RAW_WR_PERM"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">description</span>&gt;</span><span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">fuse</span> <span class="attr">ignore</span>=<span class="string">"false"</span> <span class="attr">n</span>=<span class="string">"0"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">address</span>&gt;</span>0x00780158<span class="tag">&lt;/<span class="name">address</span>&gt;</span></span><br><span class="line">...</span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">&lt;field id="OEM_CONFIG"&gt;</span></span><br><span class="line"><span class="comment">	&lt;description&gt;&lt;/description&gt;</span></span><br><span class="line"><span class="comment">	&lt;owner&gt;QTI&lt;/owner&gt;</span></span><br><span class="line"><span class="comment">	&lt;value&gt;0x1&lt;/value&gt;</span></span><br><span class="line"><span class="comment">	&lt;bits&gt;10&lt;/bits&gt;</span></span><br><span class="line"><span class="comment">&lt;/field&gt;</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line">...</span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">&lt;field id="OEM_SEC_BOOT"&gt;</span></span><br><span class="line"><span class="comment">	&lt;description&gt;&lt;/description&gt;</span></span><br><span class="line"><span class="comment">	&lt;owner&gt;QTI&lt;/owner&gt;</span></span><br><span class="line"><span class="comment">	&lt;value&gt;0x1&lt;/value&gt;</span></span><br><span class="line"><span class="comment">	&lt;bits&gt;20&lt;/bits&gt;</span></span><br><span class="line"><span class="comment">&lt;/field&gt;</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>(2)在<meta build>/common/tools/sectools/config/<chipset>/<chipset>_debugpolicy.xml中打开debug policy：</chipset></chipset></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">flag</span>&gt;</span> <span class="tag">&lt;<span class="name">bit_pos</span>&gt;</span>0<span class="tag">&lt;/<span class="name">bit_pos</span>&gt;</span> <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span> <span class="tag">&lt;/<span class="name">flag</span>&gt;</span> <span class="comment">&lt;!--DP_ENABLE_ONLINE_CRASH_DUMPS--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">flag</span>&gt;</span> <span class="tag">&lt;<span class="name">bit_pos</span>&gt;</span>1<span class="tag">&lt;/<span class="name">bit_pos</span>&gt;</span> <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span> <span class="tag">&lt;/<span class="name">flag</span>&gt;</span> <span class="comment">&lt;!--DP_ENABLE_OFFLINE_CRASH_DUMPS--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">flag</span>&gt;</span> <span class="tag">&lt;<span class="name">bit_pos</span>&gt;</span>2<span class="tag">&lt;/<span class="name">bit_pos</span>&gt;</span> <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span> <span class="tag">&lt;/<span class="name">flag</span>&gt;</span> <span class="comment">&lt;!--DP_ENABLE_JTAG--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">flag</span>&gt;</span> <span class="tag">&lt;<span class="name">bit_pos</span>&gt;</span>3<span class="tag">&lt;/<span class="name">bit_pos</span>&gt;</span> <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span> <span class="tag">&lt;/<span class="name">flag</span>&gt;</span> <span class="comment">&lt;!--DP_ENABLE_LOGS--&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(3)在trustzone_images/securemsm/trustzone/qsee/mink/oem/config/<chipset>/oem_config.xml中将OEM_enablecrashdumps_before_arb设置为1：</chipset></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Mark third party signed secure applications sandboxed by default --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">props</span> <span class="attr">name</span>=<span class="string">"OEM_enablecrashdumps_before_arb"</span> <span class="attr">type</span>=<span class="string">DALPROP_ATTR_TYPE_UINT32</span>&gt;</span>1<span class="tag">&lt;/<span class="name">props</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>(4)在<meta build>/common/tools/sectools/config/<chipset>/<chipset>_secimage.xml中DEBUG_OU设为0：</chipset></chipset></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;debug&gt;0x0000000000000000&lt;/debug&gt;</span><br></pre></td></tr></table></figure>
+<p>(5)在boot_images\QcomPkg\Library\SecDbgLib\oem\secDbg_oem.c中定义SKIP_SERIAL_NUMBER_CHECK：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/* Serial Number Flag */</span><br><span class="line">#define SKIP_SERIAL_NUMBER_CHECK 1</span><br></pre></td></tr></table></figure>
+<p>(6)在完成上述配置后再将sdm450_fuseblower_QTI.xml中(1)处修改还原回去，生成sec.dat烧录到sec分区进行熔丝。</p>
+<p>(7)<meta build>/common/tools/sectools/config/sdm450/sdm450_debugpolicy.xml中指定SN：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">serial_num_list</span>&gt;</span> <span class="comment">&lt;!--Range: 1 to 200--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">serial_num</span>&gt;</span>9d925867<span class="tag">&lt;/<span class="name">serial_num</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">serial_num_list</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boot/" rel="tag"># Boot</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/15/Tool/Image文件解包及类型转换方法/" rel="next" title="Image 文件解包及类型转换方法">
+                <i class="fa fa-chevron-left"></i> Image 文件解包及类型转换方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">87</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Secure-Boot概述"><span class="nav-text">1.Secure Boot概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-生成Secure-Boot-Keys"><span class="nav-text">2.生成Secure Boot Keys</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-生成自定义key前准备条件"><span class="nav-text">2.1 生成自定义key前准备条件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-生成root-key和certificate"><span class="nav-text">2.2 生成root key和certificate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-生成attestation-CA-key和certificate"><span class="nav-text">2.3 生成attestation CA key和certificate</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-将Root-of-Trust配置为QFPROM-Fuse"><span class="nav-text">3.将Root of Trust配置为QFPROM Fuse</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-配置OEM-PK-HASH"><span class="nav-text">3.1 配置OEM PK HASH</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-配置PK-HASH-IN-FUSE"><span class="nav-text">3.2 配置PK HASH IN FUSE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-生成sec-dat"><span class="nav-text">3.3 生成sec.dat</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-为Root-of-trust签名image"><span class="nav-text">3.4 为Root of trust签名image</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-配置Debug-policy抓取dump"><span class="nav-text">4.配置Debug policy抓取dump</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
