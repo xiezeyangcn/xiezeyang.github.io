@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="从Android 9开始，boot映象的header包含一个字段用于标识header版本号。引导加载程序必须检查header版本号字段，并相应地解析header。通过对boot映象header进行版本编号，可在将来对header进行修改，保持向后兼容性。 旧版本中的unused字段在Android 9之后会转换为header_version字段，Android 9之间版本的boot映象的heade">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-01-05T03:37:54.247Z">
+<meta property="og:updated_time" content="2020-01-05T03:42:47.088Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Boot Image Header Version 介绍">
 <meta name="twitter:description" content="从Android 9开始，boot映象的header包含一个字段用于标识header版本号。引导加载程序必须检查header版本号字段，并相应地解析header。通过对boot映象header进行版本编号，可在将来对header进行修改，保持向后兼容性。 旧版本中的unused字段在Android 9之后会转换为header_version字段，Android 9之间版本的boot映象的heade">
@@ -429,6 +429,7 @@
 <p>旧版本中的<code>unused</code>字段在Android 9之后会转换为<code>header_version</code>字段，Android 9之间版本的boot映象的header版本会被视为0。所有新发布的Android 9设备必须使用v1版本的boot header。所有新发布的Android 10设备必须使用v2版本的boot header。</p>
 <p>Android 9在创建boot映象的mkbootimg工具添加了<code>header_version</code>、<code>recovery_dtbo</code>参数用于设置boot映象header版本和recovery dtbo映象的路径。可在BoardConfig.mk中使用<code>BOARD_MKBOOTIMG_ARGS</code>配置这些参数，如：</p>
 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BOARD_MKBOOTIMG_ARGS := --ramdisk_offset <span class="variable">$(BOARD_RAMDISK_OFFSET)</span> --tags_offset <span class="variable">$(BOARD_KERNEL_TAGS_OFFSET)</span> --header_version <span class="variable">$(BOARD_BOOTIMG_HEADER_VERSION)</span></span><br></pre></td></tr></table></figure>
+<a id="more"></a>
 <p>Android 9及之前版本，dtb.img不是在自己的分区里，就是被打包到image.gz中以创建kernel+dtb映象（即用于mkbootimg工具创建boot映象）。从Android 10开始，对boot映象格式进行了调整，默认会包含dtb映象，并在bootloader添加了新的kernel cmdline参数androidboot.dtb_idx来指示所选DT的索引用于进行VTS验证，以检查设备中的boot映象header版本是不是v2。对于Non-A/B设备，会将dtb作为recovery映象的一部分，可以避免某些因OTA升级中断而带来的问题。例如，在OTA升级时，若dtb分区已升级，但因为某些原因未完全升级完成（如断电），设备会重启进入recovery模式以重新进行OTA升级，但此时就会出现recovery映象不匹配的情况（因为dtb已经升级了）。</p>
 <p>dtb映象必须使用以下格式之一：</p>
 <p>(1)DT Blob依次串联：bootloader使用每个fdt头文件中<code>totalsize</code>字段来读取和解析相应的blob。</p>
