@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. Binder 简介Binder是Android引入的一种进程间通信(IPC)机制，其底层驱动和其它Linux驱动类似，以misc设备来注册的。主要包括以下几个部分： (1)调用binder_init函数创建/dev/binder设备节点； (2)调用binder_open函数获取binder驱动文件描述符； (3)调用binder_mmap函数分配内存存放数据； (4)调用binder_io">
+<meta name="keywords" content="IPC,Binder">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Binder Driver 初始化">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/02/08/IPC/BinderDriver初始化/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1. Binder 简介Binder是Android引入的一种进程间通信(IPC)机制，其底层驱动和其它Linux驱动类似，以misc设备来注册的。主要包括以下几个部分： (1)调用binder_init函数创建/dev/binder设备节点； (2)调用binder_open函数获取binder驱动文件描述符； (3)调用binder_mmap函数分配内存存放数据； (4)调用binder_io">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/binder_user_kernel_syscall.png">
+<meta property="og:updated_time" content="2020-06-20T05:08:10.605Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Binder Driver 初始化">
+<meta name="twitter:description" content="1. Binder 简介Binder是Android引入的一种进程间通信(IPC)机制，其底层驱动和其它Linux驱动类似，以misc设备来注册的。主要包括以下几个部分： (1)调用binder_init函数创建/dev/binder设备节点； (2)调用binder_open函数获取binder驱动文件描述符； (3)调用binder_mmap函数分配内存存放数据； (4)调用binder_io">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/binder_user_kernel_syscall.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/02/08/IPC/BinderDriver初始化/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Binder Driver 初始化 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/02/08/IPC/BinderDriver初始化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Binder Driver 初始化
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-08 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-08T00:00:00+08:00">2020-02-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="1-Binder-简介"><a href="#1-Binder-简介" class="headerlink" title="1. Binder 简介"></a>1. Binder 简介</h4><p>Binder是Android引入的一种进程间通信(IPC)机制，其底层驱动和其它Linux驱动类似，以misc设备来注册的。主要包括以下几个部分：</p>
+<p>(1)调用binder_init函数创建/dev/binder设备节点；</p>
+<p>(2)调用binder_open函数获取binder驱动文件描述符；</p>
+<p>(3)调用binder_mmap函数分配内存存放数据；</p>
+<p>(4)调用binder_ioctl函数进行IPC数据操作。</p>
+<p>Client，Service以及Service Manager是运行在用户空间的，而binder驱动是运行在内核空间的，需要通过系统调用(syscall)来内核态和用户态切换，如下图所示：</p>
+<p><img src="/images/binder_user_kernel_syscall.png" alt></p>
+<a id="more"></a>
+<h4 id="2-kernel-init-简述"><a href="#2-kernel-init-简述" class="headerlink" title="2. kernel init 简述"></a>2. kernel init 简述</h4><p>涉及的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kernel/include/uapi/linux/android/binder.h</span><br><span class="line">kernel/drivers/android/binder.c</span><br><span class="line">kernel/include/linux/init.h</span><br></pre></td></tr></table></figure>
+<p>在kernel启动时会将initcall分为不同阶段，每个阶段顺序由链接顺序决定。如有兴趣可以自行查阅vmlinux.lds.h和vmlinux.lds.S代码了解initcall的实现。下面只列出init.h文件中不同initcall的优先级：</p>
+<figure class="highlight h"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/include/linux/init.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> pure_initcall(fn)        __define_initcall(fn, 0)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> core_initcall(fn)        __define_initcall(fn, 1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> core_initcall_sync(fn)        __define_initcall(fn, 1s)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> postcore_initcall(fn)        __define_initcall(fn, 2)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> postcore_initcall_sync(fn)    __define_initcall(fn, 2s)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> arch_initcall(fn)        __define_initcall(fn, 3)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> arch_initcall_sync(fn)        __define_initcall(fn, 3s)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> subsys_initcall(fn)        __define_initcall(fn, 4)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> subsys_initcall_sync(fn)    __define_initcall(fn, 4s)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> fs_initcall(fn)            __define_initcall(fn, 5)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> fs_initcall_sync(fn)        __define_initcall(fn, 5s)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> device_initcall(fn)        __define_initcall(fn, 6)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> device_initcall_sync(fn)    __define_initcall(fn, 6s)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> late_initcall(fn)        __define_initcall(fn, 7)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> late_initcall_sync(fn)        __define_initcall(fn, 7s)</span></span><br></pre></td></tr></table></figure>
+<p>从binder.c中能明显看到，binder驱动就是在device_initcall阶段开始初始化的。</p>
+<h4 id="3-binder-init-代码分析"><a href="#3-binder-init-代码分析" class="headerlink" title="3. binder init 代码分析"></a>3. binder init 代码分析</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> __<span class="function">init <span class="title">binder_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="keyword">char</span> *device_name, *device_names;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_device</span> *<span class="title">device</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span> *<span class="title">tmp</span>;</span></span><br><span class="line">    <span class="comment">// 初始化为binder分配内存缓冲区。</span></span><br><span class="line">    binder_alloc_shrinker_init();</span><br><span class="line">    <span class="comment">// ~0U：无符号整型，对0取反。</span></span><br><span class="line">    atomic_set(&amp;binder_transaction_log.cur, ~<span class="number">0U</span>);</span><br><span class="line">    atomic_set(&amp;binder_transaction_log_failed.cur, ~<span class="number">0U</span>);</span><br><span class="line">    <span class="comment">// 创建/sys/kernel/debug/binder目录。</span></span><br><span class="line">    binder_debugfs_dir_entry_root = debugfs_create_dir(<span class="string">"binder"</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (binder_debugfs_dir_entry_root)</span><br><span class="line">        <span class="comment">// 创建/sys/kernel/debug/binder/proc目录用于记录每个进程基本信息。</span></span><br><span class="line">        binder_debugfs_dir_entry_proc = debugfs_create_dir(<span class="string">"proc"</span>,</span><br><span class="line">                         binder_debugfs_dir_entry_root);</span><br><span class="line">    <span class="keyword">if</span> (binder_debugfs_dir_entry_root) &#123;</span><br><span class="line">        <span class="comment">// S_IRUGO=S_IRUSR-00400|S_IRGRP-00040|S_IROTH-00004=00444</span></span><br><span class="line">        <span class="comment">// 创建/sys/kernel/debug/binder/state文件用于记录状态信息，并注册操作函数binder_state_fops。</span></span><br><span class="line">        debugfs_create_file(<span class="string">"state"</span>,</span><br><span class="line">                    S_IRUGO,</span><br><span class="line">                    binder_debugfs_dir_entry_root,</span><br><span class="line">                    <span class="literal">NULL</span>,</span><br><span class="line">                    &amp;binder_state_fops);</span><br><span class="line">        <span class="comment">// 创建/sys/kernel/debug/binder/stats文件用于记录统计信息，并注册操作函数binder_stats_fops。</span></span><br><span class="line">        debugfs_create_file(<span class="string">"stats"</span>,</span><br><span class="line">                    S_IRUGO,</span><br><span class="line">                    binder_debugfs_dir_entry_root,</span><br><span class="line">                    <span class="literal">NULL</span>,</span><br><span class="line">                    &amp;binder_stats_fops);</span><br><span class="line">        <span class="comment">// 创建/sys/kernel/debug/binder/transactions文件用于记录transaction相关信息，并注册操作函数binder_transactions_fops。</span></span><br><span class="line">        debugfs_create_file(<span class="string">"transactions"</span>,</span><br><span class="line">                    S_IRUGO,</span><br><span class="line">                    binder_debugfs_dir_entry_root,</span><br><span class="line">                    <span class="literal">NULL</span>,</span><br><span class="line">                    &amp;binder_transactions_fops);</span><br><span class="line">        <span class="comment">// 创建/sys/kernel/debug/binder/transaction_log文件用于记录transaction日志相关信息，并注册操作函数binder_transaction_log_fops。</span></span><br><span class="line">        debugfs_create_file(<span class="string">"transaction_log"</span>,</span><br><span class="line">                    S_IRUGO,</span><br><span class="line">                    binder_debugfs_dir_entry_root,</span><br><span class="line">                    &amp;binder_transaction_log,</span><br><span class="line">                    &amp;binder_transaction_log_fops);</span><br><span class="line">        <span class="comment">// 创建/sys/kernel/debug/binder/failed_transaction_log文件用于记录transaction失败日志相关信息，并注册操作函数binder_transaction_log_fops。</span></span><br><span class="line">        debugfs_create_file(<span class="string">"failed_transaction_log"</span>,</span><br><span class="line">                    S_IRUGO,</span><br><span class="line">                    binder_debugfs_dir_entry_root,</span><br><span class="line">                    &amp;binder_transaction_log_failed,</span><br><span class="line">                    &amp;binder_transaction_log_fops);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// kzalloc：分配不超过128KB的连续的物理内存映射区域。</span></span><br><span class="line">    <span class="comment">// GFP_KERNEL：内存分配器flags，无内存可用时可引起休眠，允许启动磁盘IO和文件系统IO。</span></span><br><span class="line">    <span class="comment">// binder_devices_param：binder，hwbinder，vndbinder。</span></span><br><span class="line">    device_names = kzalloc(<span class="built_in">strlen</span>(binder_devices_param) + <span class="number">1</span>, GFP_KERNEL);</span><br><span class="line">    <span class="keyword">if</span> (!device_names) &#123;</span><br><span class="line">        <span class="comment">// ENOMEM：12，内存溢出。</span></span><br><span class="line">        ret = -ENOMEM;</span><br><span class="line">        <span class="keyword">goto</span> err_alloc_device_names_failed;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">strcpy</span>(device_names, binder_devices_param);</span><br><span class="line">    <span class="comment">// 创建binder设备</span></span><br><span class="line">    <span class="keyword">while</span> ((device_name = strsep(&amp;device_names, <span class="string">","</span>))) &#123;</span><br><span class="line">        ret = init_binder_device(device_name);</span><br><span class="line">        <span class="keyword">if</span> (ret)</span><br><span class="line">            <span class="keyword">goto</span> err_init_binder_device_failed;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">err_init_binder_device_failed:</span><br><span class="line">    hlist_for_each_entry_safe(device, tmp, &amp;binder_devices, hlist) &#123;</span><br><span class="line">        <span class="comment">// 注册misc设备：/dev/binder</span></span><br><span class="line">        misc_deregister(&amp;device-&gt;miscdev);</span><br><span class="line">        <span class="comment">// 从hash表中删除。</span></span><br><span class="line">        hlist_del(&amp;device-&gt;hlist);</span><br><span class="line">        kfree(device);</span><br><span class="line">    &#125;</span><br><span class="line">err_alloc_device_names_failed:</span><br><span class="line">    <span class="comment">// 删除/sys/kernel/debug/binder目录。</span></span><br><span class="line">    debugfs_remove_recursive(binder_debugfs_dir_entry_root);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">device_initcall(binder_init);</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">binder_device</span> &#123;</span></span><br><span class="line">    <span class="comment">// 加入binder_devices全局链表。</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span> <span class="title">hlist</span>;</span></span><br><span class="line">    <span class="comment">// misc设备。</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">miscdevice</span> <span class="title">miscdev</span>;</span></span><br><span class="line">    <span class="comment">// 获取service manager对应的binder_node。</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_context</span> <span class="title">context</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">binder_fops</span> = &#123;</span></span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .poll = binder_poll,</span><br><span class="line">    .unlocked_ioctl = binder_ioctl,</span><br><span class="line">    .compat_ioctl = binder_ioctl,</span><br><span class="line">    .mmap = binder_mmap,</span><br><span class="line">    .open = binder_open,</span><br><span class="line">    .flush = binder_flush,</span><br><span class="line">    .release = binder_release,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> __<span class="function">init <span class="title">init_binder_device</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *name)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_device</span> *<span class="title">binder_device</span>;</span></span><br><span class="line">    binder_device = kzalloc(<span class="keyword">sizeof</span>(*binder_device), GFP_KERNEL);</span><br><span class="line">    <span class="keyword">if</span> (!binder_device)</span><br><span class="line">        <span class="keyword">return</span> -ENOMEM;</span><br><span class="line">    <span class="comment">// 定义binder相关操作fops。</span></span><br><span class="line">    binder_device-&gt;miscdev.fops = &amp;binder_fops;</span><br><span class="line">    <span class="comment">// MISC_DYNAMIC_MINOR：由miscdevice动态分配次设备号。</span></span><br><span class="line">    binder_device-&gt;miscdev.minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">    binder_device-&gt;miscdev.name = name;</span><br><span class="line">    binder_device-&gt;context.binder_context_mgr_uid = INVALID_UID;</span><br><span class="line">    binder_device-&gt;context.name = name;</span><br><span class="line">    mutex_init(&amp;binder_device-&gt;context.context_mgr_node_lock);</span><br><span class="line">    <span class="comment">// 注册misc混杂设备，其主设备号为10，在/sys/devices/virtual/misc目录下创建设备节点。</span></span><br><span class="line">    ret = misc_register(&amp;binder_device-&gt;miscdev);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 释放分配的内存，否则会引起oops异常。</span></span><br><span class="line">        kfree(binder_device);</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 通过全局链表binder_devices管理binder_device。</span></span><br><span class="line">    hlist_add_head(&amp;binder_device-&gt;hlist, &amp;binder_devices);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-binder-相关日志介绍"><a href="#4-binder-相关日志介绍" class="headerlink" title="4. binder 相关日志介绍"></a>4. binder 相关日志介绍</h4><p>(1)执行<code>cat /sys/kernel/debug/binder/proc/&lt;pid&gt;</code>指令所对应的函数是binder_proc_show，包含ref/node/thread等信息：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">android:/<span class="title">sys</span>/<span class="title">kernel</span>/<span class="title">debug</span>/<span class="title">binder</span>/<span class="title">proc</span> # <span class="title">cat</span> 539</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">binder</span> <span class="title">proc</span> <span class="title">state</span>:</span></span><br><span class="line"><span class="function"><span class="title">proc</span> 539</span></span><br><span class="line"><span class="function"><span class="title">context</span> <span class="title">binder</span></span></span><br><span class="line"><span class="function">  <span class="title">thread</span> 539: <span class="title">l</span> 12 <span class="title">need_return</span> 0 <span class="title">tr</span> 0 // 线程号是539；<span class="title">l</span> 12表明线程状态是<span class="title">BINDER_LOOPER_STATE_ENTERED</span>,<span class="title">BINDER_LOOPER_STATE_WAITING</span>；<span class="title">tr</span> 0表明线程<span class="title">tmp_ref</span>不在使用。</span></span><br><span class="line"><span class="function">  <span class="title">thread</span> 565: <span class="title">l</span> 12 <span class="title">need_return</span> 0 <span class="title">tr</span> 0</span></span><br><span class="line"><span class="function">  <span class="title">node</span> 712: <span class="title">u0000007116e2d140</span> <span class="title">c0000007116e53008</span> <span class="title">pri</span> 0:139 <span class="title">hs</span> 1 <span class="title">hw</span> 1 <span class="title">ls</span> 0 <span class="title">lw</span> 0 <span class="title">is</span> 1 <span class="title">iw</span> 1 <span class="title">tr</span> 1 <span class="title">proc</span> 369</span></span><br><span class="line"><span class="function">  <span class="title">ref</span> 710: <span class="title">desc</span> 0 <span class="title">node</span> 1 <span class="title">s</span> 1 <span class="title">w</span> 1 <span class="title">d</span> 0000000000000000</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">// <span class="title">node</span> <span class="title">debug_id</span>: <span class="title">binder_address</span> <span class="title">weakref_impl_address</span> <span class="title">pri</span> <span class="title">policy:priority</span> <span class="title">hs</span> <span class="title">has_strong_ref</span> <span class="title">hw</span> <span class="title">has_weak_ref</span> <span class="title">ls</span> <span class="title">local_strong_ref</span> <span class="title">lw</span> <span class="title">local_weak_ref</span> <span class="title">is</span> <span class="title">internal_strong_ref</span> <span class="title">iw</span> <span class="title">internal_weak_ref</span> <span class="title">tr</span> <span class="title">tmp_ref</span> <span class="title">proc</span> <span class="title">pid</span></span></span><br></pre></td></tr></table></figure>
+<p>(2)执行<code>cat /sys/kernel/debug/binder/state</code>指令所对应的函数是binder_state_show，其结构主要包括以下几部分：</p>
+<p>a.整体信息：所有dead npdes信息。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">android:/<span class="title">sys</span>/<span class="title">kernel</span>/<span class="title">debug</span>/<span class="title">binder</span> <span class="title">cat</span> <span class="title">state</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">binder</span> <span class="title">state</span>:</span></span><br><span class="line"><span class="function"><span class="title">dead</span> <span class="title">nodes</span>:</span></span><br><span class="line"><span class="function">  <span class="title">node</span> 1851: <span class="title">u00000071a5c2d460</span> <span class="title">c00000071a5c44140</span> <span class="title">pri</span> 0:120 <span class="title">hs</span> 1 <span class="title">hw</span> 1 <span class="title">ls</span> 0 <span class="title">lw</span> 0 <span class="title">is</span> 0 <span class="title">iw</span> 1 <span class="title">tr</span> 1 <span class="title">proc</span> 913</span></span><br><span class="line"><span class="function">  <span class="title">node</span> 42820: <span class="title">u0000007c8b80db00</span> <span class="title">c0000007c8b80e3c0</span> <span class="title">pri</span> 0:139 <span class="title">hs</span> 1 <span class="title">hw</span> 1 <span class="title">ls</span> 0 <span class="title">lw</span> 0 <span class="title">is</span> 1 <span class="title">iw</span> 1 <span class="title">tr</span> 1 <span class="title">proc</span> 541</span></span><br><span class="line"><span class="function">  <span class="title">node</span> 10135: <span class="title">u0000007c89f80980</span> <span class="title">c0000007c89f5c3c0</span> <span class="title">pri</span> 0:139 <span class="title">hs</span> 1 <span class="title">hw</span> 1 <span class="title">ls</span> 0 <span class="title">lw</span> 0 <span class="title">is</span> 1 <span class="title">iw</span> 1 <span class="title">tr</span> 1 <span class="title">proc</span> 1147</span></span><br><span class="line"><span class="function">  <span class="title">node</span> 10112: <span class="title">u0000007c89f808c0</span> <span class="title">c0000007c920fce00</span> <span class="title">pri</span> 0:139 <span class="title">hs</span> 1 <span class="title">hw</span> 1 <span class="title">ls</span> 0 <span class="title">lw</span> 0 <span class="title">is</span> 1 <span class="title">iw</span> 1 <span class="title">tr</span> 1 <span class="title">proc</span> 913</span></span><br></pre></td></tr></table></figure>
+<p>b.各个进程信息：每个进程thread,node,ref,buffer等信息。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">android:/<span class="title">sys</span>/<span class="title">kernel</span>/<span class="title">debug</span>/<span class="title">binder</span> <span class="title">cat</span> <span class="title">state</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">proc</span> 559</span></span><br><span class="line"><span class="function"><span class="title">context</span> <span class="title">hwbinder</span></span></span><br><span class="line"><span class="function">  <span class="title">thread</span> 559: <span class="title">l</span> 02 <span class="title">need_return</span> 0 <span class="title">tr</span> 0</span></span><br><span class="line"><span class="function">    <span class="title">incoming</span> <span class="title">transaction</span> 5224: 0000000000000000 <span class="title">from</span> 913:1058 <span class="title">to</span> 559:559 <span class="title">code</span> 4 <span class="title">flags</span> 10 <span class="title">pri</span> 1:89 <span class="title">r1</span> <span class="title">node</span> 921 <span class="title">size</span> 44:0 <span class="title">data</span> 0000000000000000</span></span><br><span class="line"><span class="function">  <span class="title">thread</span> 1055: <span class="title">l</span> 11 <span class="title">need_return</span> 0 <span class="title">tr</span> 0</span></span><br><span class="line"><span class="function">  <span class="title">node</span> 921: <span class="title">u0000007dc7e2d380</span> <span class="title">c0000007dc7e441e0</span> <span class="title">pri</span> 0:120 <span class="title">hs</span> 1 <span class="title">hw</span> 1 <span class="title">ls</span> 1 <span class="title">lw</span> 0 <span class="title">is</span> 2 <span class="title">iw</span> 2 <span class="title">tr</span> 1 <span class="title">proc</span> 913 370</span></span><br><span class="line"><span class="function">  <span class="title">ref</span> 786: <span class="title">desc</span> 0 <span class="title">node</span> 3 <span class="title">s</span> 1 <span class="title">w</span> 1 <span class="title">d</span> 0000000000000000</span></span><br><span class="line"><span class="function">  <span class="title">buffer</span> 5224: 0000000000000000 <span class="title">size</span> 44:0:0 <span class="title">active</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">// <span class="title">pending</span> <span class="title">transaction</span>：当前所有<span class="title">proc</span>和<span class="title">thread</span> <span class="title">todo</span>队列的<span class="title">transaction</span>。</span></span><br><span class="line"><span class="function">// <span class="title">incoming</span> <span class="title">transaction</span>：当前<span class="title">thread</span> <span class="title">transaction_stack</span>，由该<span class="title">thread</span>接收的<span class="title">transaction</span>。</span></span><br><span class="line"><span class="function">// <span class="title">outgoint</span> <span class="title">transaction</span>：当前<span class="title">thread</span> <span class="title">transaction_stack</span>,由该<span class="title">thread</span>发出的<span class="title">transaction</span>。</span></span><br><span class="line"><span class="function">// <span class="title">pending</span> <span class="title">transactions</span>：当前<span class="title">proc</span>总的<span class="title">pending</span> <span class="title">transcation</span>。</span></span><br></pre></td></tr></table></figure>
+<p>(3)执行<code>cat /sys/kernel/debug/binder/stats</code>指令所对应的函数是binder_stats_show，其结果主要包含两部分：</p>
+<p>a.整体统计信息：所有BC_XXX、BR_XXX命令的次数，系统存活的binder数、开机后所创建的binder数。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">android:/<span class="title">sys</span>/<span class="title">kernel</span>/<span class="title">debug</span>/<span class="title">binder</span> <span class="title">cat</span> <span class="title">stats</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">binder</span> <span class="title">stats</span>:</span></span><br><span class="line"><span class="function"><span class="title">BC_TRANSACTION</span>: 261976</span></span><br><span class="line"><span class="function"><span class="title">BC_REPLY</span>: 27152</span></span><br><span class="line"><span class="function"><span class="title">BC_FREE_BUFFER</span>: 309211</span></span><br><span class="line"><span class="function"><span class="title">BC_INCREFS</span>: 3754</span></span><br><span class="line"><span class="function"><span class="title">BC_ACQUIRE</span>: 3924</span></span><br><span class="line"><span class="function"><span class="title">BC_RELEASE</span>: 1132</span></span><br><span class="line"><span class="function"><span class="title">BC_DECREFS</span>: 1106</span></span><br><span class="line"><span class="function"><span class="title">BC_INCREFS_DONE</span>: 2111</span></span><br><span class="line"><span class="function"><span class="title">BC_ACQUIRE_DONE</span>: 2111</span></span><br><span class="line"><span class="function"><span class="title">BC_REGISTER_LOOPER</span>: 197</span></span><br><span class="line"><span class="function"><span class="title">BC_ENTER_LOOPER</span>: 171</span></span><br><span class="line"><span class="function"><span class="title">BC_REQUEST_DEATH_NOTIFICATION</span>: 1219</span></span><br><span class="line"><span class="function"><span class="title">BC_CLEAR_DEATH_NOTIFICATION</span>: 577</span></span><br><span class="line"><span class="function"><span class="title">BC_DEAD_BINDER_DONE</span>: 88</span></span><br><span class="line"><span class="function"><span class="title">BC_TRANSACTION_SG</span>: 10950</span></span><br><span class="line"><span class="function"><span class="title">BC_REPLY_SG</span>: 9304</span></span><br><span class="line"><span class="function"><span class="title">BR_TRANSACTION</span>: 272925</span></span><br><span class="line"><span class="function"><span class="title">BR_REPLY</span>: 36456</span></span><br><span class="line"><span class="function"><span class="title">BR_TRANSACTION_COMPLETE</span>: 309380</span></span><br><span class="line"><span class="function"><span class="title">BR_INCREFS</span>: 2122</span></span><br><span class="line"><span class="function"><span class="title">BR_ACQUIRE</span>: 2122</span></span><br><span class="line"><span class="function"><span class="title">BR_RELEASE</span>: 770</span></span><br><span class="line"><span class="function"><span class="title">BR_DECREFS</span>: 766</span></span><br><span class="line"><span class="function"><span class="title">BR_SPAWN_LOOPER</span>: 199</span></span><br><span class="line"><span class="function"><span class="title">BR_DEAD_BINDER</span>: 89</span></span><br><span class="line"><span class="function"><span class="title">BR_CLEAR_DEATH_NOTIFICATION_DONE</span>: 577</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">proc</span>: <span class="title">active</span> 124 <span class="title">total</span> 205</span></span><br><span class="line"><span class="function"><span class="title">thread</span>: <span class="title">active</span> 531 <span class="title">total</span> 1154</span></span><br><span class="line"><span class="function"><span class="title">node</span>: <span class="title">active</span> 1159 <span class="title">total</span> 2128</span></span><br><span class="line"><span class="function"><span class="title">ref</span>: <span class="title">active</span> 1916 <span class="title">total</span> 3941</span></span><br><span class="line"><span class="function"><span class="title">death</span>: <span class="title">active</span> 620 <span class="title">total</span> 1219</span></span><br><span class="line"><span class="function"><span class="title">transaction</span>: <span class="title">active</span> 3 <span class="title">total</span> 309382</span></span><br><span class="line"><span class="function"><span class="title">transaction_complete</span>: <span class="title">active</span> 0 <span class="title">total</span> 309382</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">// 有124个<span class="title">binder_proc</span>，531个<span class="title">binder_thread</span>，1159个<span class="title">binder_node</span>，1916个<span class="title">binder_refd</span>等等。</span></span><br><span class="line"><span class="function">// 从开机到现在创建了205个<span class="title">binder_proc</span>，1154个<span class="title">binder_thread</span>等等。</span></span><br><span class="line"><span class="function">// 3个正在执行的<span class="title">binder_transaction</span>，完成了0个<span class="title">transaction</span>。</span></span><br><span class="line"><span class="function">// <span class="title">BC_TRANSACTION</span>+<span class="title">BC_REPLY</span>=<span class="title">BR_TRANSACTION_COMPLETE</span>+<span class="title">BR_DEAD_REPLY</span>+<span class="title">BR_FAILED_REPLY</span></span></span><br></pre></td></tr></table></figure>
+<p>b.遍历进程信息：每个进程基本信息（如refs/node/thread等），所有BC_XXX、BR_XXX命令的次数。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">android:/<span class="title">sys</span>/<span class="title">kernel</span>/<span class="title">debug</span>/<span class="title">binder</span> <span class="title">cat</span> <span class="title">stats</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">proc</span> 539 // <span class="title">pid</span>号是539</span></span><br><span class="line"><span class="function"><span class="title">context</span> <span class="title">binder</span> // <span class="title">context</span>类型是<span class="title">binder</span>（主要分<span class="title">binder</span>、<span class="title">hwbinder</span>、<span class="title">vndbinder</span>三类）。</span></span><br><span class="line"><span class="function">  <span class="title">threads</span>: 2 //2个<span class="title">binder_thread</span></span></span><br><span class="line"><span class="function">  <span class="title">requested</span> <span class="title">threads</span>: 0+0/15 //0个<span class="title">requested_threads</span>(请求线程数)+0个<span class="title">requested_threads_started</span>(已启动线程数)/15个<span class="title">max_threads</span>(最大线程数)</span></span><br><span class="line"><span class="function">  <span class="title">ready</span> <span class="title">threads</span> 2 // 2个<span class="title">ready_threads</span>(准备就绪的线程数)</span></span><br><span class="line"><span class="function">  <span class="title">free</span> <span class="title">async</span> <span class="title">space</span> 520192 // 520<span class="title">kb</span>可用的异步空间</span></span><br><span class="line"><span class="function">  <span class="title">nodes</span>: 1 // 1个<span class="title">binder_node</span></span></span><br><span class="line"><span class="function">  <span class="title">refs</span>: 1 <span class="title">s</span> 1 <span class="title">w</span> 1 // 1次引用次数，1次强引用次数，1次弱引用次数</span></span><br><span class="line"><span class="function">  <span class="title">buffers</span>: 0 // 0个<span class="title">allocated_buffers</span>(已分配的<span class="title">buffer</span>个数)</span></span><br><span class="line"><span class="function">  <span class="title">pages</span>: 0:1:253</span></span><br><span class="line"><span class="function">  <span class="title">pages</span> <span class="title">high</span> <span class="title">watermark</span>: 1</span></span><br><span class="line"><span class="function">  <span class="title">pending</span> <span class="title">transactions</span>: 0 // <span class="title">todo</span>队列中有0个<span class="title">transaction</span></span></span><br><span class="line"><span class="function">  //该进程中<span class="title">BC_XXX</span> 和<span class="title">BR_XXX</span>命令执行次数</span></span><br><span class="line"><span class="function">  <span class="title">BC_TRANSACTION</span>: 2</span></span><br><span class="line"><span class="function">  <span class="title">BC_FREE_BUFFER</span>: 2</span></span><br><span class="line"><span class="function">  <span class="title">BC_INCREFS</span>: 1</span></span><br><span class="line"><span class="function">  <span class="title">BC_ACQUIRE</span>: 1</span></span><br><span class="line"><span class="function">  <span class="title">BC_INCREFS_DONE</span>: 1</span></span><br><span class="line"><span class="function">  <span class="title">BC_ACQUIRE_DONE</span>: 1</span></span><br><span class="line"><span class="function">  <span class="title">BC_ENTER_LOOPER</span>: 2</span></span><br><span class="line"><span class="function">  <span class="title">BR_REPLY</span>: 2</span></span><br><span class="line"><span class="function">  <span class="title">BR_TRANSACTION_COMPLETE</span>: 2</span></span><br><span class="line"><span class="function">  <span class="title">BR_INCREFS</span>: 1</span></span><br><span class="line"><span class="function">  <span class="title">BR_ACQUIRE</span>: 1</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">// 当<span class="title">binder</span>内存吃紧时，可查看<span class="title">free</span> <span class="title">async</span> <span class="title">space</span>和<span class="title">buffers</span>字段。</span></span><br><span class="line"><span class="function">// 当系统空间时，一般<span class="title">ready_threads</span>=<span class="title">requested_threads_started</span>+<span class="title">BC_ENTER_LOOPER</span>，<span class="title">ready_threads</span>个数越少，说明系统越繁忙。</span></span><br><span class="line"><span class="function">// 绝大多数进程的最大线程数是15个，而<span class="title">surfaceflinger</span>只有4个，但<span class="title">servicemanager</span>、<span class="title">hwbinder</span>、<span class="title">vndbinder</span>却是0个（因为只有主线程）。</span></span><br></pre></td></tr></table></figure>
+<p>(4)执行<code>cat /sys/kernel/debug/binder/transactions</code>指令可以查看各进程基本信息；</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">android:/<span class="title">sys</span>/<span class="title">kernel</span>/<span class="title">debug</span>/<span class="title">binder</span> # <span class="title">cat</span> <span class="title">transactions</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">binder</span> <span class="title">transactions</span>:</span></span><br><span class="line"><span class="function"><span class="title">proc</span> 469</span></span><br><span class="line"><span class="function"><span class="title">context</span> <span class="title">hwbinder</span></span></span><br><span class="line"><span class="function">  <span class="title">thread</span> 469: <span class="title">l</span> 02 <span class="title">need_return</span> 0 <span class="title">tr</span> 0</span></span><br><span class="line"><span class="function">    <span class="title">incoming</span> <span class="title">transaction</span> 45841: 0000000000000000 <span class="title">from</span> 0:0 <span class="title">to</span> 469:469 <span class="title">code</span> 6 <span class="title">flags</span> 10 <span class="title">pri</span> 0:120 <span class="title">r1</span> <span class="title">node</span> 400 <span class="title">size</span> 48:0 <span class="title">data</span> 0000000000000000</span></span><br><span class="line"><span class="function">  <span class="title">node</span> 400: <span class="title">u0000007edd02d380</span> <span class="title">c0000007edd0530a0</span> <span class="title">pri</span> 0:120 <span class="title">hs</span> 1 <span class="title">hw</span> 1 <span class="title">ls</span> 3 <span class="title">lw</span> 0 <span class="title">is</span> 1 <span class="title">iw</span> 1 <span class="title">tr</span> 1 <span class="title">proc</span> 370</span></span><br><span class="line"><span class="function">  <span class="title">buffer</span> 45841: 0000000000000000 <span class="title">size</span> 48:0:0 <span class="title">delivered</span> // <span class="title">data_size</span>是48，<span class="title">offset_size</span>是0，<span class="title">delivered</span>表明该内存块已被分发。</span></span><br><span class="line"><span class="function">  <span class="title">buffer</span> 138360: 0000000000000000 <span class="title">size</span> 32:0:0 <span class="title">active</span></span></span><br><span class="line"><span class="function">  <span class="title">buffer</span> 368562: 0000000000000000 <span class="title">size</span> 32:0:0 <span class="title">active</span></span></span><br><span class="line"><span class="function">  <span class="title">pending</span> <span class="title">transaction</span> 138360: 0000000000000000 <span class="title">from</span> 0:0 <span class="title">to</span> 469:0 <span class="title">code</span> <span class="title">f43484e</span> <span class="title">flags</span> 10 <span class="title">pri</span> 0:120 <span class="title">r1</span> <span class="title">node</span> 400 <span class="title">size</span> 32:0 <span class="title">data</span> 0000000000000000</span></span><br><span class="line"><span class="function">  <span class="title">pending</span> <span class="title">transaction</span> 368562: 0000000000000000 <span class="title">from</span> 0:0 <span class="title">to</span> 469:0 <span class="title">code</span> <span class="title">f43484e</span> <span class="title">flags</span> 10 <span class="title">pri</span> 0:120 <span class="title">r1</span> <span class="title">node</span> 400 <span class="title">size</span> 32:0 <span class="title">data</span> 0000000000000000</span></span><br></pre></td></tr></table></figure>
+<p>(5)执行<code>cat /sys/kernel/debug/binder/transaction_log</code>指令可查看最近32次transaction对应的调用节点信息。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">android:/<span class="title">sys</span>/<span class="title">kernel</span>/<span class="title">debug</span>/<span class="title">binder</span> # <span class="title">cat</span> <span class="title">transaction_log</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">742412: <span class="title">async</span> <span class="title">from</span> 1699:1699 <span class="title">to</span> 479:0 <span class="title">context</span> <span class="title">binder</span> <span class="title">node</span> 30674 <span class="title">handle</span> 25 <span class="title">size</span> 80:0 <span class="title">ret</span> 0/0 <span class="title">l</span>=0</span></span><br><span class="line"><span class="function">742413: <span class="title">call</span> <span class="title">from</span> 1789:1789 <span class="title">to</span> 479:0 <span class="title">context</span> <span class="title">binder</span> <span class="title">node</span> 34965 <span class="title">handle</span> 34 <span class="title">size</span> 80:0 <span class="title">ret</span> 0/0 <span class="title">l</span>=0</span></span><br><span class="line"><span class="function">742414: <span class="title">reply</span> <span class="title">from</span> 1699:1699 <span class="title">to</span> 479:0 <span class="title">context</span> <span class="title">binder</span> <span class="title">node</span> 30674 <span class="title">handle</span> 25 <span class="title">size</span> 80:0 <span class="title">ret</span> 0/0 <span class="title">l</span>=0</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">// <span class="title">debug_id</span>: <span class="title">call_type</span> <span class="title">from</span> <span class="title">from_proc:from_thread</span> <span class="title">to</span> <span class="title">to_proc:to_thread</span> <span class="title">node</span> <span class="title">to_nodehandle</span> <span class="title">target_handle</span> <span class="title">size</span> <span class="title">data_size:offsets_size</span></span></span><br><span class="line"><span class="function">// <span class="title">call_type</span>有三种，分别是<span class="title">call</span>,<span class="title">reply</span>,<span class="title">async</span>。</span></span><br><span class="line"><span class="function">// 相较于<span class="title">transaction_log</span>，<span class="title">failed_transaction_log</span>的差异在于其<span class="title">to_proc</span>字段为0，即远程<span class="title">proc</span>挂掉了。</span></span><br></pre></td></tr></table></figure>
+<h4 id="5-binder-相关常量说明"><a href="#5-binder-相关常量说明" class="headerlink" title="5. binder 相关常量说明"></a>5. binder 相关常量说明</h4><p>(1)binder_stat_types中定义的类型及其创建、删除函数整理如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">类型</th>
+<th style="text-align:center">备注</th>
+<th style="text-align:center">创建函数</th>
+<th style="text-align:center">删除函数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BINDER_STAT_PROC</td>
+<td style="text-align:center">binder进程</td>
+<td style="text-align:center">binder_open</td>
+<td style="text-align:center">binder_deferred_release</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_STAT_THREAD</td>
+<td style="text-align:center">binder线程</td>
+<td style="text-align:center">binder_get_thread</td>
+<td style="text-align:center">binder_free_thread</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_STAT_NODE</td>
+<td style="text-align:center">binder节点</td>
+<td style="text-align:center">binder_new_node</td>
+<td style="text-align:center">binder_thread_read/binder_node_release/binder_dec_node</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_STAT_REF</td>
+<td style="text-align:center">binder引用</td>
+<td style="text-align:center">binder_get_ref_for_node</td>
+<td style="text-align:center">binder_delete_ref</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_STAT_DEATH</td>
+<td style="text-align:center">binder死亡</td>
+<td style="text-align:center">binder_thread_write</td>
+<td style="text-align:center">binder_thread_read/binder_release_work/binder_delete_ref</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_STAT_TRANSACTION</td>
+<td style="text-align:center">binder事务</td>
+<td style="text-align:center">binder_transactionbinder_thread_read/binder_transaction/binder_release_work/binder_pop_transaction</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_STAT_TRANSACTION_COMPLETE</td>
+<td style="text-align:center">binder已完成事务</td>
+<td style="text-align:center">binder_transaction</td>
+<td style="text-align:center">binder_thread_read/binder_transaction/binder_release_work</td>
+</tr>
+</tbody>
+</table>
+<p>(2)binder_driver_command_protocol中包含19条BC_XXX命令，其类型整理如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Call命令</th>
+<th style="text-align:center">类型</th>
+<th style="text-align:center">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BC_TRANSACTION</td>
+<td style="text-align:center">binder_transaction_data</td>
+<td style="text-align:center">binder事务（client对server的请求）</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_REPLY</td>
+<td style="text-align:center">binder_transaction_data</td>
+<td style="text-align:center">事务答复（server对client的答复）</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_ACQUIRE_RESULT</td>
+<td style="text-align:center">__s32</td>
+<td style="text-align:center">获取结果</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_FREE_BUFFER</td>
+<td style="text-align:center">binder_uintptr_t</td>
+<td style="text-align:center">释放缓冲</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_INCREFS</td>
+<td style="text-align:center">__u32</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_ACQUIRE</td>
+<td style="text-align:center">__u32</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_RELEASE</td>
+<td style="text-align:center">__u32</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_DECREFS</td>
+<td style="text-align:center">__u32</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_INCREFS_DONE</td>
+<td style="text-align:center">binder_ptr_cookie</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_ACQUIRE_DONE</td>
+<td style="text-align:center">binder_ptr_cookie</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_ATTEMPT_ACQUIRE</td>
+<td style="text-align:center">binder_pri_desc</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_REGISTER_LOOPER</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">通知子线程准备</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_ENTER_LOOPER</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">通知主线程准备</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_EXIT_LOOPER</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">通知线程退出</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_REQUEST_DEATH_NOTIFICATION</td>
+<td style="text-align:center">binder_handle_cookie</td>
+<td style="text-align:center">请求接收死亡通知</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_CLEAR_DEATH_NOTIFICATION</td>
+<td style="text-align:center">binder_handle_cookie</td>
+<td style="text-align:center">请求清除死亡通知</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_DEAD_BINDER_DONE</td>
+<td style="text-align:center">binder_uintptr_t</td>
+<td style="text-align:center">已处理完死亡通知</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_TRANSACTION_SG</td>
+<td style="text-align:center">binder_transaction_data_sg</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BC_REPLY_SG</td>
+<td style="text-align:center">binder_transaction_data_sg</td>
+<td style="text-align:center">-</td>
+</tr>
+</tbody>
+</table>
+<p>(3)binder_driver_return_protocol中包含18条BR_XXX命令，其类型整理如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Return命令</th>
+<th style="text-align:center">类型</th>
+<th style="text-align:center">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BR_ERROR</td>
+<td style="text-align:center">__s32</td>
+<td style="text-align:center">操作发生错误</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_OK</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">操作完成</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_TRANSACTION</td>
+<td style="text-align:center">binder_transaction_data</td>
+<td style="text-align:center">通知进程收到1次binder请求（server端）</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_REPLY</td>
+<td style="text-align:center">binder_transaction_data</td>
+<td style="text-align:center">通知进程收到binder请求的回复（client端）</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_ACQUIRE_RESULT</td>
+<td style="text-align:center">__s32</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_DEAD_REPLY</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_TRANSACTION_COMPLETE</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">对于接受请求的确认回复</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_INCREFS</td>
+<td style="text-align:center">binder_ptr_cookie</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_ACQUIRE</td>
+<td style="text-align:center">binder_ptr_cookie</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_RELEASE</td>
+<td style="text-align:center">binder_ptr_cookie</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_DECREFS</td>
+<td style="text-align:center">binder_ptr_cookie</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_ATTEMPT_ACQUIRE</td>
+<td style="text-align:center">binder_pri_ptr_cookie</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_NOOP</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_SPAWN_LOOPER</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">通知binder进程创建一个新线程</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_FINISHED</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_DEAD_BINDER</td>
+<td style="text-align:center">binder_uintptr_t</td>
+<td style="text-align:center">发送死亡通知</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_CLEAR_DEATH_NOTIFICATION_DONE</td>
+<td style="text-align:center">binder_uintptr_t</td>
+<td style="text-align:center">完成清除死亡通知</td>
+</tr>
+<tr>
+<td style="text-align:center">BR_FAILED_REPLY</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">-</td>
+</tr>
+</tbody>
+</table>
+<p>(4)looper相关状态整理如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Looper状态</th>
+<th style="text-align:center">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BINDER_LOOPER_STATE_REGISTERED</td>
+<td style="text-align:center">0x01</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_LOOPER_STATE_ENTERED</td>
+<td style="text-align:center">0x02</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_LOOPER_STATE_EXITED</td>
+<td style="text-align:center">0x04</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_LOOPER_STATE_INVALID</td>
+<td style="text-align:center">0x08</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_LOOPER_STATE_WAITING</td>
+<td style="text-align:center">0x10</td>
+</tr>
+<tr>
+<td style="text-align:center">BINDER_LOOPER_STATE_POLL</td>
+<td style="text-align:center">0x20</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/IPC/" rel="tag"># IPC</a>
+          
+            <a href="/tags/Binder/" rel="tag"># Binder</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/24/IPC/BinderDriverI:O操作/" rel="next" title="Binder Driver I/O操作">
+                <i class="fa fa-chevron-left"></i> Binder Driver I/O操作
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/02/14/IPC/JavaBinder之BinderProxy/" rel="prev" title="Java Binder 之 BinderProxy">
+                Java Binder 之 BinderProxy <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">95</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Binder-简介"><span class="nav-text">1. Binder 简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-kernel-init-简述"><span class="nav-text">2. kernel init 简述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-binder-init-代码分析"><span class="nav-text">3. binder init 代码分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-binder-相关日志介绍"><span class="nav-text">4. binder 相关日志介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-binder-相关常量说明"><span class="nav-text">5. binder 相关常量说明</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

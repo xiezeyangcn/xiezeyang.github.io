@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="涉及的代码： 12kernel/include/uapi/linux/android/binder.hkernel/drivers/android/binder.c 1. binder_open1234567891011121314151617// kernel/drivers/android/binder.cstatic bool is_rt_policy(int policy)&amp;#123;">
+<meta name="keywords" content="IPC,Sun Feb 16 2020 08:00:00 GMT+0800 (GMT+08:00)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Binder Driver 打开及内存映射">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/01/17/IPC/BinderDriver打开及内存映射/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="涉及的代码： 12kernel/include/uapi/linux/android/binder.hkernel/drivers/android/binder.c 1. binder_open1234567891011121314151617// kernel/drivers/android/binder.cstatic bool is_rt_policy(int policy)&amp;#123;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-06-20T05:09:35.634Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Binder Driver 打开及内存映射">
+<meta name="twitter:description" content="涉及的代码： 12kernel/include/uapi/linux/android/binder.hkernel/drivers/android/binder.c 1. binder_open1234567891011121314151617// kernel/drivers/android/binder.cstatic bool is_rt_policy(int policy)&amp;#123;">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/01/17/IPC/BinderDriver打开及内存映射/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Binder Driver 打开及内存映射 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/01/17/IPC/BinderDriver打开及内存映射/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Binder Driver 打开及内存映射
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-01-17 00:00:00" itemprop="dateCreated datePublished" datetime="2020-01-17T00:00:00+08:00">2020-01-17</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>涉及的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kernel/include/uapi/linux/android/binder.h</span><br><span class="line">kernel/drivers/android/binder.c</span><br></pre></td></tr></table></figure>
+<h4 id="1-binder-open"><a href="#1-binder-open" class="headerlink" title="1. binder_open"></a>1. binder_open</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">is_rt_policy</span><span class="params">(<span class="keyword">int</span> policy)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> policy == SCHED_FIFO || policy == SCHED_RR;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">is_fair_policy</span><span class="params">(<span class="keyword">int</span> policy)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> policy == SCHED_NORMAL || policy == SCHED_BATCH;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">binder_supported_policy</span><span class="params">(<span class="keyword">int</span> policy)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> is_fair_policy(policy) || is_rt_policy(policy);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">binder_stats_created</span><span class="params">(<span class="keyword">enum</span> binder_stat_types type)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    atomic_inc(&amp;binder_stats.obj_created[type]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">binder_open</span><span class="params">(struct inode *nodp, struct file *filp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 创建进程对应的binder_proc。</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_device</span> *<span class="title">binder_dev</span>;</span></span><br><span class="line">    binder_debug(BINDER_DEBUG_OPEN_CLOSE, <span class="string">"binder_open: %d:%d\n"</span>,</span><br><span class="line">             current-&gt;group_leader-&gt;pid, current-&gt;pid);</span><br><span class="line">    <span class="comment">// 创建1个binder_proc描述为binder进程，并为其分配内存。</span></span><br><span class="line">    proc = kzalloc(<span class="keyword">sizeof</span>(*proc), GFP_KERNEL);</span><br><span class="line">    <span class="keyword">if</span> (proc == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> -ENOMEM;</span><br><span class="line">    <span class="comment">// 初始化两个自旋锁。</span></span><br><span class="line">    <span class="comment">// inner_lock保护线程、binder_node以及所有与进程相关的的todo队列。</span></span><br><span class="line">    <span class="comment">// outer_lock保护binder_ref。</span></span><br><span class="line">    spin_lock_init(&amp;proc-&gt;inner_lock);</span><br><span class="line">    spin_lock_init(&amp;proc-&gt;outer_lock);</span><br><span class="line">    <span class="comment">// 获取当前进程组领头进程。</span></span><br><span class="line">    get_task_struct(current-&gt;group_leader);</span><br><span class="line">    <span class="comment">// 初始化binder_proc。</span></span><br><span class="line">    proc-&gt;tsk = current-&gt;group_leader;</span><br><span class="line">    <span class="comment">// 锁保护。</span></span><br><span class="line">    mutex_init(&amp;proc-&gt;files_lock);</span><br><span class="line">    <span class="comment">// 初始化proc的todo列表。</span></span><br><span class="line">    INIT_LIST_HEAD(&amp;proc-&gt;todo);</span><br><span class="line">    <span class="comment">// 判断当前进程的调度策略是否支持，binder只支持SCHED_NORMAL(00b)、SCHED_FIFO(01b)、SCHED_RR(10b)、SCHED_BATCH(11b)。</span></span><br><span class="line">    <span class="comment">// prio为进程优先级，可通过normal_prio获取。一般分为实时优先级及静态优先级。</span></span><br><span class="line">    <span class="keyword">if</span> (binder_supported_policy(current-&gt;policy)) &#123;</span><br><span class="line">        proc-&gt;default_priority.sched_policy = current-&gt;policy;</span><br><span class="line">        proc-&gt;default_priority.prio = current-&gt;normal_prio;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        proc-&gt;default_priority.sched_policy = SCHED_NORMAL;</span><br><span class="line">        proc-&gt;default_priority.prio = NICE_TO_PRIO(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 通过miscdev获取binder_device。</span></span><br><span class="line">    binder_dev = container_of(filp-&gt;private_data, struct binder_device,</span><br><span class="line">                  miscdev);</span><br><span class="line">    proc-&gt;context = &amp;binder_dev-&gt;context;</span><br><span class="line">    <span class="comment">// 初始化binder_proc的binder_alloc字段。</span></span><br><span class="line">    binder_alloc_init(&amp;proc-&gt;alloc);</span><br><span class="line">    <span class="comment">// binder驱动维护静态全局数组binder_stats，其中有一个成员数组obj_created。</span></span><br><span class="line">    <span class="comment">// 当binder_open调用时，obj_created[BINDER_STAT_PROC]将自增。该数组用来统计binder对象的数量。</span></span><br><span class="line">    binder_stats_created(BINDER_STAT_PROC);</span><br><span class="line">    <span class="comment">// 初始化binder_proc的pid为领头进程的pid值。</span></span><br><span class="line">    proc-&gt;pid = current-&gt;group_leader-&gt;pid;</span><br><span class="line">    <span class="comment">// 初始化delivered_death及waiting_threads队列。</span></span><br><span class="line">    INIT_LIST_HEAD(&amp;proc-&gt;delivered_death);</span><br><span class="line">    INIT_LIST_HEAD(&amp;proc-&gt;waiting_threads);</span><br><span class="line">    <span class="comment">// private_data保存binder_proc对象。</span></span><br><span class="line">    filp-&gt;private_data = proc;</span><br><span class="line">    <span class="comment">// 将binder_proc加入到全局队列binder_procs中,该操作必须加锁。</span></span><br><span class="line">    mutex_lock(&amp;binder_procs_lock);</span><br><span class="line">    hlist_add_head(&amp;proc-&gt;proc_node, &amp;binder_procs);</span><br><span class="line">    mutex_unlock(&amp;binder_procs_lock);</span><br><span class="line">    <span class="comment">// 若/sys/kernel/binder/proc目录已经创建好，则在该目录下创建一个以pid为名的文件。</span></span><br><span class="line">    <span class="keyword">if</span> (binder_debugfs_dir_entry_proc) &#123;</span><br><span class="line">        <span class="keyword">char</span> strbuf[<span class="number">11</span>];</span><br><span class="line">        <span class="built_in">snprintf</span>(strbuf, <span class="keyword">sizeof</span>(strbuf), <span class="string">"%u"</span>, proc-&gt;pid);</span><br><span class="line">        <span class="comment">// proc调试条目在上下文之间共享，如果进程尝试使用其他上下文再次打开驱动程序，则此操作将失败。</span></span><br><span class="line">        proc-&gt;debugfs_entry = debugfs_create_file(strbuf, S_IRUGO,</span><br><span class="line">            binder_debugfs_dir_entry_proc,</span><br><span class="line">            (<span class="keyword">void</span> *)(<span class="keyword">unsigned</span> <span class="keyword">long</span>)proc-&gt;pid,</span><br><span class="line">            &amp;binder_proc_fops);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/android/binder_alloc.c</span></span><br><span class="line"><span class="comment">// 初始化新的binder proc。</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">binder_alloc_init</span><span class="params">(struct binder_alloc *alloc)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    alloc-&gt;pid = current-&gt;group_leader-&gt;pid;</span><br><span class="line">    mutex_init(&amp;alloc-&gt;mutex);</span><br><span class="line">    INIT_LIST_HEAD(&amp;alloc-&gt;buffers);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">字段</th>
+<th style="text-align:center">描述</th>
+<th style="text-align:center">调度器类</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">SCHED_BATCH</td>
+<td style="text-align:center">用于非交互的处理器消耗型进程。</td>
+<td style="text-align:center">CFS</td>
+</tr>
+<tr>
+<td style="text-align:center">SCHED_DEADLINE</td>
+<td style="text-align:center">突发型的实时进程调度算法。</td>
+<td style="text-align:center">DL</td>
+</tr>
+<tr>
+<td style="text-align:center">SCHED_FIFO</td>
+<td style="text-align:center">先入先出调度算法</td>
+<td style="text-align:center">RT</td>
+</tr>
+<tr>
+<td style="text-align:center">SCHED_IDLE</td>
+<td style="text-align:center">用于系统负载很低时。</td>
+<td style="text-align:center">CFS-IDLE</td>
+</tr>
+<tr>
+<td style="text-align:center">SCHED_NORMAL</td>
+<td style="text-align:center">用于普通进程。</td>
+<td style="text-align:center">CFS</td>
+</tr>
+<tr>
+<td style="text-align:center">SCHED_RR</td>
+<td style="text-align:center">时间片轮转调度算法。</td>
+<td style="text-align:center">RT</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2-binder-mmap"><a href="#2-binder-mmap" class="headerlink" title="2. binder_mmap"></a>2. binder_mmap</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/android/binder.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">binder_mmap</span><span class="params">(struct file *filp, struct vm_area_struct *vma)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="comment">// private_data保存binder_proc进程结构体。</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> = <span class="title">filp</span>-&gt;<span class="title">private_data</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *failure_string;</span><br><span class="line">    <span class="keyword">if</span> (proc-&gt;tsk != current-&gt;group_leader)</span><br><span class="line">        <span class="keyword">return</span> -EINVAL;</span><br><span class="line">    <span class="comment">// 限定映射的用户空间不超过SZ_4M(0x0x400000=4MB)，其中vma用户描述用户空间地址。</span></span><br><span class="line">    <span class="keyword">if</span> ((vma-&gt;vm_end - vma-&gt;vm_start) &gt; SZ_4M)</span><br><span class="line">        vma-&gt;vm_end = vma-&gt;vm_start + SZ_4M;</span><br><span class="line">    binder_debug(BINDER_DEBUG_OPEN_CLOSE,</span><br><span class="line">             <span class="string">"%s: %d %lx-%lx (%ld K) vma %lx pagep %lx\n"</span>,</span><br><span class="line">             __func__, proc-&gt;pid, vma-&gt;vm_start, vma-&gt;vm_end,</span><br><span class="line">             (vma-&gt;vm_end - vma-&gt;vm_start) / SZ_1K, vma-&gt;vm_flags,</span><br><span class="line">             (<span class="keyword">unsigned</span> <span class="keyword">long</span>)pgprot_val(vma-&gt;vm_page_prot));</span><br><span class="line">    <span class="comment">// FORBIDDEN_MMAP_FLAGS，用户申请映射的空间只可读。因此如果有写相关flag就会报错。</span></span><br><span class="line">    <span class="keyword">if</span> (vma-&gt;vm_flags &amp; FORBIDDEN_MMAP_FLAGS) &#123;</span><br><span class="line">        ret = -EPERM;</span><br><span class="line">        failure_string = <span class="string">"bad vm_flags"</span>;</span><br><span class="line">        <span class="keyword">goto</span> err_bad_arg;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 定义不能拷贝、禁止可能写操作的标志位。</span></span><br><span class="line">    vma-&gt;vm_flags = (vma-&gt;vm_flags | VM_DONTCOPY) &amp; ~VM_MAYWRITE;</span><br><span class="line">    vma-&gt;vm_ops = &amp;binder_vm_ops;</span><br><span class="line">    vma-&gt;vm_private_data = proc;</span><br><span class="line">    <span class="comment">// 分配映射内存。</span></span><br><span class="line">    ret = binder_alloc_mmap_handler(&amp;proc-&gt;alloc, vma);</span><br><span class="line">    <span class="keyword">if</span> (ret)</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    mutex_lock(&amp;proc-&gt;files_lock);</span><br><span class="line">    proc-&gt;files = get_files_struct(current);</span><br><span class="line">    mutex_unlock(&amp;proc-&gt;files_lock);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">err_bad_arg:</span><br><span class="line">    pr_err(<span class="string">"binder_mmap: %d %lx-%lx %s failed %d\n"</span>,</span><br><span class="line">           proc-&gt;pid, vma-&gt;vm_start, vma-&gt;vm_end, failure_string, ret);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/android/binder_alloc.c</span></span><br><span class="line"><span class="comment">// 计算出给定buffer的大小。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> size_t <span class="title">binder_alloc_buffer_size</span><span class="params">(struct binder_alloc *alloc,</span></span></span><br><span class="line"><span class="function"><span class="params">                       struct binder_buffer *buffer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// binder进程中的binder_alloc成员管理着一个内核buffers链表。</span></span><br><span class="line">    <span class="comment">// 先检查这个新的buffer是否在链表末尾，计算出尾部的地址，再减去当前buffer的内核地址(buffer-&gt;data是当前buffer的起始地址)。</span></span><br><span class="line">    <span class="comment">// buffer大小为：基地址(alloc-&gt;buffer，总的buffer内核起始地址)+总大小(alloc-&gt;buffer_size,映射的总大小)。</span></span><br><span class="line">    <span class="keyword">if</span> (list_is_last(&amp;buffer-&gt;entry, &amp;alloc-&gt;buffers))</span><br><span class="line">        <span class="keyword">return</span> (u8 *)alloc-&gt;buffer +</span><br><span class="line">            alloc-&gt;buffer_size - (u8 *)buffer-&gt;data;</span><br><span class="line">    <span class="comment">// 若不在尾部，则用下一个buffer的内核地址减去当前buffer的内核地址。</span></span><br><span class="line">    <span class="keyword">return</span> (u8 *)binder_buffer_next(buffer)-&gt;data - (u8 *)buffer-&gt;data;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">binder_insert_free_buffer</span><span class="params">(struct binder_alloc *alloc,</span></span></span><br><span class="line"><span class="function"><span class="params">                      struct binder_buffer *new_buffer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 获取Binder进程的红黑树根节点。</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rb_node</span> **<span class="title">p</span> = &amp;<span class="title">alloc</span>-&gt;<span class="title">free_buffers</span>.<span class="title">rb_node</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rb_node</span> *<span class="title">parent</span> = <span class="title">NULL</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_buffer</span> *<span class="title">buffer</span>;</span></span><br><span class="line">    <span class="keyword">size_t</span> buffer_size;</span><br><span class="line">    <span class="keyword">size_t</span> new_buffer_size;</span><br><span class="line">    BUG_ON(!new_buffer-&gt;<span class="built_in">free</span>);</span><br><span class="line">    <span class="comment">// 通过binder_alloc_buffer_size计算当前new_buffer的大小，之后将用于比较。</span></span><br><span class="line">    new_buffer_size = binder_alloc_buffer_size(alloc, new_buffer);</span><br><span class="line">    binder_alloc_debug(BINDER_DEBUG_BUFFER_ALLOC,</span><br><span class="line">             <span class="string">"%d: add free buffer, size %zd, at %pK\n"</span>,</span><br><span class="line">              alloc-&gt;pid, new_buffer_size, new_buffer);</span><br><span class="line">    <span class="keyword">while</span> (*p) &#123;</span><br><span class="line">        parent = *p;</span><br><span class="line">        <span class="comment">// 获取当前红黑树节点的buffer。</span></span><br><span class="line">        buffer = rb_entry(parent, struct binder_buffer, rb_node);</span><br><span class="line">        BUG_ON(!buffer-&gt;<span class="built_in">free</span>);</span><br><span class="line">        <span class="comment">// 计算当前红黑树节点的buffer大小。</span></span><br><span class="line">        buffer_size = binder_alloc_buffer_size(alloc, buffer);</span><br><span class="line">        <span class="comment">// 红黑树遵循二叉树规则：当新的buffer比当前节点的buffer小时，向左子节点继续重复，否则转向右子节点。</span></span><br><span class="line">        <span class="keyword">if</span> (new_buffer_size &lt; buffer_size)</span><br><span class="line">            p = &amp;parent-&gt;rb_left;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            p = &amp;parent-&gt;rb_right;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 找到合适位置后，将new_buffer插入到该位置。</span></span><br><span class="line">    rb_link_node(&amp;new_buffer-&gt;rb_node, parent, p);</span><br><span class="line">    rb_insert_color(&amp;new_buffer-&gt;rb_node, &amp;alloc-&gt;free_buffers);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 映射proc的虚拟地址空间。</span></span><br><span class="line"><span class="comment">// 参数alloc：此过程的分配结构。</span></span><br><span class="line"><span class="comment">// 参数vma：将vma传递给mmap()。</span></span><br><span class="line"><span class="comment">// 由binder_mmap()调用以初始化在vma中指定的用于分配binder buffer的空间。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_alloc_mmap_handler</span><span class="params">(struct binder_alloc *alloc,</span></span></span><br><span class="line"><span class="function"><span class="params">                  struct vm_area_struct *vma)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vm_struct</span> *<span class="title">area</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *failure_string;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_buffer</span> *<span class="title">buffer</span>;</span></span><br><span class="line">    <span class="comment">// 分配buffer时加互斥锁。</span></span><br><span class="line">    mutex_lock(&amp;binder_alloc_mmap_lock);</span><br><span class="line">    <span class="keyword">if</span> (alloc-&gt;buffer) &#123;</span><br><span class="line">        ret = -EBUSY;</span><br><span class="line">        failure_string = <span class="string">"already mapped"</span>;</span><br><span class="line">        <span class="keyword">goto</span> err_already_mapped;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 在进程内核空间中分配vma-&gt;vm_end到vma-&gt;vm_start的连续空间。</span></span><br><span class="line">    area = get_vm_area(vma-&gt;vm_end - vma-&gt;vm_start, VM_IOREMAP);</span><br><span class="line">    <span class="keyword">if</span> (area == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ret = -ENOMEM;</span><br><span class="line">        failure_string = <span class="string">"get_vm_area"</span>;</span><br><span class="line">        <span class="keyword">goto</span> err_get_vm_area_failed;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// binder_alloc的buffer指向内核空间地址。</span></span><br><span class="line">    alloc-&gt;buffer = area-&gt;addr;</span><br><span class="line">    <span class="comment">// vma-&gt;vm_start是用户空间起始地址，alloc-&gt;buffer是内核空间起始地址。</span></span><br><span class="line">    <span class="comment">// 用户空间地址与内核空间地址的差值保存在user_buffer_offset中。</span></span><br><span class="line">    alloc-&gt;user_buffer_offset =</span><br><span class="line">        vma-&gt;vm_start - (<span class="keyword">uintptr_t</span>)alloc-&gt;buffer;</span><br><span class="line">    mutex_unlock(&amp;binder_alloc_mmap_lock);</span><br><span class="line"><span class="comment">// VIPT(Virtual Index Physical Tag)-虚拟地址做索引，物理地址做标签。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_CPU_CACHE_VIPT</span></span><br><span class="line">    <span class="keyword">if</span> (cache_is_vipt_aliasing()) &#123;</span><br><span class="line">        <span class="keyword">while</span> (CACHE_COLOUR(</span><br><span class="line">                (vma-&gt;vm_start ^ (<span class="keyword">uint32_t</span>)alloc-&gt;buffer))) &#123;</span><br><span class="line">            pr_info(<span class="string">"%s: %d %lx-%lx maps %pK bad alignment\n"</span>,</span><br><span class="line">                __func__, alloc-&gt;pid, vma-&gt;vm_start,</span><br><span class="line">                vma-&gt;vm_end, alloc-&gt;buffer);</span><br><span class="line">            vma-&gt;vm_start += PAGE_SIZE;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// pages管理的是物理页，分配的长度是(vma-&gt;vm_end-vma-&gt;vm_start)/PAGE_SIZE)。</span></span><br><span class="line">    <span class="comment">// 单位是sizeof(alloc-&gt;pages[0])的数组，pages指向其起始地址。</span></span><br><span class="line">    alloc-&gt;pages = kzalloc(<span class="keyword">sizeof</span>(alloc-&gt;pages[<span class="number">0</span>]) *</span><br><span class="line">                   ((vma-&gt;vm_end - vma-&gt;vm_start) / PAGE_SIZE),</span><br><span class="line">                   GFP_KERNEL);</span><br><span class="line">    <span class="keyword">if</span> (alloc-&gt;pages == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ret = -ENOMEM;</span><br><span class="line">        failure_string = <span class="string">"alloc page array"</span>;</span><br><span class="line">        <span class="keyword">goto</span> err_alloc_pages_failed;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 通过get_vm_area分配的buffer_size是内核空间大小。</span></span><br><span class="line">    alloc-&gt;buffer_size = vma-&gt;vm_end - vma-&gt;vm_start;</span><br><span class="line">    <span class="comment">// 分配binder_buffer结构体。</span></span><br><span class="line">    buffer = kzalloc(<span class="keyword">sizeof</span>(*buffer), GFP_KERNEL);</span><br><span class="line">    <span class="keyword">if</span> (!buffer) &#123;</span><br><span class="line">        ret = -ENOMEM;</span><br><span class="line">        failure_string = <span class="string">"alloc buffer struct"</span>;</span><br><span class="line">        <span class="keyword">goto</span> err_alloc_buf_struct_failed;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// buffer的data指针指向alloc的内核空间buffer地址。</span></span><br><span class="line">    buffer-&gt;data = alloc-&gt;buffer;</span><br><span class="line">    <span class="comment">// 将buffer加到binder_alloc中的内核buffers链表中管理。</span></span><br><span class="line">    list_add(&amp;buffer-&gt;entry, &amp;alloc-&gt;buffers);</span><br><span class="line">    buffer-&gt;<span class="built_in">free</span> = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 该buffer未被使用，故调用binder_insert_free_buffer红黑树进行管理。</span></span><br><span class="line">    binder_insert_free_buffer(alloc, buffer);</span><br><span class="line">    <span class="comment">// 将最大可用于异步事务的内核buffer大小设置为内核buffer大小的一半。</span></span><br><span class="line">    alloc-&gt;free_async_space = alloc-&gt;buffer_size / <span class="number">2</span>;</span><br><span class="line">    barrier();</span><br><span class="line">    <span class="comment">// 描述用户空间的vma。</span></span><br><span class="line">    alloc-&gt;vma = vma;</span><br><span class="line">    alloc-&gt;vma_vm_mm = vma-&gt;vm_mm;</span><br><span class="line">    atomic_inc(&amp;alloc-&gt;vma_vm_mm-&gt;mm_count);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">err_alloc_buf_struct_failed:</span><br><span class="line">    kfree(alloc-&gt;pages);</span><br><span class="line">    alloc-&gt;pages = <span class="literal">NULL</span>;</span><br><span class="line">err_alloc_pages_failed:</span><br><span class="line">    mutex_lock(&amp;binder_alloc_mmap_lock);</span><br><span class="line">    vfree(alloc-&gt;buffer);</span><br><span class="line">    alloc-&gt;buffer = <span class="literal">NULL</span>;</span><br><span class="line">err_get_vm_area_failed:</span><br><span class="line">err_already_mapped:</span><br><span class="line">    mutex_unlock(&amp;binder_alloc_mmap_lock);</span><br><span class="line">    pr_err(<span class="string">"%s: %d %lx-%lx %s failed %d\n"</span>, __func__,</span><br><span class="line">           alloc-&gt;pid, vma-&gt;vm_start, vma-&gt;vm_end, failure_string, ret);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/IPC/" rel="tag"># IPC</a>
+          
+            <a href="/tags/Sun-Feb-16-2020-08-00-00-GMT-0800-GMT-08-00/" rel="tag"># Sun Feb 16 2020 08:00:00 GMT+0800 (GMT+08:00)</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/04/Boot/Boot映像Header版本概述/" rel="next" title="Boot Image Header Version 介绍">
+                <i class="fa fa-chevron-left"></i> Boot Image Header Version 介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/24/IPC/BinderDriverI:O操作/" rel="prev" title="Binder Driver I/O操作">
+                Binder Driver I/O操作 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">95</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-binder-open"><span class="nav-text">1. binder_open</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-binder-mmap"><span class="nav-text">2. binder_mmap</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
