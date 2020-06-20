@@ -493,6 +493,343 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/04/18/IPC/JavaBinder之Binder/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/04/18/IPC/JavaBinder之Binder/" class="post-title-link" itemprop="url">Java Binder 之 Binder</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-04-18 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-18T00:00:00+08:00">2020-04-18</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Binder是远端对象的基类，是IBinder定义的轻量级远程过程调用(RPC)机制的核心部分。该类是IBinder的实现，它提供了该类对象的本地标准实现。</p>
+<p>大多数开发人员都不会直接实现此类，而是使用AIDL工具来描述需要的接口，并使其生成合适的Binder子类。可以直接从Binder派生实现自定义的RPC协议，也可以直接实例化原始Binder对象以用作可以在各个进程之间共享的token。</p>
+<p>该类只是一个基本的IPC原语；它对应用程序的生命周期没有影响，并且仅在创建它的进程继续运行时才有效。</p>
+<p>必须在顶级应用程序组件<code>android.app.Service</code>、<code>android.app.Activity</code>或<code>android.content.ContentProvider</code>的上下文中进行操作。让系统知道进程应保持运行状态。必须牢记进程可能会挂掉的情况，因此要重新创建一个新的binder，并在进程再次开始时重新连接它。例如，如果在<code>android.app.Activity</code>中使用它，则任何时候该activity未开始，它的activity进程都可能会被杀死；如果稍后重新创建了activity，则需要创建一个新的binder，然后将其重新放回正确的位置；进程可能是出于其他原因（如接收广播）而启动的，而这又不涉及重新创建activity，因此要运行其代码来创建新的binder。 </p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2020/04/18/IPC/JavaBinder之Binder/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/04/05/IPC/JavaBinder之IBinder/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/04/05/IPC/JavaBinder之IBinder/" class="post-title-link" itemprop="url">Java Binder 之 IBinder</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-04-05 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-05T00:00:00+08:00">2020-04-05</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="1-IBinder"><a href="#1-IBinder" class="headerlink" title="1. IBinder"></a>1. IBinder</h2><p>IBinder是远端对象的基本接口，是轻量级远端过程调用(RPC)机制的核心部分，旨在在进程内和跨进程调用时实现高性能。该接口描述了与远端对象交互的抽象协议。应从Binder扩展该接口，而不能直接实现该接口。</p>
+<p>IBinder最关键的API是<code>transact()</code>和与之相匹配的<code>Binder.onTransact()</code>。它们可以向IBinder对象发送调用并接收对Binder对象的调用。该API是同步的，因此在<code>Binder.onTransact()</code>返回之前，<code>transact()</code>的调用不会返回。这是调用本地进程存在的对象时的预期行为，底层的进程间通信(IPC)机制可确保跨进程时应用这些语义。</p>
+<p>通过<code>transact()</code>发送的数据是<code>Parcel</code>类型的，<code>Parcel</code>通用数据缓冲区，还维护一些有关其内容的元数据。元数据用于管理缓冲区中的IBinder对象引用，以便在缓冲区跨进程移动时可以维持这些引用。这种机制确保了，当将IBinder写到<code>Parcel</code>中并发送到另一个进程时，若另一个进程将对同一个IBinder的引用发送给原进程，则原进程将返回同一个IBinder对象。这些语义允许将IBinder/Binder对象用作可以跨进程管理的唯一标识（用作token或其它目的）。</p>
+<p>系统在运行的每个进程中维护一个事务线程池。这些线程用于分发来自其他进程的所有IPC。例如，当从进程A到进程B创建IPC时，A中的调用线程在将事务发送到进程B时在<code>transact()</code>中阻塞。B中的下一个可用池线程接收到传入的事务，在目标对象上调用<code>Binder.onTransact()</code>，并返回结果<code>Parcel</code>。接收到其结果后，进程A中的线程将返回以允许其继续执行。</p>
+<p>Binder系统还支持跨进程的递归。例如，如果进程A执行到进程B的事务，并且进程B在处理该事务时对在A中实现的IBinder上的调用<code>transact()</code>进行了处理，那么当前正在等待原事务完成的进程A中的线程将非常关注进程B调用对象调用<code>Binder.onTransact()</code>的过程。这确保了调用远端binder对象时的递归语义与调用本地对象时的递归语义相同。</p>
+<p>在使用远端对象时，可以通过下面三种方法确定它们何时不再有效：</p>
+<p>(1)如果尝试在已不存在的进程的IBinder上调用<code>transact()</code>方法，则会抛出RemoteException异常。</p>
+<p>(2)可以调用<code>pingBinder()</code>方法，如果远程进程已不存在，则将返回false。</p>
+<p>(3)<code>linkToDeath()</code>方法可用于向IBinder注册DeathRecipient，当进程挂掉时会调用该方法。 </p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2020/04/05/IPC/JavaBinder之IBinder/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/03/21/IPC/NativeBinder之IServiceManager/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1635,340 +1972,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/12/21/Security/QCOM平台SecureBoot配置过程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/12/21/Security/QCOM平台SecureBoot配置过程/" class="post-title-link" itemprop="url">QCOM 平台 Secure Boot 配置过程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-12-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-12-21T00:00:00+08:00">2019-12-21</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-Secure-Boot概述"><a href="#1-Secure-Boot概述" class="headerlink" title="1.Secure Boot概述"></a>1.Secure Boot概述</h3><p>Secure Boot是为安全程序建立可信平台的启动序列。为了确保仅执行授权的软件，Secure Boot使用加密身份验证来启动一个不可变的序列，以验证代码的来源。启动序列会将设备置于已知的安全状态，并保护其免受软件的二进制操作和下载攻击的影响。Secure Boot系统会在启动过程的每个阶段添加加密检查，以执行以下操作：</p>
-<p>(1)声明设备执行的所有安全软件images的真实性；</p>
-<p>(2)防止任何未经授权或恶意修改的软件在设备上运行。</p>
-<p>通过一组HW Fuse启用Secure Boot。HW Fuse中标识的受信任实体必须对代码签名才能执行。如果不使用Qualcomm Fuse Programmable Read Only Memory（QFPROM），即Fuse，则无法保证Secure Boot。被许可方必须通过熔断Fuse才能启用Secure Boot。启用平台Secure Boot所需的Fuse配置包括以下内容：</p>
-<p>(1)启用了image认证；</p>
-<p>(2)禁用的JTAG访问；</p>
-<p>(3)本地签名的读写权限熔断，即可以从本地签名机访问的OEM签名密钥。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/12/21/Security/QCOM平台SecureBoot配置过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/12/15/Tool/Image文件解包及类型转换方法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/12/15/Tool/Image文件解包及类型转换方法/" class="post-title-link" itemprop="url">Image 文件解包及类型转换方法</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-12-15 00:00:00" itemprop="dateCreated datePublished" datetime="2019-12-15T00:00:00+08:00">2019-12-15</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tool/" itemprop="url" rel="index"><span itemprop="name">Tool</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、img文件解包"><a href="#一、img文件解包" class="headerlink" title="一、img文件解包"></a>一、img文件解包</h3><h4 id="1-1-boot-image解包"><a href="#1-1-boot-image解包" class="headerlink" title="1.1 boot image解包"></a>1.1 boot image解包</h4><h5 id="1-1-1-准备boot解包工具"><a href="#1-1-1-准备boot解包工具" class="headerlink" title="1.1.1 准备boot解包工具"></a>1.1.1 准备boot解包工具</h5><p>单编system/core/mkbootimg模块，在out/host/linux-x86/bin/目录会生成mkbootimg和unpack_bootimg可执行文件。<br>其中mkbootimg可将kernel/dtb/ramdisk打包成boot.img，unpack_bootimg可以将boot.img解包。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 单编生成mkbootimg和unpack_bootimg</span><br><span class="line">$ mmm system/core/mkbootimg</span><br></pre></td></tr></table></figure>
-<p>也可以直接使用system/core/mkbootimg目录的mkbootimg.py和unpack_bootimg.py脚本来完成打包、解包工作。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/12/15/Tool/Image文件解包及类型转换方法/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2017,7 +2020,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">95</span>
+                    <span class="site-state-item-count">97</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Binder是远端对象的基类，是IBinder定义的轻量级远程过程调用(RPC)机制的核心部分。该类是IBinder的实现，它提供了该类对象的本地标准实现。 大多数开发人员都不会直接实现此类，而是使用AIDL工具来描述需要的接口，并使其生成合适的Binder子类。可以直接从Binder派生实现自定义的RPC协议，也可以直接实例化原始Binder对象以用作可以在各个进程之间共享的token。 该类只">
+<meta name="keywords" content="IPC,Binder">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java Binder 之 Binder">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/04/18/IPC/JavaBinder之Binder/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="Binder是远端对象的基类，是IBinder定义的轻量级远程过程调用(RPC)机制的核心部分。该类是IBinder的实现，它提供了该类对象的本地标准实现。 大多数开发人员都不会直接实现此类，而是使用AIDL工具来描述需要的接口，并使其生成合适的Binder子类。可以直接从Binder派生实现自定义的RPC协议，也可以直接实例化原始Binder对象以用作可以在各个进程之间共享的token。 该类只">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-06-20T05:42:36.617Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java Binder 之 Binder">
+<meta name="twitter:description" content="Binder是远端对象的基类，是IBinder定义的轻量级远程过程调用(RPC)机制的核心部分。该类是IBinder的实现，它提供了该类对象的本地标准实现。 大多数开发人员都不会直接实现此类，而是使用AIDL工具来描述需要的接口，并使其生成合适的Binder子类。可以直接从Binder派生实现自定义的RPC协议，也可以直接实例化原始Binder对象以用作可以在各个进程之间共享的token。 该类只">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/04/18/IPC/JavaBinder之Binder/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java Binder 之 Binder | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/04/18/IPC/JavaBinder之Binder/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Java Binder 之 Binder
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-04-18 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-18T00:00:00+08:00">2020-04-18</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Binder是远端对象的基类，是IBinder定义的轻量级远程过程调用(RPC)机制的核心部分。该类是IBinder的实现，它提供了该类对象的本地标准实现。</p>
+<p>大多数开发人员都不会直接实现此类，而是使用AIDL工具来描述需要的接口，并使其生成合适的Binder子类。可以直接从Binder派生实现自定义的RPC协议，也可以直接实例化原始Binder对象以用作可以在各个进程之间共享的token。</p>
+<p>该类只是一个基本的IPC原语；它对应用程序的生命周期没有影响，并且仅在创建它的进程继续运行时才有效。</p>
+<p>必须在顶级应用程序组件<code>android.app.Service</code>、<code>android.app.Activity</code>或<code>android.content.ContentProvider</code>的上下文中进行操作。让系统知道进程应保持运行状态。必须牢记进程可能会挂掉的情况，因此要重新创建一个新的binder，并在进程再次开始时重新连接它。例如，如果在<code>android.app.Activity</code>中使用它，则任何时候该activity未开始，它的activity进程都可能会被杀死；如果稍后重新创建了activity，则需要创建一个新的binder，然后将其重新放回正确的位置；进程可能是出于其他原因（如接收广播）而启动的，而这又不涉及重新创建activity，因此要运行其代码来创建新的binder。 </p>
+<a id="more"></a>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br><span class="line">510</span><br><span class="line">511</span><br><span class="line">512</span><br><span class="line">513</span><br><span class="line">514</span><br><span class="line">515</span><br><span class="line">516</span><br><span class="line">517</span><br><span class="line">518</span><br><span class="line">519</span><br><span class="line">520</span><br><span class="line">521</span><br><span class="line">522</span><br><span class="line">523</span><br><span class="line">524</span><br><span class="line">525</span><br><span class="line">526</span><br><span class="line">527</span><br><span class="line">528</span><br><span class="line">529</span><br><span class="line">530</span><br><span class="line">531</span><br><span class="line">532</span><br><span class="line">533</span><br><span class="line">534</span><br><span class="line">535</span><br><span class="line">536</span><br><span class="line">537</span><br><span class="line">538</span><br><span class="line">539</span><br><span class="line">540</span><br><span class="line">541</span><br><span class="line">542</span><br><span class="line">543</span><br><span class="line">544</span><br><span class="line">545</span><br><span class="line">546</span><br><span class="line">547</span><br><span class="line">548</span><br><span class="line">549</span><br><span class="line">550</span><br><span class="line">551</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/os/Binder.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Binder</span> <span class="keyword">implements</span> <span class="title">IBinder</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 将此flag设置为true可以检测扩展此Binder类，它不能是静态的匿名类、本地类或成员类，因为这些类可能会导致泄漏。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> FIND_POTENTIAL_LEAKS = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> CHECK_PARCEL_SIZE = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">"Binder"</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> LOG_RUNTIME_EXCEPTION = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">// 表明未设置调用工作源。该常量需要和IPCThreadState::kUnsetWorkSource保持同步。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNSET_WORKSOURCE = -<span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 控制dump()调用是否被允许。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> String sDumpDisabled = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 此进程的全局事务跟踪器实例。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> TransactionTracker sTransactionTracker = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 此进程的全局观察器。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> BinderInternal.Observer sObserver = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 与native内存关联的binder指标。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> NATIVE_ALLOCATION_SIZE = <span class="number">500</span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">getNativeFinalizer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 使用Holder可以在启动映像中静态初始化BinderProxy，并避免一些初始化顺序问题。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">NoImagePreloadHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> NativeAllocationRegistry sRegistry = <span class="keyword">new</span> NativeAllocationRegistry(</span><br><span class="line">                Binder.class.getClassLoader(), getNativeFinalizer(), NATIVE_ALLOCATION_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 标识是否跟踪事务调用过程。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> sTracingEnabled = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">// 使能Binder IPC跟踪。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">enableTracing</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sTracingEnabled = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 禁用Binder IPC跟踪。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">disableTracing</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sTracingEnabled = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 检查binder事务跟踪是否被使能。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isTracingEnabled</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> sTracingEnabled;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 获取该进程的binder事务跟踪器。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">static</span> TransactionTracker <span class="title">getTransactionTracker</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (sTransactionTracker == <span class="keyword">null</span>)</span><br><span class="line">            sTransactionTracker = <span class="keyword">new</span> TransactionTracker();</span><br><span class="line">        <span class="keyword">return</span> sTransactionTracker;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 获取该进程的binder事务观察者。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setObserver</span><span class="params">(@Nullable BinderInternal.Observer observer)</span> </span>&#123;</span><br><span class="line">        sObserver = observer;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> sWarnOnBlocking = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">// 如果这个进程阻塞了binder事务，则发出警告。通常仅对系统进程有用，以防止其阻塞对外部不受信任代码的调用。</span></span><br><span class="line">    <span class="comment">// 相反，所有需要结果的传出调用必须以IBinder#FLAG_ONEWAY调用的形式发送，这些调用通过回调接口传递结果。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setWarnOnBlocking</span><span class="params">(<span class="keyword">boolean</span> warnOnBlocking)</span> </span>&#123;</span><br><span class="line">        sWarnOnBlocking = warnOnBlocking;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 允许对给定接口进行阻塞调用，覆盖setWarnOnBlocking(boolean)所请求的值。</span></span><br><span class="line">    <span class="comment">// 只有当完全确定远程接口是一个永远无法升级的内置系统组件时，才应很少调用该接口。</span></span><br><span class="line">    <span class="comment">// 这个绝不能被可以被升级或替换的包托管的接口调用，否则，如果远程接口卡住，将面临系统不稳定的风险。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> IBinder <span class="title">allowBlocking</span><span class="params">(IBinder binder)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (binder <span class="keyword">instanceof</span> BinderProxy) &#123;</span><br><span class="line">                ((BinderProxy) binder).mWarnOnBlocking = <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (binder != <span class="keyword">null</span> &amp;&amp; binder.getInterfaceDescriptor() != <span class="keyword">null</span></span><br><span class="line">                    &amp;&amp; binder.queryLocalInterface(binder.getInterfaceDescriptor()) == <span class="keyword">null</span>) &#123;</span><br><span class="line">                Log.w(TAG, <span class="string">"Unable to allow blocking on interface "</span> + binder);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException ignored) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> binder;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将给定的接口重置回默认的阻塞行为，还原allowBlocking(IBinder)所做的任何更改。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> IBinder <span class="title">defaultBlocking</span><span class="params">(IBinder binder)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (binder <span class="keyword">instanceof</span> BinderProxy) &#123;</span><br><span class="line">            ((BinderProxy) binder).mWarnOnBlocking = sWarnOnBlocking;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> binder;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 从一个给定接口继承当前allowBlocking(IBinder)的值到另一个接口。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">copyAllowBlocking</span><span class="params">(IBinder fromBinder, IBinder toBinder)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (fromBinder <span class="keyword">instanceof</span> BinderProxy &amp;&amp; toBinder <span class="keyword">instanceof</span> BinderProxy) &#123;</span><br><span class="line">            ((BinderProxy) toBinder).mWarnOnBlocking = ((BinderProxy) fromBinder).mWarnOnBlocking;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 指向JavaBBinderHolder对象的原始native指针。Java对象所拥有。不为空。</span></span><br><span class="line">    <span class="meta">@UnsupportedAppUsage</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">long</span> mObject;</span><br><span class="line">    <span class="keyword">private</span> IInterface mOwner;</span><br><span class="line">    <span class="keyword">private</span> String mDescriptor;</span><br><span class="line">    <span class="comment">// 返回发送当前正在处理事务的进程ID。如果当前线程未在执行时传入事务，则返回其自己的pid。</span></span><br><span class="line">    <span class="comment">// 该pid可以与更高级别的系统服务一起使用，以确定其身份并检查权限。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">getCallingPid</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 返回分配给发送当前正在处理事务的进程uid。如果当前线程未在执行时传入事务，则返回其自己的uid。</span></span><br><span class="line">    <span class="comment">// 该uid可以与更高级别的系统服务一起使用，以确定其身份并检查权限。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">getCallingUid</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 如果当前线程正在执行传入事务，则返回true。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">boolean</span> <span class="title">isHandlingTransaction</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 返回分配发送当前正在处理事务的进程uid。</span></span><br><span class="line">    <span class="comment">// 如果当前线程未在执行传入事务，则抛出IllegalStateException。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">getCallingUidOrThrow</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!isHandlingTransaction()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</span><br><span class="line">                  <span class="string">"Thread is not in a binder transcation"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> getCallingUid();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 返回分配给已发送当前正在处理事务的进程UserHandle。这是调用者的用户。</span></span><br><span class="line">    <span class="comment">// 它与getCallingUid()的不同之处在于，特定用户将在其下运行多个不同的应用程序，每个应用程序都有自己的uid。</span></span><br><span class="line">    <span class="comment">// 如果当前线程未在执行传入事务，则返回其自己的UserHandle。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="meta">@NonNull</span> <span class="function">UserHandle <span class="title">getCallingUserHandle</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> UserHandle.of(UserHandle.getUserId(getCallingUid()));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 重置传入当前线程IPC身份。如果在处理传入调用时，将要在进程本地的其他对象的接口上进行调用；</span></span><br><span class="line">    <span class="comment">// 并且需要对进入它们的调用进行权限检查（因此它们将检查本地进程的权限，而不是最初调用的进程权限）。</span></span><br><span class="line">    <span class="comment">// 返回一个token，该token可以通过将其传递给restoreCallingIdentity(long)来还原原始的调用身份。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">clearCallingIdentity</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 将传入当前线程的IPC身份还原回clearCallingIdentity返回的先前身份。</span></span><br><span class="line">    <span class="comment">// 参数token：token先前由clearCallingIdentity返回的。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">restoreCallingIdentity</span><span class="params">(<span class="keyword">long</span> token)</span></span>;</span><br><span class="line">    <span class="comment">// 运行clearCallingIdentity/restoreCallingIdentity中提供操作的便利方法。</span></span><br><span class="line">    <span class="comment">// 调用restoreCallingIdentity后，将捕获给定操作抛出的任何异常并重新抛出。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">withCleanCallingIdentity</span><span class="params">(@NonNull ThrowingRunnable action)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> callingIdentity = clearCallingIdentity();</span><br><span class="line">        Throwable throwableToPropagate = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            action.runOrThrow();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable throwable) &#123;</span><br><span class="line">            throwableToPropagate = throwable;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            restoreCallingIdentity(callingIdentity);</span><br><span class="line">            <span class="keyword">if</span> (throwableToPropagate != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> ExceptionUtils.propagate(throwableToPropagate);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 用于运行包含在clearCallingIdentity/restoreCallingIdentity中提供的操作的便捷方法。</span></span><br><span class="line">    <span class="comment">// 该方法返回结果调用restoreCallingIdentity&#125;后，将捕获并重新抛出由给定操作引发的任何异常</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> &lt;T&gt; <span class="function">T <span class="title">withCleanCallingIdentity</span><span class="params">(@NonNull ThrowingSupplier&lt;T&gt; action)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> callingIdentity = clearCallingIdentity();</span><br><span class="line">        Throwable throwableToPropagate = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> action.getOrThrow();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable throwable) &#123;</span><br><span class="line">            throwableToPropagate = throwable;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            restoreCallingIdentity(callingIdentity);</span><br><span class="line">            <span class="keyword">if</span> (throwableToPropagate != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> ExceptionUtils.propagate(throwableToPropagate);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 设置native本地线程StrictMode策略掩码。</span></span><br><span class="line">    <span class="comment">// StrictMode设置保存在两个位置：用于libcore/Dalvik的Java级线程本地，和用于通过Binder调用传输的本地线程本地（在此设置）。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">setThreadStrictModePolicy</span><span class="params">(<span class="keyword">int</span> policyMask)</span></span>;</span><br><span class="line">    <span class="comment">// 获取当前native本地线程StrictMode策略掩码。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">getThreadStrictModePolicy</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 设置该线程的工作源。</span></span><br><span class="line">    <span class="comment">// 如果在正在进行的binder事务期间调用了此方法，则以下所有binder调用都将使用工作源，直到事务结束。</span></span><br><span class="line">    <span class="comment">// 工作源的概念类似于WorkSource。但是，出于性能原因，仅支持一个UID。该UID代表负责binder调用的原始用户。</span></span><br><span class="line">    <span class="comment">// restoreCallingWorkSource(long)必须在设置工作源之后始终被调用。</span></span><br><span class="line">    <span class="comment">// 将传输工作源，以供将来在此线程上执行的外发binder事务处理。</span></span><br><span class="line">    <span class="comment">// 参数workSource：负责binder调用的原始UID。</span></span><br><span class="line">    <span class="comment">// 返回token,可还原原始工作源。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">setCallingWorkSourceUid</span><span class="params">(<span class="keyword">int</span> workSource)</span></span>;</span><br><span class="line">    <span class="comment">// 返回调用者设置的工作源。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">getCallingWorkSourceUid</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 清除该线程的工作源。将传播工作源，以供将来在此线程上执行的外发binder事务。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">clearCallingWorkSource</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 使用setCallingWorkSourceUid(int)或clearCallingWorkSource()返回的token在此线程上还原工作源。</span></span><br><span class="line">    <span class="meta">@CriticalNative</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">restoreCallingWorkSource</span><span class="params">(<span class="keyword">long</span> token)</span></span>;</span><br><span class="line">    <span class="comment">// 标记为稳定性的VINTF。该API仅应由编译系统调用。</span></span><br><span class="line">    <span class="comment">// 这意味着可以保证由此binder表示的接口可以保持稳定一些年，并且编译系统还保留这些API的快照并调用AIDL编译器以确保这些快照向后兼容。</span></span><br><span class="line">    <span class="comment">// 可用VintfStability接口代替使用此API。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">markVintfStability</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 将当前线程中所有待处理的Binder命令烧写到内核驱动程序。</span></span><br><span class="line">    <span class="comment">// 在执行可能会长时间阻塞的操作之前调用此方法很有用，以确保释放了所有待处理的对象引用，以防止该过程将对象保留的时间超过所需时间。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">flushPendingCommands</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 将调用线程添加到IPC线程池。在当前进程退出之前，该函数不会返回。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">joinThreadPool</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        BinderInternal.joinThreadPool();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果指定的接口是代理，则返回true。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">isProxy</span><span class="params">(IInterface iface)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> iface.asBinder() != iface;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 直到执行的binder线程数小于该进程允许的最大binder线程数调用阻塞。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">blockUntilThreadAvailable</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 默认构造器只是初始化该对象。</span></span><br><span class="line">    <span class="comment">// 如果要创建Binder token（没有附加接口的Binder对象），则应改用Binder(String)。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Binder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(<span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 用于创建原始Binder对象(token)和描述符的构造函数。binder对象的描述符通常指定它们正在实现的接口。</span></span><br><span class="line">    <span class="comment">// 如果使用binder令牌，则不会实现任何接口，并且描述符可以用作一种标签来帮助识别binder token。这将有助于在调试时更轻松地标识对这些对象的远程引用。</span></span><br><span class="line">    <span class="comment">// 参数descriptor：用于标识此token的创建者，例如类名。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Binder</span><span class="params">(@Nullable String descriptor)</span>  </span>&#123;</span><br><span class="line">        mObject = getNativeBBinderHolder();</span><br><span class="line">        NoImagePreloadHolder.sRegistry.registerNativeAllocation(<span class="keyword">this</span>, mObject);</span><br><span class="line">        <span class="keyword">if</span> (FIND_POTENTIAL_LEAKS) &#123;</span><br><span class="line">            <span class="keyword">final</span> Class&lt;? extends Binder&gt; klass = getClass();</span><br><span class="line">            <span class="keyword">if</span> ((klass.isAnonymousClass() || klass.isMemberClass() || klass.isLocalClass()) &amp;&amp;</span><br><span class="line">                    (klass.getModifiers() &amp; Modifier.STATIC) == <span class="number">0</span>) &#123;</span><br><span class="line">                Log.w(TAG, <span class="string">"The following Binder class should be static or leaks might occur: "</span> +</span><br><span class="line">                    klass.getCanonicalName());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        mDescriptor = descriptor;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 用于将特定接口与Binder关联的便捷方法。调用之后，将实现queryLocalInterface()，以便在请求相应的描述符时返回给定的所有者IInterface。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">attachInterface</span><span class="params">(@Nullable IInterface owner, @Nullable String descriptor)</span> </span>&#123;</span><br><span class="line">        mOwner = owner;</span><br><span class="line">        mDescriptor = descriptor;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 默认实现。返回一个空的接口名。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="meta">@Nullable</span> <span class="function">String <span class="title">getInterfaceDescriptor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mDescriptor;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 默认实现，总是返回true，说明对象处于存活状态。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">pingBinder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果正在调用本地binder，则始终返回true，因为如果正在调用它，则该进程仍处于活动状态。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isBinderAlive</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果提供的信息与请求的描述符匹配，请使用attachInterface()提供的信息来返回关联的IInterface。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="meta">@Nullable</span> <span class="function">IInterface <span class="title">queryLocalInterface</span><span class="params">(@NonNull String descriptor)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mDescriptor != <span class="keyword">null</span> &amp;&amp; mDescriptor.equals(descriptor)) &#123;</span><br><span class="line">            <span class="keyword">return</span> mOwner;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 控制在此过程中禁用dump调用。当系统进程监视程序检测到系统已挂起并将其报告回activity控制器时，系统进程监视程序使用它禁用传入的dump调用。</span></span><br><span class="line">    <span class="comment">// 这是为了防止控制器此时挂断错误报告。</span></span><br><span class="line">    <span class="comment">// 参数msg：显示消息而不是dump； 如果为null，则重新启用dump。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setDumpDisabled</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">        sDumpDisabled = msg;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 代理侧每个binder调用通知监听器。</span></span><br><span class="line">    <span class="meta">@SystemApi</span></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ProxyTransactListener</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 在onTransact之前调用。</span></span><br><span class="line">        <span class="comment">// 将传递回#onTransactEnded的对象（或null）。</span></span><br><span class="line">        <span class="meta">@Nullable</span></span><br><span class="line">        <span class="function">Object <span class="title">onTransactStarted</span><span class="params">(@NonNull IBinder binder, <span class="keyword">int</span> transactionCode)</span></span>;</span><br><span class="line">        <span class="comment">// 在onTransact之后调用（即便抛出了异常）。</span></span><br><span class="line">        <span class="comment">// 参数session：onTransactStarted返回的对象。</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">onTransactEnded</span><span class="params">(@Nullable Object session)</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将工作源传给system server执行的binder调用。</span></span><br><span class="line">    <span class="comment">// 默认情况下，如果传出调用与传入的binder调用发生在同一线程上，则此监听器将传输工作源。</span></span><br><span class="line">    <span class="comment">// 可以通过调用ThreadLocalWorkSource的setUid(int)来完成自定义归因。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PropagateWorkSourceTransactListener</span> <span class="keyword">implements</span> <span class="title">ProxyTransactListener</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Object <span class="title">onTransactStarted</span><span class="params">(IBinder binder, <span class="keyword">int</span> transactionCode)</span> </span>&#123;</span><br><span class="line">           <span class="comment">// 改用ThreadLocalWorkSource。它还允许功能所有者手动设置ThreadLocalWorkSource的set(int)方法来将资源分配给UID。</span></span><br><span class="line">            <span class="keyword">int</span> uid = ThreadLocalWorkSource.getUid();</span><br><span class="line">            <span class="keyword">if</span> (uid != ThreadLocalWorkSource.UID_NONE) &#123;</span><br><span class="line">                <span class="keyword">return</span> Binder.setCallingWorkSourceUid(uid);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onTransactEnded</span><span class="params">(Object session)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (session != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">long</span> token = (<span class="keyword">long</span>) session;</span><br><span class="line">                Binder.restoreCallingWorkSource(token);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 设置一个代理侧事务的监听器。该监听器是全局性的，只有快操作才能避免线程竞争现象。</span></span><br><span class="line">    <span class="comment">// 监听器需要能处理同步操作，即可以并发调用监听器方法。</span></span><br><span class="line">    <span class="comment">// 监听器集将用于新事务。正在进行的事务仍将使用以前的监听器（若曾设置过监听器）。</span></span><br><span class="line">    <span class="comment">// 在binder事务的关键路径上调用了监听器，因此需要关注性能。不要在监听器内执行其他binder事务。</span></span><br><span class="line">    <span class="meta">@SystemApi</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setProxyTransactListener</span><span class="params">(@Nullable ProxyTransactListener listener)</span> </span>&#123;</span><br><span class="line">        BinderProxy.setTransactListener(listener);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 默认实现是一个stub，它返回false。将覆盖此内容以进行适当的事务编组。如果要调用此函数，需调用transact()。</span></span><br><span class="line">    <span class="comment">// 返回结果的实现通常应使用Parcel.writeNoException和Parcel.writeException将异常传回调用方。</span></span><br><span class="line">    <span class="comment">// 第一个参数code：要执行的动作。这应该是FIRST_CALL_TRANSACTIONLAST_CALL_TRANSACTION之间的数字。</span></span><br><span class="line">    <span class="comment">// 第二个参数data：正在从调用方接收到编组数据。</span></span><br><span class="line">    <span class="comment">// 第三个参数reply：如果调用者期望返回结果，则应将其整理到此处。</span></span><br><span class="line">    <span class="comment">// 第四个参数flags：附加操作标志。对于普通RPC，选择0；对于单向RPC，使用FLAG_ONEWAY。</span></span><br><span class="line">    <span class="comment">// 返回值：成功调用返回true；返回false通常用于表示不了解事务码。</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">onTransact</span><span class="params">(<span class="keyword">int</span> code, @NonNull Parcel data, @Nullable Parcel reply,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">int</span> flags)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (code == INTERFACE_TRANSACTION) &#123;</span><br><span class="line">            reply.writeString(getInterfaceDescriptor());</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (code == DUMP_TRANSACTION) &#123;</span><br><span class="line">            ParcelFileDescriptor fd = data.readFileDescriptor();</span><br><span class="line">            String[] args = data.readStringArray();</span><br><span class="line">            <span class="keyword">if</span> (fd != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    dump(fd.getFileDescriptor(), args);</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    IoUtils.closeQuietly(fd);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 写StrictMode头。</span></span><br><span class="line">            <span class="keyword">if</span> (reply != <span class="keyword">null</span>) &#123;</span><br><span class="line">                reply.writeNoException();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                StrictMode.clearGatheredViolations();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (code == SHELL_COMMAND_TRANSACTION) &#123;</span><br><span class="line">            ParcelFileDescriptor in = data.readFileDescriptor();</span><br><span class="line">            ParcelFileDescriptor out = data.readFileDescriptor();</span><br><span class="line">            ParcelFileDescriptor err = data.readFileDescriptor();</span><br><span class="line">            String[] args = data.readStringArray();</span><br><span class="line">            ShellCallback shellCallback = ShellCallback.CREATOR.createFromParcel(data);</span><br><span class="line">            ResultReceiver resultReceiver = ResultReceiver.CREATOR.createFromParcel(data);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (out != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    shellCommand(in != <span class="keyword">null</span> ? in.getFileDescriptor() : <span class="keyword">null</span>,</span><br><span class="line">                            out.getFileDescriptor(),</span><br><span class="line">                            err != <span class="keyword">null</span> ? err.getFileDescriptor() : out.getFileDescriptor(),</span><br><span class="line">                            args, shellCallback, resultReceiver);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                IoUtils.closeQuietly(in);</span><br><span class="line">                IoUtils.closeQuietly(out);</span><br><span class="line">                IoUtils.closeQuietly(err);</span><br><span class="line">                <span class="comment">// 写StrictMode头。</span></span><br><span class="line">                <span class="keyword">if</span> (reply != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    reply.writeNoException();</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    StrictMode.clearGatheredViolations();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将事务代码解析为易于理解的名称。默认实现是一个返回null的存根。</span></span><br><span class="line">    <span class="comment">// AIDL生成的代码将返回原始方法名称。</span></span><br><span class="line">    <span class="comment">// 参数transactionCode：要解析的代码。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="meta">@Nullable</span> <span class="function">String <span class="title">getTransactionName</span><span class="params">(<span class="keyword">int</span> transactionCode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 实现调用更方便的版本。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dump</span><span class="params">(@NonNull FileDescriptor fd, @Nullable String[] args)</span> </span>&#123;</span><br><span class="line">        FileOutputStream fout = <span class="keyword">new</span> FileOutputStream(fd);</span><br><span class="line">        PrintWriter pw = <span class="keyword">new</span> FastPrintWriter(fout);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            doDump(fd, pw, args);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            pw.flush();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">doDump</span><span class="params">(FileDescriptor fd, PrintWriter pw, String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> String disabled = sDumpDisabled;</span><br><span class="line">        <span class="keyword">if</span> (disabled == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                dump(fd, pw, args);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (SecurityException e) &#123;</span><br><span class="line">                pw.println(<span class="string">"Security exception: "</span> + e.getMessage());</span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">                <span class="comment">// 与通常的调用不同，在这种情况下，如果抛出异常，将其打印回dump数据中，因为调用者希望在那里收集所有有用的信息。</span></span><br><span class="line">                pw.println();</span><br><span class="line">                pw.println(<span class="string">"Exception occurred while dumping:"</span>);</span><br><span class="line">                e.printStackTrace(pw);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            pw.println(sDumpDisabled);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 类似于dump(FileDescriptor，String[])，但要确保目标是异步执行的。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dumpAsync</span><span class="params">(@NonNull <span class="keyword">final</span> FileDescriptor fd, @Nullable <span class="keyword">final</span> String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> FileOutputStream fout = <span class="keyword">new</span> FileOutputStream(fd);</span><br><span class="line">        <span class="keyword">final</span> PrintWriter pw = <span class="keyword">new</span> FastPrintWriter(fout);</span><br><span class="line">        Thread thr = <span class="keyword">new</span> Thread(<span class="string">"Binder.dumpAsync"</span>) &#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    dump(fd, pw, args);</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    pw.flush();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        thr.start();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将对象的状态打印到给定的流中。</span></span><br><span class="line">    <span class="comment">// 第一个参数fd：将dump发送到的原始文件描述符。</span></span><br><span class="line">    <span class="comment">// 第二个参数fout：应将状态dump到的文件。</span></span><br><span class="line">    <span class="comment">// 第三个参数args：为dump请求添加其他参数。</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">dump</span><span class="params">(@NonNull FileDescriptor fd, @NonNull PrintWriter fout,</span></span></span><br><span class="line"><span class="function"><span class="params">            @Nullable String[] args)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 在这个对象上执行一个shell命令。这可以从调用者异步执行; 完成时，实现必须始终调用resultReceiver。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">shellCommand</span><span class="params">(@Nullable FileDescriptor in, @Nullable FileDescriptor out,</span></span></span><br><span class="line"><span class="function"><span class="params">            @Nullable FileDescriptor err,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull String[] args, @Nullable ShellCallback callback,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull ResultReceiver resultReceiver)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">        onShellCommand(in, out, err, args, callback, resultReceiver);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 处理对shellCommand的调用。默认实现只是打印一条错误消息。覆盖并替换为您自己的。</span></span><br><span class="line">    <span class="comment">// 在调用此方法之前，不进行权限检查； 必须对正在执行的命令进行适当的安全检查。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onShellCommand</span><span class="params">(@Nullable FileDescriptor in, @Nullable FileDescriptor out,</span></span></span><br><span class="line"><span class="function"><span class="params">            @Nullable FileDescriptor err,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull String[] args, @Nullable ShellCallback callback,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull ResultReceiver resultReceiver)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">        FileOutputStream fout = <span class="keyword">new</span> FileOutputStream(err != <span class="keyword">null</span> ? err : out);</span><br><span class="line">        PrintWriter pw = <span class="keyword">new</span> FastPrintWriter(fout);</span><br><span class="line">        pw.println(<span class="string">"No shell command implementation."</span>);</span><br><span class="line">        pw.flush();</span><br><span class="line">        resultReceiver.send(<span class="number">0</span>, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 默认实现倒回parcels并在onTransact上调用。在远端，事务将调用binder以进行IPC。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">transact</span><span class="params">(<span class="keyword">int</span> code, @NonNull Parcel data, @Nullable Parcel reply,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">int</span> flags)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">false</span>) Log.v(<span class="string">"Binder"</span>, <span class="string">"Transact: "</span> + code + <span class="string">" to "</span> + <span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (data != <span class="keyword">null</span>) &#123;</span><br><span class="line">            data.setDataPosition(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">boolean</span> r = onTransact(code, data, reply, flags);</span><br><span class="line">        <span class="keyword">if</span> (reply != <span class="keyword">null</span>) &#123;</span><br><span class="line">            reply.setDataPosition(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 本地实现是不可操作的。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">linkToDeath</span><span class="params">(@NonNull DeathRecipient recipient, <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 本地实现是不可操作的。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">unlinkToDeath</span><span class="params">(@NonNull DeathRecipient recipient, <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">checkParcel</span><span class="params">(IBinder obj, <span class="keyword">int</span> code, Parcel parcel, String msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (CHECK_PARCEL_SIZE &amp;&amp; parcel.dataSize() &gt;= <span class="number">800</span>*<span class="number">1024</span>) &#123;</span><br><span class="line">            <span class="comment">// 尝试发送大于800k数据。</span></span><br><span class="line">            StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">            sb.append(msg);</span><br><span class="line">            sb.append(<span class="string">": on "</span>);</span><br><span class="line">            sb.append(obj);</span><br><span class="line">            sb.append(<span class="string">" calling "</span>);</span><br><span class="line">            sb.append(code);</span><br><span class="line">            sb.append(<span class="string">" size "</span>);</span><br><span class="line">            sb.append(parcel.dataSize());</span><br><span class="line">            sb.append(<span class="string">" (data: "</span>);</span><br><span class="line">            parcel.setDataPosition(<span class="number">0</span>);</span><br><span class="line">            sb.append(parcel.readInt());</span><br><span class="line">            sb.append(<span class="string">", "</span>);</span><br><span class="line">            sb.append(parcel.readInt());</span><br><span class="line">            sb.append(<span class="string">", "</span>);</span><br><span class="line">            sb.append(parcel.readInt());</span><br><span class="line">            sb.append(<span class="string">")"</span>);</span><br><span class="line">            Slog.wtfStack(TAG, sb.toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">getNativeBBinderHolder</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">getFinalizer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 默认情况下，使用调用uid，因为它始终可信。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> BinderInternal.WorkSourceProvider sWorkSourceProvider =</span><br><span class="line">            (x) -&gt; Binder.getCallingUid();</span><br><span class="line">    <span class="comment">// 设置工作源提供者。回调是全局的。只有快速操作才能避免线程竞争。</span></span><br><span class="line">    <span class="comment">// 如果需要，回调实现需要处理同步。回调中的方法可以并发调用。</span></span><br><span class="line">    <span class="comment">// 回调是在活页夹事务的关键路径上调用的，因此要注意性能。不可在回调内部执行其他binder事务。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setWorkSourceProvider</span><span class="params">(BinderInternal.WorkSourceProvider workSourceProvider)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (workSourceProvider == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"workSourceProvider cannot be null"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        sWorkSourceProvider = workSourceProvider;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// android_util_Binder.cpp的onTransact函数的入口。</span></span><br><span class="line">    <span class="meta">@UnsupportedAppUsage</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">execTransact</span><span class="params">(<span class="keyword">int</span> code, <span class="keyword">long</span> dataObj, <span class="keyword">long</span> replyObj,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 此时，尚未解析parcel请求头，因此不知道调用者设置了哪个WorkSource。使用调用uid作为默认值。</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> callingUid = Binder.getCallingUid();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> origWorkSource = ThreadLocalWorkSource.setUid(callingUid);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> execTransactInternal(code, dataObj, replyObj, flags, callingUid);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            ThreadLocalWorkSource.restore(origWorkSource);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">execTransactInternal</span><span class="params">(<span class="keyword">int</span> code, <span class="keyword">long</span> dataObj, <span class="keyword">long</span> replyObj, <span class="keyword">int</span> flags,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">int</span> callingUid)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 确保观察者在处理事务时不会改变。</span></span><br><span class="line">        <span class="keyword">final</span> BinderInternal.Observer observer = sObserver;</span><br><span class="line">        <span class="keyword">final</span> CallSession callSession =</span><br><span class="line">                observer != <span class="keyword">null</span> ? observer.callStarted(<span class="keyword">this</span>, code, UNSET_WORKSOURCE) : <span class="keyword">null</span>;</span><br><span class="line">        Parcel data = Parcel.obtain(dataObj);</span><br><span class="line">        Parcel reply = Parcel.obtain(replyObj);</span><br><span class="line">        <span class="comment">// 从理论上讲，应该调用事务处理，该方法将调用onTransact，但所做的只是回调它，因此将直接调用它。</span></span><br><span class="line">        <span class="keyword">boolean</span> res;</span><br><span class="line">        <span class="comment">// 将异常记为警告，如果调用是FLAG_ONEWAY，则这些异常会消失。</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> tracingEnabled = Binder.isTracingEnabled();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (tracingEnabled) &#123;</span><br><span class="line">                <span class="keyword">final</span> String transactionName = getTransactionName(code);</span><br><span class="line">                Trace.traceBegin(Trace.TRACE_TAG_ALWAYS, getClass().getName() + <span class="string">":"</span></span><br><span class="line">                        + (transactionName != <span class="keyword">null</span> ? transactionName : code));</span><br><span class="line">            &#125;</span><br><span class="line">            res = onTransact(code, data, reply, flags);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException|RuntimeException e) &#123;</span><br><span class="line">            <span class="keyword">if</span> (observer != <span class="keyword">null</span>) &#123;</span><br><span class="line">                observer.callThrewException(callSession, e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (LOG_RUNTIME_EXCEPTION) &#123;</span><br><span class="line">                Log.w(TAG, <span class="string">"Caught a RuntimeException from the binder stub implementation."</span>, e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> ((flags &amp; FLAG_ONEWAY) != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (e <span class="keyword">instanceof</span> RemoteException) &#123;</span><br><span class="line">                    Log.w(TAG, <span class="string">"Binder call failed."</span>, e);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    Log.w(TAG, <span class="string">"Caught a RuntimeException from the binder stub implementation."</span>, e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 在写入异常之前清除parcel。</span></span><br><span class="line">                reply.setDataSize(<span class="number">0</span>);</span><br><span class="line">                reply.setDataPosition(<span class="number">0</span>);</span><br><span class="line">                reply.writeException(e);</span><br><span class="line">            &#125;</span><br><span class="line">            res = <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (tracingEnabled) &#123;</span><br><span class="line">                Trace.traceEnd(Trace.TRACE_TAG_ALWAYS);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (observer != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 在onTransact期间已调用了parcel RPC标头，因此现在可以从parcel中访问工作源uid。</span></span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> workSourceUid = sWorkSourceProvider.resolveWorkSourceUid(</span><br><span class="line">                        data.readCallingWorkSourceUid());</span><br><span class="line">                observer.callEnded(callSession, data.dataSize(), reply.dataSize(), workSourceUid);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        checkParcel(<span class="keyword">this</span>, code, reply, <span class="string">"Unreasonably large binder reply buffer"</span>);</span><br><span class="line">        reply.recycle();</span><br><span class="line">        data.recycle();</span><br><span class="line">        <span class="comment">// 已经完成了IPC，所以应该没有更多的严格的模式冲突聚集在该线程上。</span></span><br><span class="line">        <span class="comment">// 它们要么已被打包，现在正被转移到调用方，要么将返回主事务循环以等待另一个传入事务。无论哪种方式，都会属于strict mode！</span></span><br><span class="line">        StrictMode.clearGatheredViolations();</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 从servicemanager返回指定的服务。如果服务未运行，则servicemanager将尝试启动它，并且此功能将等待其准备就绪。</span></span><br><span class="line">    <span class="comment">// 仅当存在权限问题或致命错误时才返回nullptr。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="meta">@Nullable</span> <span class="function">IBinder <span class="title">waitForService</span><span class="params">(@NonNull String serviceName)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> RemoteException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/IPC/" rel="tag"># IPC</a>
+          
+            <a href="/tags/Binder/" rel="tag"># Binder</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/04/05/IPC/JavaBinder之IBinder/" rel="next" title="Java Binder 之 IBinder">
+                <i class="fa fa-chevron-left"></i> Java Binder 之 IBinder
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/04/26/IPC/JavaBinder之BinderProxy/" rel="prev" title="Java Binder 之 BinderProxy">
+                Java Binder 之 BinderProxy <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">97</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
