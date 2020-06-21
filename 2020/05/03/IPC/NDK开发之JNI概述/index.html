@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. NDK 概述1.1 NDK 定义Android 官网对 NDK 的定义 (https://developer.android.com/ndk)： Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。 1.2 NDK 优势使用 NDK 主要">
+<meta name="keywords" content="IPC,JNI,NDK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NDK 开发之 JNI 概述">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/05/03/IPC/NDK开发之JNI概述/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1. NDK 概述1.1 NDK 定义Android 官网对 NDK 的定义 (https://developer.android.com/ndk)： Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。 1.2 NDK 优势使用 NDK 主要">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-06-21T08:30:23.681Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NDK 开发之 JNI 概述">
+<meta name="twitter:description" content="1. NDK 概述1.1 NDK 定义Android 官网对 NDK 的定义 (https://developer.android.com/ndk)： Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。 1.2 NDK 优势使用 NDK 主要">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/05/03/IPC/NDK开发之JNI概述/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>NDK 开发之 JNI 概述 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/05/03/IPC/NDK开发之JNI概述/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">NDK 开发之 JNI 概述
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-05-03 00:00:00" itemprop="dateCreated datePublished" datetime="2020-05-03T00:00:00+08:00">2020-05-03</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-NDK-概述"><a href="#1-NDK-概述" class="headerlink" title="1. NDK 概述"></a>1. NDK 概述</h3><h4 id="1-1-NDK-定义"><a href="#1-1-NDK-定义" class="headerlink" title="1.1 NDK 定义"></a>1.1 NDK 定义</h4><p>Android 官网对 NDK 的定义 (<a href="https://developer.android.com/ndk)：" target="_blank" rel="noopener">https://developer.android.com/ndk)：</a></p>
+<p>Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。</p>
+<h4 id="1-2-NDK-优势"><a href="#1-2-NDK-优势" class="headerlink" title="1.2 NDK 优势"></a>1.2 NDK 优势</h4><p>使用 NDK 主要有这几个好处：</p>
+<p>（1）可以在平台之间移植其应用。</p>
+<p>（2）可以重复使用现有库，或者提供其自己的库供重复使用。</p>
+<p>（3）在某些情况下可以提高性能，特别是像游戏这种计算密集型应用。</p>
+<p>（4）可以增强代码 C/C++ 库的安全性，因为 相比 Java 代码，C/C++ 反编译难度更大。</p>
+<p>（5）可以使用优秀的由 C/C++ 编写的第三方库。</p>
+<h4 id="1-3-NDK-组件"><a href="#1-3-NDK-组件" class="headerlink" title="1.3 NDK 组件"></a>1.3 NDK 组件</h4><p>在进行 NDK 开发之前，需要了解以下几个组件：</p>
+<p>（1）Native shared library （原生共享库）：NDK 可以将 C/C++ 代码编译成<code>.so</code>动态库文件。</p>
+<p>（2）Native static library （原生静态库）：NDK 可以将 C/C++ 代码编译成<code>.a</code>静态库文件。</p>
+<p>（3）Application Binary Interface (ABI)：ABI 可以精确地定义应用的机器代码在运行时应该如何与系统交互。不同的 ABI 对应不同的架构：NDK 为 32 位 ARM，AArch64，x86 及 x86-64 提供 ABI 支持。</p>
+<p>（4）Manifest（清单）：如果编写的应用不包含 Java 组件，则必须在清单中声明 NativeActivity 类。</p>
+<p>（5）CMake：一款外部编译工具，可与 Gradle 搭配使用来编译 native 库。如果只计划使用 ndk-build，则不需要此组件。</p>
+<p>（6）LLDB：Android Studio 用于调试 natvie 代码的调试程序。</p>
+<p>（7）Java Native Interface (JNI)：JNI 是 Java 和 C++ 组件互相通信的接口。它定义了 Android 从受管理代码（使用 Java 或 Kotlin 编程语言编写）编译的字节码与原生代码（使用 C/C++ 编写）互动的方式。JNI 不依赖于供应商，支持从动态共享库加载代码，虽然较为繁琐，但有时相当有效。Java 调用 C/C++ 并不是 Android 所独有的，只是 Java 语言原本就支持的，只是 Android 中的 JNI 使用更简单一些罢了。在 Oracle 官网 有对 JNI 规范有详细的说明（<a href="https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html）。" target="_blank" rel="noopener">https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html）。</a></p>
+<h4 id="1-4-NDK-开发流程"><a href="#1-4-NDK-开发流程" class="headerlink" title="1.4 NDK 开发流程"></a>1.4 NDK 开发流程</h4><p>NDK 的开发流程如下：</p>
+<p>（1）创建一个 Android 应用项目。</p>
+<p>（2）在 AndroidManifest.xml 中声明 NativeActivity 类。</p>
+<p>（3）在“jni”目录中创建一个描述 native 库的 Android.mk 文件，包括名称、标记、关联库和要编译的源文件。也可以创建一个配置目标 ABI、工具链、发布/调试模式和 STL 的 Application.mk 文件。</p>
+<p>（4）将 native 源码放在项目的 jni 目录下。</p>
+<p>（5）使用 ndk-build 编译原生（.so、.a）库。</p>
+<p>（6）编译 Java 组件，生成可执行 .dex 文件。</p>
+<p>（7）将所有内容封装到一个 APK 文件中，包括 .so，.dex 以及应用运行所需的其他文件。</p>
+<h3 id="2-JNI-概述"><a href="#2-JNI-概述" class="headerlink" title="2. JNI 概述"></a>2. JNI 概述</h3><h4 id="2-1-JNI-类型"><a href="#2-1-JNI-类型" class="headerlink" title="2.1 JNI 类型"></a>2.1 JNI 类型</h4><h5 id="2-1-1-基本数据类型"><a href="#2-1-1-基本数据类型" class="headerlink" title="2.1.1 基本数据类型"></a>2.1.1 基本数据类型</h5><table>
+<thead>
+<tr>
+<th style="text-align:center">JNI 类型</th>
+<th style="text-align:center">Java 类型</th>
+<th style="text-align:center">　描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">jboolean</td>
+<td style="text-align:center">boolean</td>
+<td style="text-align:center">unsigned char (8 bits)</td>
+</tr>
+<tr>
+<td style="text-align:center">jbyte</td>
+<td style="text-align:center">byte</td>
+<td style="text-align:center">signed char (8 bits)</td>
+</tr>
+<tr>
+<td style="text-align:center">jchar</td>
+<td style="text-align:center">char</td>
+<td style="text-align:center">unsigned short (16 bits)</td>
+</tr>
+<tr>
+<td style="text-align:center">jshort</td>
+<td style="text-align:center">short</td>
+<td style="text-align:center">signed short (16 bits)</td>
+</tr>
+<tr>
+<td style="text-align:center">jint</td>
+<td style="text-align:center">int</td>
+<td style="text-align:center">signed int (32 bits)</td>
+</tr>
+<tr>
+<td style="text-align:center">jlong</td>
+<td style="text-align:center">long</td>
+<td style="text-align:center">signed long (64 bits)</td>
+</tr>
+<tr>
+<td style="text-align:center">jfloat</td>
+<td style="text-align:center">float</td>
+<td style="text-align:center">32 bits</td>
+</tr>
+<tr>
+<td style="text-align:center">jdouble</td>
+<td style="text-align:center">double</td>
+<td style="text-align:center">64 bits</td>
+</tr>
+<tr>
+<td style="text-align:center">void</td>
+<td style="text-align:center">void</td>
+<td style="text-align:center">-</td>
+</tr>
+</tbody>
+</table>
+<h5 id="2-1-2-引用类型"><a href="#2-1-2-引用类型" class="headerlink" title="2.1.2 引用类型"></a>2.1.2 引用类型</h5><table>
+<thead>
+<tr>
+<th style="text-align:center">JNI 类型</th>
+<th style="text-align:center">Java 类型</th>
+<th style="text-align:center">　描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">jobject</td>
+<td style="text-align:center">Object</td>
+<td style="text-align:center">all jave objects</td>
+</tr>
+<tr>
+<td style="text-align:center">jclass</td>
+<td style="text-align:center">class</td>
+<td style="text-align:center">java.lang.Class objects</td>
+</tr>
+<tr>
+<td style="text-align:center">jstring</td>
+<td style="text-align:center">String</td>
+<td style="text-align:center">java.lang.String objects</td>
+</tr>
+<tr>
+<td style="text-align:center">jobjectArray</td>
+<td style="text-align:center">Object[]</td>
+<td style="text-align:center">object arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jbooleanArray</td>
+<td style="text-align:center">boolean[]</td>
+<td style="text-align:center">boolean arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jbyteArray</td>
+<td style="text-align:center">byte[]</td>
+<td style="text-align:center">byte arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jcharArray</td>
+<td style="text-align:center">char[]</td>
+<td style="text-align:center">char arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jshortArray</td>
+<td style="text-align:center">short[]</td>
+<td style="text-align:center">short arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jintArray</td>
+<td style="text-align:center">int[]</td>
+<td style="text-align:center">int arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jlongArray</td>
+<td style="text-align:center">long[]</td>
+<td style="text-align:center">long arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jfloatArray</td>
+<td style="text-align:center">float[]</td>
+<td style="text-align:center">float arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jdouble</td>
+<td style="text-align:center">double[]</td>
+<td style="text-align:center">double arrays</td>
+</tr>
+<tr>
+<td style="text-align:center">jthrowable</td>
+<td style="text-align:center">Throwable</td>
+<td style="text-align:center">-</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2-2-JNI-描述符"><a href="#2-2-JNI-描述符" class="headerlink" title="2.2 JNI 描述符"></a>2.2 JNI 描述符</h4><h5 id="2-2-1-field-描述符-jfieldID"><a href="#2-2-1-field-描述符-jfieldID" class="headerlink" title="2.2.1 field 描述符 - jfieldID"></a>2.2.1 field 描述符 - jfieldID</h5><p>基本数据类型描述符对应关系如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Field Descriptor</th>
+<th style="text-align:center">Java 类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Z</td>
+<td style="text-align:center">boolean</td>
+</tr>
+<tr>
+<td style="text-align:center">B</td>
+<td style="text-align:center">byte</td>
+</tr>
+<tr>
+<td style="text-align:center">C</td>
+<td style="text-align:center">char</td>
+</tr>
+<tr>
+<td style="text-align:center">S</td>
+<td style="text-align:center">short</td>
+</tr>
+<tr>
+<td style="text-align:center">I</td>
+<td style="text-align:center">int</td>
+</tr>
+<tr>
+<td style="text-align:center">J</td>
+<td style="text-align:center">long</td>
+</tr>
+<tr>
+<td style="text-align:center">F</td>
+<td style="text-align:center">float</td>
+</tr>
+<tr>
+<td style="text-align:center">D</td>
+<td style="text-align:center">double</td>
+</tr>
+</tbody>
+</table>
+<p>引用类型描述符规则通常是：”L + class 描述符 + ;”，比较特殊的是数组域描述符，其规则是：”[ + 类型域描述符”，有多少级数组就有多少个”[“，只有当数组类型为class时才需要加上”;”，如：</p>
+<p>Field Descriptor | Java 类型<br>[I | int[]<br>[D | double[]<br>[[I | int[][]<br>[[D | double[][]<br>[Ljava/lang/String; | String[]<br>[Ljava/lang/Object; | Object[]</p>
+<p>使用 GetFieldID 或 GetObjectField 获取字段；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// C</span><br><span class="line">jfieldID (*GetFieldID)(JNIEnv*, jclass, const char*, const char*);</span><br><span class="line">jobject (*GetObjectField)(JNIEnv*, jobject, jfieldID);</span><br><span class="line">// C++</span><br><span class="line">jfieldID GetFieldID(jclass clazz, const char* name, const char* sig) &#123;</span><br><span class="line">    return functions-&gt;GetFieldID(this, clazz, name, sig);</span><br><span class="line">&#125;</span><br><span class="line">jobject GetObjectField(jobject obj, jfieldID fieldID) &#123;</span><br><span class="line">    return functions-&gt;GetObjectField(this, obj, fieldID);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-2-2-class-描述符-jclass"><a href="#2-2-2-class-描述符-jclass" class="headerlink" title="2.2.2 class 描述符 - jclass"></a>2.2.2 class 描述符 - jclass</h5><p>class 描述符是 class 的完整名称：包名 + 类名。与java中用”.”分割包名不同的是，在 JNI 中使用”/“分割包名。使用 FindClass 获取类的类对象引用；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// C</span><br><span class="line">jclass (*FindClass)(JNIEnv*, const char*);</span><br><span class="line">// C++</span><br><span class="line">jclass FindClass(const char* name) &#123;</span><br><span class="line">    return functions-&gt;FindClass(this, name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-2-3-method-描述符-jmethodID"><a href="#2-2-3-method-描述符-jmethodID" class="headerlink" title="2.2.3 method 描述符 - jmethodID"></a>2.2.3 method 描述符 - jmethodID</h5><p>JNI 通过方法名和方法描述符关联 Java 中的方法，方法描述符由参数和返回值两部分组成，参数由”()”表示，括号里是参数的类型描述符，”()”后面接返回值的类型描述符，”V”表示返回值为空。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Method 描述</th>
+<th style="text-align:center">Java 方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">()Ljava/lang/String;</td>
+<td style="text-align:center">String f();</td>
+</tr>
+<tr>
+<td style="text-align:center">(ILjava/lang/Class;)J</td>
+<td style="text-align:center">long f(int i, Class c);</td>
+</tr>
+<tr>
+<td style="text-align:center">([B)V”</td>
+<td style="text-align:center">void f(byte[] bytes);</td>
+</tr>
+</tbody>
+</table>
+<p>使用 GetMethodID 获取 method：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// C</span><br><span class="line">jmethodID (*GetMethodID)(JNIEnv*, jclass, const char*, const char*);</span><br><span class="line">// C++</span><br><span class="line">jmethodID GetMethodID(jclass clazz, const char* name, const char* sig) &#123;</span><br><span class="line">    return functions-&gt;GetMethodID(this, clazz, name, sig);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于每个进程只能包含一个 JavaVM，因此将这些数据存储在静态本地结构中是一种合理的做法。</p>
+<p>在取消 load 类之前，类引用、字段 ID 和方法 ID 需保证有效。只有在与 ClassLoader 关联的所有类可以进行垃圾回收时，系统才会取消 load 类。需要注意的是，jclass 是类引用，必须通过调用 NewGlobalRef 来保护它。</p>
+<p>若想在 load 类时缓存方法 ID，并在取消 load 类后重新 load 时自动重新缓存方法 ID，可参考下面的代码在查找 ID 时创建 <code>nativeInit()</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeInit</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    nativeInit();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-JNI-引用"><a href="#2-3-JNI-引用" class="headerlink" title="2.3 JNI 引用"></a>2.3 JNI 引用</h4><p>JNI 规范中定义了三种引用：局部引用（Local Reference）、全局引用（Global Reference）、弱全局引用（Weak Global Reference）。</p>
+<h5 id="2-3-1-局部引用-Local-Reference"><a href="#2-3-1-局部引用-Local-Reference" class="headerlink" title="2.3.1 局部引用(Local Reference)"></a>2.3.1 局部引用(Local Reference)</h5><p>局部引用，也称本地引用，通常是在函数中创建并使用，会阻止GC回收所有引用对象。传递给 native 方法的每个参数，以及 JNI 函数返回的几乎每个对象都属于”局部引用”。即局部引用在当前线程中的当前 native 方法运行期间有效。在 native 方法返回后，即使对象本身继续存在，该引用也无效。适用于 jobject 的所有子类，包括 jclass、jstring 和 jarray。</p>
+<h5 id="2-3-2-全局引用-Global-Reference"><a href="#2-3-2-全局引用-Global-Reference" class="headerlink" title="2.3.2 全局引用(Global Reference)"></a>2.3.2 全局引用(Global Reference)</h5><p>全局引用可以跨方法、跨线程使用，直到被开发者显式释放。全局引用在被释放前引用对象不被GC回收。如果希望长时间保留某个引用，则必须使用”全局引用”。NewGlobalRef 函数将局部引用作为参数，然后返回全局引用。在调用 DeleteGlobalRef 之前，全局引用保证有效。释放它需要使用 ReleaseGlobalRef 函数。</p>
+<h5 id="2-3-3-弱全局引用-Weak-Global-Reference"><a href="#2-3-3-弱全局引用-Weak-Global-Reference" class="headerlink" title="2.3.3 弱全局引用(Weak Global Reference)"></a>2.3.3 弱全局引用(Weak Global Reference)</h5><p>与全局引用类似，创建跟删除都需要由编程人员来进行，不一样的是，弱引用不会阻止垃圾回收这个引用所指向的对象，所以在使用时需要多加小心，它所引用的对象可能是不存在的或者已经被回收。通过使用 NewWeakGlobalRef、ReleaseWeakGlobalRef 来产生和释放引用。</p>
+<p>所有 JNI 方法都接受局部和全局引用作为参数。对同一对象的引用可能具有不同的值。对同一对象连续调用 NewGlobalRef 所返回的值可能有所不同。要了解两个引用是否引用同一对象，必须使用 IsSameObject 函数。 切勿在原生代码中使用 == 比较各个引用。</p>
+<h4 id="2-4-JNI-注册"><a href="#2-4-JNI-注册" class="headerlink" title="2.4 JNI 注册"></a>2.4 JNI 注册</h4><p>在 Java 中执行 native 代码之前需注册 native 方法。JNI 支持静态和动态两种注册方式。</p>
+<h5 id="2-4-1-静态注册"><a href="#2-4-1-静态注册" class="headerlink" title="2.4.1 静态注册"></a>2.4.1 静态注册</h5><p>静态注册就是根据函数名建立 Java 方法和 JNI 函数的一一对应关系。其大致流程如下：</p>
+<p>（1）编写 Java 的 native 方法；<br>（2）用 javah 工具生成对应的头文件，执行命令”javah packag.class”可以生成由”包名+类名”的 jni 头文件；<br>（3）实现 JNI 函数，再在 Java 中通过 System.loadLibrary 加载”.so”库；</p>
+<p>JNI 的调用函数的命名通常采用如下规则：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">JNIEXPORT 返回值 JNICALL Java_全路径类名_方法名_参数(JNIEnv* , jclass, 其它参数);</span><br></pre></td></tr></table></figure>
+<p>其中，”Java_”是为了标识该函数来源于 Java。如果使用的是 C++，在函数前加上 extern “C”（表示按照 C 的方式编译），函数命名后面就不需要加上”参数”。</p>
+<h5 id="2-4-2-动态注册"><a href="#2-4-2-动态注册" class="headerlink" title="2.4.2 动态注册"></a>2.4.2 动态注册</h5><p>动态注册是告诉 native 方法其在 JNI 中对应函数的指针。通过使用 JNINativeMethod 结构来保存 Java 的 native 方法和 JNI 函数对应关系。 大致流程如下：</p>
+<p>（1）编写 Java 的 native 方法；<br>（2）编写 JNI 函数的实现；<br>（3）利用结构体 JNINativeMethod 保存 Java native 方法和 JNI 函数的对应关系；<br>（4）利用 registerNatives(JNIEnv* env) 注册类的本地方法；<br>（5）在 JNI_OnLoad 方法中调用注册方法；<br>（6）在 Java 中通过 System.loadLibrary 加载完 JNI 库之后，会调用 JNI_OnLoad 函数，完成动态注册。</p>
+<h4 id="2-5-JavaVM-和-JNIEnv"><a href="#2-5-JavaVM-和-JNIEnv" class="headerlink" title="2.5 JavaVM 和 JNIEnv"></a>2.5 JavaVM 和 JNIEnv</h4><p>JNI 定义了两个关键数据结构：JavaVM 和 JNIEnv，两者都是指向函数表的二级指针。在 C++ 中，它们具有指向函数表的指针，并具有每个通过该函数表间接调用的 JNI 函数的成员函数。</p>
+<h5 id="2-5-1-JavaVM"><a href="#2-5-1-JavaVM" class="headerlink" title="2.5.1 JavaVM"></a>2.5.1 JavaVM</h5><p>Java 的 Runtime 环境是 Java 虚拟机 (JVM)，每个 JVM 虚拟机进程在本地环境中都有一个 JavaVM 结构体，该结构体在创建 Java 虚拟机时被返回。JNI 中创建 JVM 的函数是”JNI_CreateJavaVM”。JavaVM 提供“调用接口”函数，允许创建和销毁 JavaVM。理论上每个进程可以有多个 JavaVM，但 Android 只允许有一个 JavaVM。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">JNI_CreateJavaVM(JavaVM **pvm, void **penv, void*args);</span><br></pre></td></tr></table></figure>
+<h5 id="2-5-2-JNIEnv"><a href="#2-5-2-JNIEnv" class="headerlink" title="2.5.2 JNIEnv"></a>2.5.2 JNIEnv</h5><p>JNIEnv 是当前 Java 线程的 Runtime 环境，一个进程对应一个 JavaVM 结构， 一个 JVM 中可能存在多个 Java　线程，每个线程对应一个 JNIEnv 结构， 它们被保存在每个线程的本地存储TLS中，因此无法在线程之间共享 JNIEnv。如果一段代码无法通过其他方法获取自己的 JNIEnv，则应该共享相应 JavaVM，然后使用 GetEnv 查找线程的 JNIEnv。JNIEnv 提供了大部分 JNI 函数。native 函数会以 JNIEnv 作为第一个参数。</p>
+<p>JNIEnv 和 JavaVM 的 C 声明与 C++ 声明不同。”jni.h” 文件会提供不同的类型定义typedef，因此不建议在这两种语言包含的头文件中添加 JNIEnv 参数。即：如果头文件需要 “#ifdef __cplusplus”，且该头文件中的所有内容都引用 JNIEnv，则需要进行一些额外操作。</p>
+<p>JNIEnv 的创建与释放 - C</p>
+<p>（1）创建： 调用结构体 JNIInvokeInterface 中的 (AttachCurrentThread)(JavaVM, JNIEnv*, void) 方法，能够获得 JNIEnv 结构体。</p>
+<p>（2）释放：调用结构体 JNIInvokeInterface 中的 (DetachCurrentThread)(JavaVM) 方法，能够释放本线程的 JNIEnv 结构体。</p>
+<p>JNIEnv 的创建与释放 - C++</p>
+<p>（1）创建：调用结构体 _JavaVM 中的 jint AttachCurrentThread(JNIEnv*<em> p_env, void</em> thr_args) 方法，能够获得 JNIEnv 结构体。</p>
+<p>（2）释放：调用结构体 _JavaVM 中的 jint DetachCurrentThread(){ return functions-&gt;DetachCurrentThread(this); } 方法，能够释放本线程的 JNIEnv 结构体。</p>
+<p>线程通常使用 Thread.start启动，也可以在其他位置创建，然后附加到 JavaVM。在附加之前，线程不包含任何 JNIEnv，也无法调用 JNI。附加 native 创建的线程会构建 java.lang.Thread 对象并将其添加到“main” ThreadGroup，从而使 debugger 能够看到它。在已附加的线程上调用 AttachCurrentThread 属于空操作。Android 不会挂起执行 native 代码的线程。如果正在进行垃圾回收，或者debugger已发出挂起请求，则在线程下次调用 JNI 时，Android 会将其挂起。通过 JNI 附加的线程在退出之前必须调用 DetachCurrentThread。</p>
+<h4 id="2-6-JNIEnv-常用函数"><a href="#2-6-JNIEnv-常用函数" class="headerlink" title="2.6 JNIEnv 常用函数"></a>2.6 JNIEnv 常用函数</h4><h5 id="2-6-1-创建-Object-对象"><a href="#2-6-1-创建-Object-对象" class="headerlink" title="2.6.1 创建 Object 对象"></a>2.6.1 创建 Object 对象</h5><p>第1个参数”jclass”代表所创建类的对象，第2个参数”jmethodID”代表所使用构造方法的ID。只要有jclass和jmethodID，就可以在本地方法创建该Java类的对象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">jobject NewObject(JNIEnv *env, jclass clazz,jmethodID methodID, ...)：</span><br><span class="line">jobject NewObjectA(JNIEnv *env, jclass clazz,jmethodID methodID, const jvalue *args)：</span><br><span class="line">jobject NewObjectV(JNIEnv *env, jclass clazz,jmethodID methodID, va_list args)：</span><br></pre></td></tr></table></figure>
+<h5 id="2-6-2-创建-String-对象"><a href="#2-6-2-创建-String-对象" class="headerlink" title="2.6.2 创建 String 对象"></a>2.6.2 创建 String 对象</h5><p>通过 Unicode 字符的数组来创建一个新的 String 对象。env 是 JNI 接口指针，unicodeChars 是指向 Unicode 字符串的指针，len 是 Unicode 字符串的长度。返回值是 Java 字符串对象，如果无法构造该字符串，则为 null。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jstring NewString(JNIEnv *env, const jchar *unicodeChars,jsize len)：</span><br><span class="line">jstring NewStringUTF(JNIEnv *env, const char *bytes)</span><br></pre></td></tr></table></figure>
+<h5 id="2-6-3-创建-PrimitiveType-数组"><a href="#2-6-3-创建-PrimitiveType-数组" class="headerlink" title="2.6.3 创建 PrimitiveType 数组"></a>2.6.3 创建 PrimitiveType 数组</h5><p>构造一个指定长度，返回相应的Java基本类型的数组：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ArrayType New&lt;PrimitiveType&gt;Array(JNIEnv *env, jsize length);</span><br></pre></td></tr></table></figure>
+<p>用于构造一个原始类型的数组对象：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">New<primitivetype>Array Routines</primitivetype></td>
+<td style="text-align:center">Array Type</td>
+</tr>
+<tr>
+<td style="text-align:center">NewBooleanArray()</td>
+<td style="text-align:center">jbooleanArray</td>
+</tr>
+<tr>
+<td style="text-align:center">NewByteArray()</td>
+<td style="text-align:center">jbyteArray</td>
+</tr>
+<tr>
+<td style="text-align:center">NewCharArray()</td>
+<td style="text-align:center">jcharArray</td>
+</tr>
+<tr>
+<td style="text-align:center">NewShortArray()</td>
+<td style="text-align:center">jshortArray</td>
+</tr>
+<tr>
+<td style="text-align:center">NewIntArray()</td>
+<td style="text-align:center">jintArray</td>
+</tr>
+<tr>
+<td style="text-align:center">NewLongArray()</td>
+<td style="text-align:center">jlongArray</td>
+</tr>
+<tr>
+<td style="text-align:center">NewFloatArray()</td>
+<td style="text-align:center">jfloatArray</td>
+</tr>
+<tr>
+<td style="text-align:center">NewDoubleArray()</td>
+<td style="text-align:center">jdoubleArray</td>
+</tr>
+</tbody>
+</table>
+<h5 id="2-6-4-创建-elementClass-数组"><a href="#2-6-4-创建-elementClass-数组" class="headerlink" title="2.6.4 创建 elementClass 数组"></a>2.6.4 创建 elementClass 数组</h5><p>构造一个类型是elementClass的数组，所有类型都被初始化为initialElement：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jobjectArray NewObjectArray(JNIEnv *env, jsize length,</span><br><span class="line">jclass elementClass, jobject initialElement);</span><br></pre></td></tr></table></figure>
+<h5 id="2-6-5-获取数组指定位置的元素"><a href="#2-6-5-获取数组指定位置的元素" class="headerlink" title="2.6.5 获取数组指定位置的元素"></a>2.6.5 获取数组指定位置的元素</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jobject GetObjectArrayElement(JNIEnv *env,</span><br><span class="line">jobjectArray array, jsize index);</span><br></pre></td></tr></table></figure>
+<h5 id="2-6-6-获取数组的长度"><a href="#2-6-6-获取数组的长度" class="headerlink" title="2.6.6 获取数组的长度"></a>2.6.6 获取数组的长度</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jsize GetArrayLength(JNIEnv *env, jarray array);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/IPC/" rel="tag"># IPC</a>
+          
+            <a href="/tags/JNI/" rel="tag"># JNI</a>
+          
+            <a href="/tags/NDK/" rel="tag"># NDK</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/04/26/IPC/JavaBinder之BinderProxy/" rel="next" title="Java Binder 之 BinderProxy">
+                <i class="fa fa-chevron-left"></i> Java Binder 之 BinderProxy
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">24</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-NDK-概述"><span class="nav-text">1. NDK 概述</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-NDK-定义"><span class="nav-text">1.1 NDK 定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-NDK-优势"><span class="nav-text">1.2 NDK 优势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-NDK-组件"><span class="nav-text">1.3 NDK 组件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-NDK-开发流程"><span class="nav-text">1.4 NDK 开发流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-JNI-概述"><span class="nav-text">2. JNI 概述</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-JNI-类型"><span class="nav-text">2.1 JNI 类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-基本数据类型"><span class="nav-text">2.1.1 基本数据类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-2-引用类型"><span class="nav-text">2.1.2 引用类型</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-JNI-描述符"><span class="nav-text">2.2 JNI 描述符</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-field-描述符-jfieldID"><span class="nav-text">2.2.1 field 描述符 - jfieldID</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-2-class-描述符-jclass"><span class="nav-text">2.2.2 class 描述符 - jclass</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-3-method-描述符-jmethodID"><span class="nav-text">2.2.3 method 描述符 - jmethodID</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-JNI-引用"><span class="nav-text">2.3 JNI 引用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-1-局部引用-Local-Reference"><span class="nav-text">2.3.1 局部引用(Local Reference)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-2-全局引用-Global-Reference"><span class="nav-text">2.3.2 全局引用(Global Reference)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-3-弱全局引用-Weak-Global-Reference"><span class="nav-text">2.3.3 弱全局引用(Weak Global Reference)</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-JNI-注册"><span class="nav-text">2.4 JNI 注册</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-4-1-静态注册"><span class="nav-text">2.4.1 静态注册</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-4-2-动态注册"><span class="nav-text">2.4.2 动态注册</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-JavaVM-和-JNIEnv"><span class="nav-text">2.5 JavaVM 和 JNIEnv</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-5-1-JavaVM"><span class="nav-text">2.5.1 JavaVM</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-5-2-JNIEnv"><span class="nav-text">2.5.2 JNIEnv</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-JNIEnv-常用函数"><span class="nav-text">2.6 JNIEnv 常用函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-6-1-创建-Object-对象"><span class="nav-text">2.6.1 创建 Object 对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-6-2-创建-String-对象"><span class="nav-text">2.6.2 创建 String 对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-6-3-创建-PrimitiveType-数组"><span class="nav-text">2.6.3 创建 PrimitiveType 数组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-6-4-创建-elementClass-数组"><span class="nav-text">2.6.4 创建 elementClass 数组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-6-5-获取数组指定位置的元素"><span class="nav-text">2.6.5 获取数组指定位置的元素</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-6-6-获取数组的长度"><span class="nav-text">2.6.6 获取数组的长度</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
