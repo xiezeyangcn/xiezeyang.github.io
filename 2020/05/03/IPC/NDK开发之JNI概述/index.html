@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="1. NDK 概述1.1 NDK 定义Android 官网对 NDK 的定义 (https://developer.android.com/ndk)： Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。 1.2 NDK 优势使用 NDK 主要">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-06-21T08:36:18.680Z">
+<meta property="og:updated_time" content="2020-06-21T08:37:34.911Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NDK 开发之 JNI 概述">
 <meta name="twitter:description" content="1. NDK 概述1.1 NDK 定义Android 官网对 NDK 的定义 (https://developer.android.com/ndk)： Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。 1.2 NDK 优势使用 NDK 主要">
@@ -712,11 +712,11 @@
 <h5 id="2-5-2-JNIEnv"><a href="#2-5-2-JNIEnv" class="headerlink" title="2.5.2 JNIEnv"></a>2.5.2 JNIEnv</h5><p>JNIEnv 是当前 Java 线程的 Runtime 环境，一个进程对应一个 JavaVM 结构， 一个 JVM 中可能存在多个 Java　线程，每个线程对应一个 JNIEnv 结构， 它们被保存在每个线程的本地存储TLS中，因此无法在线程之间共享 JNIEnv。如果一段代码无法通过其他方法获取自己的 JNIEnv，则应该共享相应 JavaVM，然后使用 GetEnv 查找线程的 JNIEnv。JNIEnv 提供了大部分 JNI 函数。native 函数会以 JNIEnv 作为第一个参数。</p>
 <p>JNIEnv 和 JavaVM 的 C 声明与 C++ 声明不同。”jni.h” 文件会提供不同的类型定义typedef，因此不建议在这两种语言包含的头文件中添加 JNIEnv 参数。即：如果头文件需要 “#ifdef __cplusplus”，且该头文件中的所有内容都引用 JNIEnv，则需要进行一些额外操作。</p>
 <p>JNIEnv 的创建与释放 - C</p>
-<p>（1）创建： 调用结构体 JNIInvokeInterface 中的 (AttachCurrentThread)(JavaVM, JNIEnv*, void) 方法，能够获得 JNIEnv 结构体。</p>
-<p>（2）释放：调用结构体 JNIInvokeInterface 中的 (DetachCurrentThread)(JavaVM) 方法，能够释放本线程的 JNIEnv 结构体。</p>
+<p>（1）创建： 调用结构体 JNIInvokeInterface 中的 “(AttachCurrentThread)(JavaVM, JNIEnv*, void)” 方法，能够获得 JNIEnv 结构体。</p>
+<p>（2）释放：调用结构体 JNIInvokeInterface 中的 “(DetachCurrentThread)(JavaVM)” 方法，能够释放本线程的 JNIEnv 结构体。</p>
 <p>JNIEnv 的创建与释放 - C++</p>
-<p>（1）创建：调用结构体 _JavaVM 中的 jint AttachCurrentThread(JNIEnv*<em> p_env, void</em> thr_args) 方法，能够获得 JNIEnv 结构体。</p>
-<p>（2）释放：调用结构体 _JavaVM 中的 jint DetachCurrentThread(){ return functions-&gt;DetachCurrentThread(this); } 方法，能够释放本线程的 JNIEnv 结构体。</p>
+<p>（1）创建：调用结构体 _JavaVM 中的 “jint AttachCurrentThread(JNIEnv*<em> p_env, void</em> thr_args)” 方法，能够获得 JNIEnv 结构体。</p>
+<p>（2）释放：调用结构体 _JavaVM 中的 “jint DetachCurrentThread(){ return functions-&gt;DetachCurrentThread(this); }” 方法，能够释放本线程的 JNIEnv 结构体。</p>
 <p>线程通常使用 Thread.start启动，也可以在其他位置创建，然后附加到 JavaVM。在附加之前，线程不包含任何 JNIEnv，也无法调用 JNI。附加 native 创建的线程会构建 java.lang.Thread 对象并将其添加到“main” ThreadGroup，从而使 debugger 能够看到它。在已附加的线程上调用 AttachCurrentThread 属于空操作。Android 不会挂起执行 native 代码的线程。如果正在进行垃圾回收，或者debugger已发出挂起请求，则在线程下次调用 JNI 时，Android 会将其挂起。通过 JNI 附加的线程在退出之前必须调用 DetachCurrentThread。</p>
 <h4 id="2-6-JNIEnv-常用函数"><a href="#2-6-JNIEnv-常用函数" class="headerlink" title="2.6 JNIEnv 常用函数"></a>2.6 JNIEnv 常用函数</h4><h5 id="2-6-1-创建-Object-对象"><a href="#2-6-1-创建-Object-对象" class="headerlink" title="2.6.1 创建 Object 对象"></a>2.6.1 创建 Object 对象</h5><p>第1个参数”jclass”代表所创建类的对象，第2个参数”jmethodID”代表所使用构造方法的ID。只要有jclass和jmethodID，就可以在本地方法创建该Java类的对象。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">jobject NewObject(JNIEnv *env, jclass clazz,jmethodID methodID, ...)：</span><br><span class="line">jobject NewObjectA(JNIEnv *env, jclass clazz,jmethodID methodID, const jvalue *args)：</span><br><span class="line">jobject NewObjectV(JNIEnv *env, jclass clazz,jmethodID methodID, va_list args)：</span><br></pre></td></tr></table></figure>
