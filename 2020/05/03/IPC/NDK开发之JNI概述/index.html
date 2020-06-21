@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="1. NDK 概述1.1 NDK 定义Android 官网对 NDK 的定义 (https://developer.android.com/ndk)： Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。 1.2 NDK 优势使用 NDK 主要">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-06-21T08:35:34.760Z">
+<meta property="og:updated_time" content="2020-06-21T08:36:18.680Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NDK 开发之 JNI 概述">
 <meta name="twitter:description" content="1. NDK 概述1.1 NDK 定义Android 官网对 NDK 的定义 (https://developer.android.com/ndk)： Android NDK (Native Development Kit) 是一个工具集，可以使用 C 和 C++ 等语言以原生代码实现应用的各个部分。对于特定类型的应用，这可以重复使用以这些语言编写的代码库。 1.2 NDK 优势使用 NDK 主要">
@@ -626,7 +626,40 @@
 </tbody>
 </table>
 <p>引用类型描述符规则通常是：”L + class 描述符 + ;”，比较特殊的是数组域描述符，其规则是：”[ + 类型域描述符”，有多少级数组就有多少个”[“，只有当数组类型为class时才需要加上”;”，如：</p>
-<p>Field Descriptor | Java 类型<br>[I | int[]<br>[D | double[]<br>[[I | int[][]<br>[[D | double[][]<br>[Ljava/lang/String; | String[]<br>[Ljava/lang/Object; | Object[]</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Field Descriptor</th>
+<th style="text-align:center">Java 类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">[I</td>
+<td style="text-align:center">int[]</td>
+</tr>
+<tr>
+<td style="text-align:center">[D</td>
+<td style="text-align:center">double[]</td>
+</tr>
+<tr>
+<td style="text-align:center">[[I</td>
+<td style="text-align:center">int[][]</td>
+</tr>
+<tr>
+<td style="text-align:center">[[D</td>
+<td style="text-align:center">double[][]</td>
+</tr>
+<tr>
+<td style="text-align:center">[Ljava/lang/String;</td>
+<td style="text-align:center">String[]</td>
+</tr>
+<tr>
+<td style="text-align:center">[Ljava/lang/Object;</td>
+<td style="text-align:center">Object[]</td>
+</tr>
+</tbody>
+</table>
 <p>使用 GetFieldID 或 GetObjectField 获取字段；</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// C</span><br><span class="line">jfieldID (*GetFieldID)(JNIEnv*, jclass, const char*, const char*);</span><br><span class="line">jobject (*GetObjectField)(JNIEnv*, jobject, jfieldID);</span><br><span class="line">// C++</span><br><span class="line">jfieldID GetFieldID(jclass clazz, const char* name, const char* sig) &#123;</span><br><span class="line">    return functions-&gt;GetFieldID(this, clazz, name, sig);</span><br><span class="line">&#125;</span><br><span class="line">jobject GetObjectField(jobject obj, jfieldID fieldID) &#123;</span><br><span class="line">    return functions-&gt;GetObjectField(this, obj, fieldID);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h5 id="2-2-2-class-描述符-jclass"><a href="#2-2-2-class-描述符-jclass" class="headerlink" title="2.2.2 class 描述符 - jclass"></a>2.2.2 class 描述符 - jclass</h5><p>class 描述符是 class 的完整名称：包名 + 类名。与java中用”.”分割包名不同的是，在 JNI 中使用”/“分割包名。使用 FindClass 获取类的类对象引用；</p>
