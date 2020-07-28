@@ -329,6 +329,336 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/07/25/Build/Android11-beta2-编译报错问题处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/07/25/Build/Android11-beta2-编译报错问题处理/" class="post-title-link" itemprop="url">Android 11 Beta2 编译报错问题处理</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-07-25 00:00:00" itemprop="dateCreated datePublished" datetime="2020-07-25T00:00:00+08:00">2020-07-25</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Build/" itemprop="url" rel="index"><span itemprop="name">Build</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>为了尝鲜Get Android 11的系统新特性，决定从Google官网拉套代码自己编译玩玩。</p>
+<p>既然是尝鲜，当然要拉Android 11最新分支代码了 – Android 11 Beta2，下面是同步代码的指令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">repo init -u https://android.googlesource.com/platform/manifest -b android-r-beta-<span class="number">2</span></span><br><span class="line">repo sync -j4</span><br></pre></td></tr></table></figure>
+<p>从device/google目录发现只有cuttlefish项目使用的API是30(对应Android 11)，于是用下面的命令开启编译：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source build/envsetup.sh</span><br><span class="line">lunch aosp_cf_arm64_phone</span><br><span class="line">make -j4 2&gt;&amp;1 | tee build.log</span><br></pre></td></tr></table></figure>
+<p>然而AOSP代码编译之路一如既往的不顺畅，直至编译完成看到新增的vendor_boot.img，耗时一天，总共遇到29个编译报错。这些问题基本都是因为同一个功能多笔提交没同步merge到beta2分支引起的。解决报错问题的步骤大概是：</p>
+<p>a. 查看编译报错日志，确认报错非环境问题；</p>
+<p>b. 使用”git log –pretty=oneline”指令查看报错文件本地的修改记录；</p>
+<p>c. 然后前往“<a href="https://cs.android.com/android/platform/superproject”网站打开master分支，查看报错的文件修改记录(history)；" target="_blank" rel="noopener">https://cs.android.com/android/platform/superproject”网站打开master分支，查看报错的文件修改记录(history)；</a></p>
+<p>d. 依次点击history中的change-id点击跳转至“<a href="https://android-review.googlesource.com”网站，判断是否因该笔提交未merged到beta2分支导致编译报错；" target="_blank" rel="noopener">https://android-review.googlesource.com”网站，判断是否因该笔提交未merged到beta2分支导致编译报错；</a></p>
+<p>e. 将该笔提交cherry-pick到本地（同步需要检查”Submitted together”处关联的提交是否有一起同步到本地）。</p>
+<p>下面是29个问题的报错日志关键信息和需要同步的gerrit提交：</p>
+<p>(1) Error 1 – external/linux-kselftest</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">error: external/linux-kselftest/Android.bp:53:13: unrecognized property &quot;arch.mips&quot;</span><br><span class="line">error: external/linux-kselftest/Android.bp:56:15: unrecognized property &quot;arch.mips64&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1252987”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/linux-kselftest/+/1252987</span><br></pre></td></tr></table></figure>
+<p>(2) Error 2 – external/seccomp-tests</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">error: external/seccomp-tests/Android.bp:20:13: unrecognized property &quot;arch.mips&quot;</span><br><span class="line">error: external/seccomp-tests/Android.bp:23:15: unrecognized property &quot;arch.mips64&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1253167”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/seccomp-tests/+/1253167</span><br></pre></td></tr></table></figure>
+<p>(3) Error 3 – libcore/apex</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">error: libcore/apex/Android.bp:22:1: module &quot;com.android.i18n&quot; already defined</span><br><span class="line">       packages/modules/RuntimeI18n/apex/Android.bp:22:1 &lt;-- previous definition here</span><br><span class="line">error: libcore/apex/Android.bp:28:1: module &quot;com.android.i18n-defaults&quot; already defined</span><br><span class="line">       packages/modules/RuntimeI18n/apex/Android.bp:28:1 &lt;-- previous definition here</span><br><span class="line">error: libcore/apex/Android.bp:36:1: module &quot;com.android.i18n.key&quot; already defined</span><br><span class="line">       packages/modules/RuntimeI18n/apex/Android.bp:47:1 &lt;-- previous definition here</span><br><span class="line">error: libcore/apex/Android.bp:42:1: module &quot;com.android.i18n.certificate&quot; already defined</span><br><span class="line">       packages/modules/RuntimeI18n/apex/Android.bp:53:1 &lt;-- previous definition here</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1312197”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1312197</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1311823</span><br><span class="line">https://android-review.googlesource.com/c/platform/packages/modules/RuntimeI18n/+/1311889</span><br></pre></td></tr></table></figure>
+<p>(4) Error 4 – libcore</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">error: libcore/non_openjdk_java_files.bp:444:1: module &quot;timezone_host_files&quot; already defined</span><br><span class="line">       external/icu/android_icu4j/Android.bp:55:1 &lt;-- previous definition here</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1333998”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1333998</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/cts/+/1345756</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1346402</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1332159</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1346485</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/1347566</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/timezone/+/1336237</span><br></pre></td></tr></table></figure>
+<p>(5) Error 5 – art/build/sdk</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">error: art/build/sdk/Android.bp:16:1: &quot;art-module-sdk&quot; depends on undefined module &quot;legacy.core.platform.api.stubs&quot;</span><br><span class="line">error: art/build/sdk/Android.bp:16:1: &quot;art-module-sdk&quot; depends on undefined module &quot;legacy-art-module-platform-api-stubs-system-modules&quot;</span><br><span class="line">error: art/build/sdk/Android.bp:16:1: &quot;art-module-sdk&quot; depends on undefined module &quot;legacy-core-platform-api-stubs-system-modules&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1321929”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1321929</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/art/+/1321930</span><br><span class="line">https://android-review.googlesource.com/c/platform/build/soong/+/1322704</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/conscrypt/+/1322705</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1322167</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/wycheproof/+/1321928</span><br></pre></td></tr></table></figure>
+<p>(6) Error 6 – libcore/mmodules/core_platform_api</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: libcore/mmodules/core_platform_api/Android.bp:196:1: &quot;stable.core.platform.api.stubs&quot; depends on undefined module &quot;i18n.module.platform.api.stubs&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1325832”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1325832</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1325831</span><br></pre></td></tr></table></figure>
+<p>(7) Error 7 – tools/security/fuzzing/orphans/gptfdisk</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: tools/security/fuzzing/orphans/gptfdisk/Android.bp:1:1: &quot;sgdisk_fuzz&quot; depends on undefined module &quot;libgptf&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1319790”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/gptfdisk/+/1319790</span><br></pre></td></tr></table></figure>
+<p>(8) Error 8 – external/grpc-grpc-java/auth</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: external/grpc-grpc-java/auth/Android.bp:16:1: &quot;grpc-java-auth&quot; depends on undefined module &quot;google-auth-library-credentials-0.13.0&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1344767”和”1344768”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/prebuilts/tools/+/1344767</span><br><span class="line">https://android-review.googlesource.com/c/platform/prebuilts/tools/+/1344768</span><br></pre></td></tr></table></figure>
+<p>(9) Error 9 – external/grpc-grpc-java/protobuf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: external/grpc-grpc-java/protobuf/Android.bp:18:1: &quot;grpc-java-protobuf&quot; depends on undefined module &quot;com.google.api.grpc_proto-google-common-protos-prebuilt-jar&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1320776”和”1323020”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/prebuilts/tools/+/1320776</span><br><span class="line">https://android-review.googlesource.com/c/platform/prebuilts/tools/+/1323020</span><br></pre></td></tr></table></figure>
+<p>(10) Error 10 – frameworks/base</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">error: frameworks/base/StubLibraries.bp:334:1: &quot;android_module_lib_stubs_current&quot; depends on undefined module &quot;art-notices-for-framework-stubs-jar&quot;</span><br><span class="line">error: frameworks/base/StubLibraries.bp:348:1: &quot;android_system_non_updatable_stubs_current&quot; depends on undefined module &quot;art-notices-for-framework-stubs-jar&quot;</span><br><span class="line">error: frameworks/base/StubLibraries.bp:328:1: &quot;android_test_stubs_current&quot; depends on undefined module &quot;art-notices-for-framework-stubs-jar&quot;</span><br><span class="line">error: frameworks/base/StubLibraries.bp:341:1: &quot;android_non_updatable_stubs_current&quot; depends on undefined module &quot;art-notices-for-framework-stubs-jar&quot;</span><br><span class="line">error: frameworks/base/StubLibraries.bp:316:1: &quot;android_stubs_current&quot; depends on undefined module &quot;art-notices-for-framework-stubs-jar&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1268170”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1268170</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1268148</span><br></pre></td></tr></table></figure>
+<p>(11) Error 11 – cts/tests/libcore/wycheproof-bc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: cts/tests/libcore/wycheproof-bc/Android.bp:15:1: &quot;CtsLibcoreWycheproofBCTestCases&quot; depends on undefined module &quot;libcore-expectations-knownfailures-jar&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1268162”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1268162</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/cts/+/1268124</span><br></pre></td></tr></table></figure>
+<p>(12) Error 12 – libcore</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: libcore/JavaLibrary.bp:158:1: &quot;core-all&quot; depends on undefined module &quot;i18n-module-intra-core-api-stubs-source&quot;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1321924”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1321924</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1322166</span><br></pre></td></tr></table></figure>
+<p>(13) Error 13 – art/test</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">error: art/test/094-pattern/Android.bp:2:1: module &quot;art-run-test-094-pattern&quot; variant &quot;android_common&quot;: depends on //libcore:core-all-system-modules which is not visible to this module</span><br><span class="line">error: art/test/2031-zygote-compiled-frame-deopt/Android.bp:2:1: module &quot;art-run-test-2031-zygote-compiled-frame-deopt&quot; variant &quot;android_common&quot;: depends on //libcore:core-all-system-modules which is not visible to this module</span><br><span class="line">error: art/test/074-gc-thrash/Android.bp:2:1: module &quot;art-run-test-074-gc-thrash&quot; variant &quot;android_common&quot;: depends on //libcore:core-all-system-modules which is not visible to this module</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1235266”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1235266</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/art/+/1235248</span><br><span class="line">https://android-review.googlesource.com/c/platform/build/soong/+/1235128</span><br></pre></td></tr></table></figure>
+<p>(14) Error 14 – art/build/sdk</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">error: art/build/sdk/Android.bp:16:1: module &quot;art-module-sdk&quot; variant &quot;android_common&quot;: depends on //libcore:libandroidio which is not visible to this module</span><br><span class="line">error: art/build/sdk/Android.bp:16:1: module &quot;art-module-sdk&quot; variant &quot;android_common&quot;: depends on //libcore:libandroidio which is not visible to this module</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1258499”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1258499</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/boringssl/+/1258354</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/bouncycastle/+/1258479</span><br></pre></td></tr></table></figure>
+<p>(15) Error 15 – libcore</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: libcore/NativeCode.bp:207:1: module &quot;libjavacoretests&quot; variant &quot;android_arm_armv8-a_cortex-a53_shared&quot;: depends on //libnativehelper:libnativehelper_compat_libc++ which is not visible to this module</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1297334”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1297334</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/art/+/1297219</span><br><span class="line">https://android-review.googlesource.com/c/platform/cts/+/1295383</span><br><span class="line">https://android-review.googlesource.com/c/platform/hardware/interfaces/+/1297221</span><br><span class="line">https://android-review.googlesource.com/c/platform/libnativehelper/+/1297222</span><br><span class="line">https://android-review.googlesource.com/c/platform/packages/apps/Bluetooth/+/1295657</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/core/+/1298681</span><br></pre></td></tr></table></figure>
+<p>(16) Error 16 – libcore</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: libcore/NativeCode.bp:48:1: module &quot;libjavacore&quot; variant &quot;android_arm_armv8-a_cortex-a53_shared&quot;: depends on //external/icu/libandroidicuinit:libandroidicuinit which is not visible to this module</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1250330”和”1254472”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1250330</span><br><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1254472</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1254607</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1250480</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/robolectric-shadows/+/1254379</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/robolectric-shadows/+/1254366</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1254517</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/1250546</span><br><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1254471</span><br><span class="line"></span><br><span class="line">https://android-review.googlesource.com/c/platform/art/+/1255567</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1254611</span><br></pre></td></tr></table></figure>
+<p>(17) Error 17 – libcore</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: libcore/NativeCode.bp:48:1: module &quot;libjavacore&quot; variant &quot;linux_glibc_x86_shared&quot;: depends on //external/icu/libandroidicuinit:libandroidicuinit which is not visible to this module</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1278614”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1278614</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1277510</span><br></pre></td></tr></table></figure>
+<p>(18) Error 18 – packages/modules/RuntimeI18n/apex</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">error: packages/modules/RuntimeI18n/apex/Android.bp:22:1: module &quot;com.android.i18n&quot; variant &quot;android_common_cfi_com.android.i18n_image&quot;: &quot;com.android.i18n&quot; requires &quot;libpac&quot; that is not available for the APEX. Dependency path:</span><br><span class="line">           via tag apex.dependencyTag&#123;name:&quot;sharedLib&quot;, payload:true&#125;</span><br><span class="line">    -&gt; libpac&#123;os:android,image:,arch:arm64_armv8-a_cortex-a53,sdk:,link:shared,version:,cfi:cfi,apex:com.android.i18n&#125;</span><br><span class="line">error: packages/modules/RuntimeI18n/apex/Android.bp:22:1: module &quot;com.android.i18n&quot; variant &quot;android_common_cfi_com.android.i18n_image&quot;: &quot;com.android.i18n&quot; requires &quot;libpac&quot; that is not available for the APEX. Dependency path:</span><br><span class="line">           via tag apex.dependencyTag&#123;name:&quot;sharedLib&quot;, payload:true&#125;</span><br><span class="line">    -&gt; libpac&#123;os:android,image:,arch:arm_armv8-a_cortex-a53,sdk:,link:shared,version:,apex:com.android.i18n&#125;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1283723”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/chromium-libpac/+/1283723</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/art/+/1299494</span><br><span class="line">https://android-review.googlesource.com/c/platform/art/+/1283897</span><br><span class="line">https://android-review.googlesource.com/c/platform/build/+/1284676</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1284675</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/v8/+/1284993</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/vogar/+/1294615</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1283938</span><br><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1283721</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/linkerconfig/+/1288092</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/sepolicy/+/1283724</span><br></pre></td></tr></table></figure>
+<p>(19) Error 19 – external/e2fsprogs/contrib/android</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">external/e2fsprogs/contrib/android/perms.c:123:22: error: variable has incomplete type &apos;struct vfs_cap_data&apos;</span><br><span class="line">        struct vfs_cap_data cap_data;</span><br><span class="line">                            ^</span><br><span class="line">external/e2fsprogs/contrib/android/perms.c:123:9: note: forward declaration of &apos;struct vfs_cap_data&apos;</span><br><span class="line">        struct vfs_cap_data cap_data;</span><br><span class="line">               ^</span><br><span class="line">external/e2fsprogs/contrib/android/perms.c:161:23: error: use of undeclared identifier &apos;VFS_CAP_REVISION_2&apos;</span><br><span class="line">        cap_data.magic_etc = VFS_CAP_REVISION_2 | VFS_CAP_FLAGS_EFFECTIVE;</span><br><span class="line">                             ^</span><br><span class="line">external/e2fsprogs/contrib/android/perms.c:161:44: error: use of undeclared identifier &apos;VFS_CAP_FLAGS_EFFECTIVE&apos;</span><br><span class="line">        cap_data.magic_etc = VFS_CAP_REVISION_2 | VFS_CAP_FLAGS_EFFECTIVE;</span><br><span class="line">                                                  ^</span><br><span class="line">external/e2fsprogs/contrib/android/perms.c:370:20: error: use of undeclared identifier &apos;fs_config&apos;</span><br><span class="line">                fs_config_func = fs_config;</span><br><span class="line">                                 ^</span><br><span class="line">4 errors generated.</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1250416”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/e2fsprogs/+/1250416</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/build/+/1250293</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/bpf/+/1250509</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/core/+/1250711</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/squashfs-tools/+/1250437</span><br></pre></td></tr></table></figure>
+<p>(20) Error 20 – libcore/luni/src/main/native</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">libcore/luni/src/main/native/JniException.cpp:24:48: error: use of undeclared identifier &apos;jniStrError&apos;</span><br><span class="line">    jniThrowException(env, exceptionClassName, jniStrError(error, buf, sizeof(buf)));</span><br><span class="line">                                               ^</span><br><span class="line">1 error generated.</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1260462”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1260462</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libnativehelper/+/1260463</span><br></pre></td></tr></table></figure>
+<p>(21) Error 21 – libcore/luni/src/main/native</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">libcore/luni/src/main/native/Register.cpp:68:5: error: use of undeclared identifier &apos;jniUninitializeConstants&apos;</span><br><span class="line">    jniUninitializeConstants();</span><br><span class="line">    ^</span><br><span class="line">1 error generated.</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1348842”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1348842</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/cts/+/1348822</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1348764</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1348763</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/native/+/1348765</span><br><span class="line">https://android-review.googlesource.com/c/platform/libnativehelper/+/1348766</span><br><span class="line">https://android-review.googlesource.com/c/platform/packages/apps/Bluetooth/+/1348767</span><br><span class="line">https://android-review.googlesource.com/c/platform/packages/apps/Nfc/+/1348862</span><br><span class="line">https://android-review.googlesource.com/c/platform/packages/modules/NetworkStack/+/1348843</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/incremental_delivery/+/1348882</span><br></pre></td></tr></table></figure>
+<p>(22) Error 22 – libcore/luni/src/main/native</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">libcore/luni/src/main/native/libcore_icu_TimeZoneNames.cpp:28:10: fatal error: &apos;ScopedIcuLocale.h&apos; file not found</span><br><span class="line">#include &quot;ScopedIcuLocale.h&quot;</span><br><span class="line">         ^~~~~~~~~~~~~~~~~~~</span><br><span class="line">1 error generated.</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1244646”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1244646</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1244626</span><br></pre></td></tr></table></figure>
+<p>(23) Error 23 – libcore/luni/src/main/native</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">libcore/luni/src/main/native/libcore_io_Linux.cpp:1115:21: error: use of undeclared identifier &apos;jniGetOwnerIdFromFileDescriptor&apos;; did you mean &apos;jniGetFDFromFileDescriptor&apos;?</span><br><span class="line">    jlong ownerId = jniGetOwnerIdFromFileDescriptor(env, javaFd);</span><br><span class="line">                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span><br><span class="line">                    jniGetFDFromFileDescriptor</span><br><span class="line">libnativehelper/include_platform/nativehelper/JNIPlatformHelp.h:109:12: note: &apos;jniGetFDFromFileDescriptor&apos; declared here</span><br><span class="line">inline int jniGetFDFromFileDescriptor(JNIEnv* env, jobject fileDescriptor) &#123;</span><br><span class="line">           ^</span><br><span class="line">1 error generated.</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1280514”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1280514</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/art/+/1280255</span><br><span class="line">https://android-review.googlesource.com/c/platform/libnativehelper/+/1280454</span><br></pre></td></tr></table></figure>
+<p>(24) Error 24 – libcore/mmodules/intracoreapi/api/intra</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">--- libcore/mmodules/intracoreapi/api/intra/current-api.txt	2020-07-25 17:40:20.613208804 +0800</span><br><span class="line">+++ out/soong/.intermediates/libcore/mmodules/intracoreapi/art-module-intra-core-api-stubs-source/android_common/art-module-intra-core-api-stubs-source_api.txt	2020-07-27 12:17:04.074987448 +0800</span><br><span class="line">@@ -75,7 +75,7 @@ @libcore.api.CorePlatformApi @libcore.ap</span><br><span class="line"> package java.net &#123;</span><br><span class="line"> </span><br><span class="line">   public class Socket implements java.io.Closeable &#123;</span><br><span class="line">-    method public java.io.FileDescriptor getFileDescriptor$();</span><br><span class="line">+    method @libcore.api.IntraCoreApi public java.io.FileDescriptor getFileDescriptor$();</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line"> &#125;</span><br><span class="line">@@ -87,11 +87,11 @@ public abstract class Charset implements</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   public abstract class CharsetDecoder &#123;</span><br><span class="line">-    ctor protected CharsetDecoder(java.nio.charset.Charset, float, float);</span><br><span class="line">+    ctor @libcore.api.IntraCoreApi protected CharsetDecoder(java.nio.charset.Charset, float, float);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   public abstract class CharsetEncoder &#123;</span><br><span class="line">-    ctor protected CharsetEncoder(java.nio.charset.Charset, float, float, byte[], boolean);</span><br><span class="line">+    ctor @libcore.api.IntraCoreApi protected CharsetEncoder(java.nio.charset.Charset, float, float, byte[], boolean);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line"> &#125;</span><br><span class="line">@@ -99,8 +99,8 @@ public abstract class CharsetEncoder &#123;</span><br><span class="line"> package java.security.spec &#123;</span><br><span class="line"> </span><br><span class="line">   public class ECParameterSpec implements java.security.spec.AlgorithmParameterSpec &#123;</span><br><span class="line">-    method public String getCurveName();</span><br><span class="line">-    method public void setCurveName(String);</span><br><span class="line">+    method @libcore.api.IntraCoreApi public String getCurveName();</span><br><span class="line">+    method @libcore.api.IntraCoreApi public void setCurveName(String);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line"> &#125;</span><br><span class="line">@@ -160,18 +160,18 @@ @java.lang.annotation.Documented @java.l</span><br><span class="line"> </span><br><span class="line"> package sun.security.util &#123;</span><br><span class="line"> </span><br><span class="line">-  public interface DerEncoder &#123;</span><br><span class="line">-    method public void derEncode(java.io.OutputStream) throws java.io.IOException;</span><br><span class="line">+  @libcore.api.IntraCoreApi public interface DerEncoder &#123;</span><br><span class="line">+    method @libcore.api.IntraCoreApi public void derEncode(java.io.OutputStream) throws java.io.IOException;</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"> package sun.security.x509 &#123;</span><br><span class="line"> </span><br><span class="line">-  public class AlgorithmId implements sun.security.util.DerEncoder java.io.Serializable &#123;</span><br><span class="line">-    method public void derEncode(java.io.OutputStream) throws java.io.IOException;</span><br><span class="line">-    method public static sun.security.x509.AlgorithmId get(String) throws java.security.NoSuchAlgorithmException;</span><br><span class="line">-    method public String getName();</span><br><span class="line">+  @libcore.api.IntraCoreApi public class AlgorithmId implements sun.security.util.DerEncoder java.io.Serializable &#123;</span><br><span class="line">+    method @libcore.api.IntraCoreApi public void derEncode(java.io.OutputStream) throws java.io.IOException;</span><br><span class="line">+    method @libcore.api.IntraCoreApi public static sun.security.x509.AlgorithmId get(String) throws java.security.NoSuchAlgorithmException;</span><br><span class="line">+    method @libcore.api.IntraCoreApi public String getName();</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1314542”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1314542</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/tools/metalava/+/1314777</span><br></pre></td></tr></table></figure>
+<p>(25) Error 25 – libcore/luni/src/main/java/libcore/icu</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">libcore/luni/src/main/java/libcore/icu/DateUtilsBridge.java:19: error: cannot find symbol</span><br><span class="line">import android.icu.impl.JavaTimeZone;</span><br><span class="line">                       ^</span><br><span class="line">  symbol:   class JavaTimeZone</span><br><span class="line">  location: package android.icu.impl</span><br><span class="line">1 error</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1356706”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1356706</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1356703</span><br></pre></td></tr></table></figure>
+<p>(26) Error 26 – libcore/ojluni/src/main/java/java/lang</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">libcore/ojluni/src/main/java/java/lang/System.java:985: error: cannot find symbol</span><br><span class="line">            StructPasswd passwd = Libcore.os.getpwuid(Libcore.os.getuid());</span><br><span class="line">            ^</span><br><span class="line">  symbol:   class StructPasswd</span><br><span class="line">  location: class System</span><br><span class="line">1 error</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1245068”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1245068</span><br></pre></td></tr></table></figure>
+<p>(27) Error 27 – libcore/mmodules/core_platform_api/api/legacy_platform</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">--- libcore/mmodules/core_platform_api/api/legacy_platform/current-api.txt	2020-07-25 17:40:20.617208818 +0800</span><br><span class="line">+++ out/soong/.intermediates/libcore/mmodules/core_platform_api/legacy-art-module-platform-api-stubs-source/android_common/legacy-art-module-platform-api-stubs-source_api.txt	2020-07-27 12:55:45.522215345 +0800</span><br><span class="line">@@ -211,10 +211,6 @@ public class DERBitString extends com.an</span><br><span class="line">     ctor public DERBitString(byte[]);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">-  @Deprecated public class DERInteger extends com.android.org.bouncycastle.asn1.ASN1Integer &#123;</span><br><span class="line">-    ctor @Deprecated public DERInteger(long);</span><br><span class="line">-  &#125;</span><br><span class="line">-</span><br><span class="line">   public class DERNull extends com.android.org.bouncycastle.asn1.ASN1Null &#123;</span><br><span class="line">     field public static final com.android.org.bouncycastle.asn1.DERNull INSTANCE;</span><br><span class="line">   &#125;</span><br><span class="line">-e</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1305974”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1305974</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/bouncycastle/+/1305774</span><br><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1305793</span><br></pre></td></tr></table></figure>
+<p>(28) Error 28 – external/conscrypt/repackaged/common/src/main/java/com/android/org/conscrypt</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">external/conscrypt/repackaged/common/src/main/java/com/android/org/conscrypt/ClientSessionContext.java:31: error: cannot find symbol</span><br><span class="line">@libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)</span><br><span class="line">                             ^</span><br><span class="line">  symbol:   method status()</span><br><span class="line">  location: @interface CorePlatformApi</span><br><span class="line">external/conscrypt/repackaged/common/src/main/java/com/android/org/conscrypt/ClientSessionContext.java:31: error: cannot find symbol</span><br><span class="line">@libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)</span><br><span class="line">                                                                 ^</span><br><span class="line">  symbol:   variable Status</span><br><span class="line">  location: @interface CorePlatformApi</span><br><span class="line">external/conscrypt/repackaged/common/src/main/java/com/android/org/conscrypt/SSLClientSessionCache.java:34: error: cannot find symbol</span><br><span class="line">@libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)</span><br><span class="line">                             ^</span><br><span class="line">  symbol:   method status()</span><br><span class="line">  location: @interface CorePlatformApi</span><br><span class="line">...</span><br><span class="line">116 errors</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1333216”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/libcore/+/1333216</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/external/conscrypt/+/1331615</span><br><span class="line">https://android-review.googlesource.com/c/platform/external/icu/+/1332158</span><br><span class="line">https://android-review.googlesource.com/c/platform/tools/currysrc/+/1331085</span><br></pre></td></tr></table></figure>
+<p>(29) Error 29 – packages/apps/Bluetooth/src/com/android/bluetooth/mapclient</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">packages/apps/Bluetooth/src/com/android/bluetooth/mapclient/MapClientService.java:440: error: Binder is not abstract and does not override abstract method setMessageStatus(BluetoothDevice,String,int) in IBluetoothMapClient</span><br><span class="line">    private static class Binder extends IBluetoothMapClient.Stub implements IProfileServiceBinder &#123;</span><br><span class="line">                   ^</span><br><span class="line">1 error</span><br><span class="line">packages/apps/Bluetooth/src/com/android/bluetooth/mapclient/MceStateMachine.java:349: error: cannot find symbol</span><br><span class="line">                case BluetoothMapClient.UNREAD:</span><br><span class="line">                                       ^</span><br><span class="line">  symbol:   variable UNREAD</span><br><span class="line">  location: class BluetoothMapClient</span><br><span class="line">packages/apps/Bluetooth/src/com/android/bluetooth/mapclient/MceStateMachine.java:354: error: cannot find symbol</span><br><span class="line">                case BluetoothMapClient.READ:</span><br><span class="line">                                       ^</span><br><span class="line">  symbol:   variable READ</span><br><span class="line">  location: class BluetoothMapClient</span><br><span class="line">...</span><br><span class="line">8 errors</span><br></pre></td></tr></table></figure>
+<p>将master分之上”1212983”修改cherry-pick到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/frameworks/base/+/1212983</span><br></pre></td></tr></table></figure>
+<p>注：同步检查关联的git仓中提交是否同步到本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://android-review.googlesource.com/c/platform/packages/apps/Bluetooth/+/1212451</span><br><span class="line">https://android-review.googlesource.com/c/platform/system/bt/+/1212761</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/05/03/IPC/NDK开发之JNI概述/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1812,172 +2142,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/01/04/Boot/Boot映像Header版本概述/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2020/01/04/Boot/Boot映像Header版本概述/" class="post-title-link" itemprop="url">Boot Image Header Version 介绍</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2020-01-04 00:00:00" itemprop="dateCreated datePublished" datetime="2020-01-04T00:00:00+08:00">2020-01-04</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>从Android 9开始，boot映象的header包含一个字段用于标识header版本号。引导加载程序必须检查header版本号字段，并相应地解析header。通过对boot映象header进行版本编号，可在将来对header进行修改，保持向后兼容性。</p>
-<p>旧版本中的<code>unused</code>字段在Android 9之后会转换为<code>header_version</code>字段，Android 9之间版本的boot映象的header版本会被视为0。所有新发布的Android 9设备必须使用v1版本的boot header。所有新发布的Android 10设备必须使用v2版本的boot header。</p>
-<p>Android 9在创建boot映象的mkbootimg工具添加了<code>header_version</code>、<code>recovery_dtbo</code>参数用于设置boot映象header版本和recovery dtbo映象的路径。可在BoardConfig.mk中使用<code>BOARD_MKBOOTIMG_ARGS</code>配置这些参数，如：</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BOARD_MKBOOTIMG_ARGS := --ramdisk_offset <span class="variable">$(BOARD_RAMDISK_OFFSET)</span> --tags_offset <span class="variable">$(BOARD_KERNEL_TAGS_OFFSET)</span> --header_version <span class="variable">$(BOARD_BOOTIMG_HEADER_VERSION)</span></span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2020/01/04/Boot/Boot映像Header版本概述/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2026,7 +2190,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-count">99</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

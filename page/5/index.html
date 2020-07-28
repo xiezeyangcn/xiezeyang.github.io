@@ -329,6 +329,171 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/02/16/Boot/Bootanimation定制及原理剖析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/16/Boot/Bootanimation定制及原理剖析/" class="post-title-link" itemprop="url">Bootanimation 定制及原理剖析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-02-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-02-16T00:00:00+08:00">2019-02-16</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、bootanimtion服务"><a href="#一、bootanimtion服务" class="headerlink" title="一、bootanimtion服务"></a>一、bootanimtion服务</h3><h4 id="1-1-init阶段bootanimation服务配置"><a href="#1-1-init阶段bootanimation服务配置" class="headerlink" title="1.1 init阶段bootanimation服务配置"></a>1.1 init阶段bootanimation服务配置</h4><p>从Android 7.0开始，谷歌将bootnimation服务从init.rc中分离出来，单独存放在frameworks/base/cmds/bootanimation/目录下bootanim.rc文件中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">service bootanim /system/bin/bootanimation</span><br><span class="line">    class core</span><br><span class="line">    user graphics</span><br><span class="line">    group graphics audio</span><br><span class="line">    disabled //init启动时不会启动bootanimation服务</span><br><span class="line">    oneshot</span><br><span class="line">    writepid /dev/stune/top-app/tasks</span><br></pre></td></tr></table></figure>
+<p>bootanimation服务的用户和用户组分别为graphic和graphics audio。需要关注的disabled，即在init启动阶段该服务是不会启动的。oneshot表示该服务只启动一次。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/02/16/Boot/Bootanimation定制及原理剖析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/27/Security/SELinux那点事儿/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1801,174 +1966,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/24/OTA/AB系统升级概述/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/11/24/OTA/AB系统升级概述/" class="post-title-link" itemprop="url">AB 系统升级概述</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-11-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-24T00:00:00+08:00">2018-11-24</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OTA/" itemprop="url" rel="index"><span itemprop="name">OTA</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、A-B系统更新的特点"><a href="#一、A-B系统更新的特点" class="headerlink" title="一、A/B系统更新的特点"></a>一、A/B系统更新的特点</h3><p>&emsp;所谓A/B系统，即有A和B两套系统，一套系统分区，另一套备份分区。这两套系统出厂时一样，此后可能不一样。即一个新版本，另一个旧版本，旧版本升级至新版本，不断更新切换。</p>
-<p>&emsp;A/B系统更新又称之为无缝更新(Seamless updates),具有以下几个特点：</p>
-<p>&emsp;<1>OTA更新在系统后台运行，该过程中用户仍可以正常使用设备。待更新完成后，需重启一次方可进入新系统。</1></p>
-<p>&emsp;<2>OTA更新失败后(OTA更新无法应用或应用后无法启动)，设备可重启回滚到旧分区继续使用，并重新尝试更新升级。</2></p>
-<p>&emsp;<3>可采用流式升级方式，即无需/data或/cache分区留出足够空间用于存储下载的升级包，也可进行OTA升级。</3></p>
-<p>&emsp;<4>确保在OTA更新期间磁盘上保留一套可以正常启动使用的系统，减少刷机变砖的可能性，减轻售后服务工作量。</4></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/11/24/OTA/AB系统升级概述/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2017,7 +2014,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-count">99</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
