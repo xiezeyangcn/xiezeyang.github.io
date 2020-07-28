@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="为了尝鲜Get Android 11的系统新特性，决定从Google官网拉套代码自己编译玩玩。 既然是尝鲜，当然要拉Android 11最新分支代码了 – Android 11 Beta2，下面是同步代码的指令： 12repo init -u https://android.googlesource.com/platform/manifest -b android-r-beta-2repo syn">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-07-28T14:30:16.480Z">
+<meta property="og:updated_time" content="2020-07-28T14:35:06.903Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 11 Beta2 编译报错问题处理">
 <meta name="twitter:description" content="为了尝鲜Get Android 11的系统新特性，决定从Google官网拉套代码自己编译玩玩。 既然是尝鲜，当然要拉Android 11最新分支代码了 – Android 11 Beta2，下面是同步代码的指令： 12repo init -u https://android.googlesource.com/platform/manifest -b android-r-beta-2repo syn">
@@ -435,8 +435,8 @@
 <p>我解决报错问题的步骤大概是：</p>
 <p>a. 查看编译报错日志，确认报错非环境问题；</p>
 <p>b. 使用”git log –pretty=oneline”指令查看报错文件本地的修改记录；</p>
-<p>c. 然后前往”<a href="https://cs.android.com/android/platform/superproject&quot;网站打开master分支，查看报错的文件修改记录(history)；" target="_blank" rel="noopener">https://cs.android.com/android/platform/superproject&quot;网站打开master分支，查看报错的文件修改记录(history)；</a></p>
-<p>d. 依次点击history中的change-id点击跳转至“<a href="https://android-review.googlesource.com”网站，判断是否因该笔提交未merged到beta2分支导致编译报错；" target="_blank" rel="noopener">https://android-review.googlesource.com”网站，判断是否因该笔提交未merged到beta2分支导致编译报错；</a></p>
+<p>c. 然后前往 “ <a href="https://cs.android.com/android/platform/superproject" target="_blank" rel="noopener">https://cs.android.com/android/platform/superproject</a> “ 网站打开master分支，查看报错的文件修改记录(history)；</p>
+<p>d. 依次点击history中的change-id点击跳转至 “ <a href="https://android-review.googlesource.com" target="_blank" rel="noopener">https://android-review.googlesource.com</a> “ 网站，判断是否因该笔提交未merged到beta2分支导致编译报错；</p>
 <p>e. 将该笔提交cherry-pick到本地（同步需要检查”Submitted together”处关联的提交是否有一起同步到本地）。</p>
 <p>现将这29个报错的关键log和解决方案的gerrit提交整理如下：</p>
 <p>(1) Error 1 – external/linux-kselftest</p>
