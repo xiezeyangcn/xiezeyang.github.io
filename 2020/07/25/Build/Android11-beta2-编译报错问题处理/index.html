@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="为了尝鲜Get Android 11的系统新特性，决定从Google官网拉套代码自己编译玩玩。 既然是尝鲜，当然要拉Android 11最新分支代码了 – Android 11 Beta2，下面是同步代码的指令： 12repo init -u https://android.googlesource.com/platform/manifest -b android-r-beta-2repo syn">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-07-28T14:27:53.927Z">
+<meta property="og:updated_time" content="2020-07-28T14:30:16.480Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 11 Beta2 编译报错问题处理">
 <meta name="twitter:description" content="为了尝鲜Get Android 11的系统新特性，决定从Google官网拉套代码自己编译玩玩。 既然是尝鲜，当然要拉Android 11最新分支代码了 – Android 11 Beta2，下面是同步代码的指令： 12repo init -u https://android.googlesource.com/platform/manifest -b android-r-beta-2repo syn">
@@ -430,7 +430,9 @@
 <figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">repo init -u https://android.googlesource.com/platform/manifest -b android-r-beta-<span class="number">2</span></span><br><span class="line">repo sync -j4</span><br></pre></td></tr></table></figure>
 <p>从device/google目录发现只有cuttlefish项目使用的API是30(对应Android 11)，于是用下面的命令开启编译：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source build/envsetup.sh</span><br><span class="line">lunch aosp_cf_arm64_phone</span><br><span class="line">make -j4 2&gt;&amp;1 | tee build.log</span><br></pre></td></tr></table></figure>
-<p>然而AOSP代码编译之路一如既往的不顺畅，直至编译完成看到新增的vendor_boot.img，耗时一天，总共遇到29个编译报错。这些问题基本都是因为同一个功能多笔提交没同步merge到beta2分支引起的。解决报错问题的步骤大概是：</p>
+<p>然而AOSP代码编译之路一如既往的不顺畅，直至编译完成看到新增的vendor_boot.img，耗时一天，总共遇到29个编译报错。这些问题基本都是因为同一个功能多笔提交没同步merge到beta2分支引起的。</p>
+<a id="more"></a>
+<p>我解决报错问题的步骤大概是：</p>
 <p>a. 查看编译报错日志，确认报错非环境问题；</p>
 <p>b. 使用”git log –pretty=oneline”指令查看报错文件本地的修改记录；</p>
 <p>c. 然后前往”<a href="https://cs.android.com/android/platform/superproject&quot;网站打开master分支，查看报错的文件修改记录(history)；" target="_blank" rel="noopener">https://cs.android.com/android/platform/superproject&quot;网站打开master分支，查看报错的文件修改记录(history)；</a></p>
