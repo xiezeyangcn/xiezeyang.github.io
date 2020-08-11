@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="本文将讲述 OPEN-TEE（一种遵循GP规范且开源的TEE方案）代码的同步及其编译环境的搭建过程。 1. 安装 OPEN-TEE 编译所依赖的库或工具（1）为了确保 Android 源码可以正常编译，请参照 Android 官网执行以下命令安装依赖文件： 12345#aosp$ sudo apt-get install git-core gnupg flex bison build-essent">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-11T15:26:00.846Z">
+<meta property="og:updated_time" content="2020-08-11T15:27:49.895Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OPEN-TEE 代码同步及编译环境配置过程">
 <meta name="twitter:description" content="本文将讲述 OPEN-TEE（一种遵循GP规范且开源的TEE方案）代码的同步及其编译环境的搭建过程。 1. 安装 OPEN-TEE 编译所依赖的库或工具（1）为了确保 Android 源码可以正常编译，请参照 Android 官网执行以下命令安装依赖文件： 12345#aosp$ sudo apt-get install git-core gnupg flex bison build-essent">
@@ -432,6 +432,7 @@
 <figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install android-tools-adb android-tools-fastboot</span><br></pre></td></tr></table></figure>
 <p>（3）为了确保 qemu 可以正常编译，请执行以下命令安装依赖文件：</p>
 <figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#qemu</span><br><span class="line">$ sudo apt-get install autoconf cscope gdisk libfdt-dev libglib2.<span class="number">0</span>-dev \</span><br><span class="line">    libstdc++<span class="number">6</span>:i386 libz1:i386 netcat uuid-dev xz-utils xterm \</span><br><span class="line">    python-crypto python-serial python-wand</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
 <h4 id="2-从-GitHub-获取-OPEN-TEE-源码"><a href="#2-从-GitHub-获取-OPEN-TEE-源码" class="headerlink" title="2. 从 GitHub 获取 OPEN-TEE 源码"></a>2. 从 GitHub 获取 OPEN-TEE 源码</h4><p>（1）可以使用<code>repo</code>工具下载整个 OPEN-TEE 项目代码：</p>
 <figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mkdir</span> -p linaro_optee</span><br><span class="line">$ <span class="built_in">cd</span> linaro_optee</span><br><span class="line">$ repo init -u https://github.com/OP-TEE/manifest.git -m default.xml -b master</span><br><span class="line">$ repo sync -j4 --no-clone-bundle</span><br></pre></td></tr></table></figure>
 <p>（2）也可以使用<code>git clone</code>命令或直接从 GitHub 下载所需的单个仓库代码：</p>
