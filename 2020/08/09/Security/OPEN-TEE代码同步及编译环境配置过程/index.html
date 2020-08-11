@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="本文将讲述 OPEN-TEE（一种遵循GP规范且开源的TEE方案）代码的同步及其编译环境的搭建过程。 1. 安装 OPEN-TEE 编译所依赖的库或工具（1）为了确保 Android 源码可以正常编译，请参照 Android 官网执行以下命令安装依赖文件： 12345#aosp$ sudo apt-get install git-core gnupg flex bison build-essent">
+<meta name="keywords" content="Security,TrustZone,TEE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OPEN-TEE 代码同步及编译环境配置过程">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/08/09/Security/OPEN-TEE代码同步及编译环境配置过程/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="本文将讲述 OPEN-TEE（一种遵循GP规范且开源的TEE方案）代码的同步及其编译环境的搭建过程。 1. 安装 OPEN-TEE 编译所依赖的库或工具（1）为了确保 Android 源码可以正常编译，请参照 Android 官网执行以下命令安装依赖文件： 12345#aosp$ sudo apt-get install git-core gnupg flex bison build-essent">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-08-11T15:26:00.846Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OPEN-TEE 代码同步及编译环境配置过程">
+<meta name="twitter:description" content="本文将讲述 OPEN-TEE（一种遵循GP规范且开源的TEE方案）代码的同步及其编译环境的搭建过程。 1. 安装 OPEN-TEE 编译所依赖的库或工具（1）为了确保 Android 源码可以正常编译，请参照 Android 官网执行以下命令安装依赖文件： 12345#aosp$ sudo apt-get install git-core gnupg flex bison build-essent">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/08/09/Security/OPEN-TEE代码同步及编译环境配置过程/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>OPEN-TEE 代码同步及编译环境配置过程 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/08/09/Security/OPEN-TEE代码同步及编译环境配置过程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">OPEN-TEE 代码同步及编译环境配置过程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-08-09 00:00:00" itemprop="dateCreated datePublished" datetime="2020-08-09T00:00:00+08:00">2020-08-09</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文将讲述 OPEN-TEE（一种遵循GP规范且开源的TEE方案）代码的同步及其编译环境的搭建过程。</p>
+<h4 id="1-安装-OPEN-TEE-编译所依赖的库或工具"><a href="#1-安装-OPEN-TEE-编译所依赖的库或工具" class="headerlink" title="1. 安装 OPEN-TEE 编译所依赖的库或工具"></a>1. 安装 OPEN-TEE 编译所依赖的库或工具</h4><p>（1）为了确保 Android 源码可以正常编译，请参照 Android 官网执行以下命令安装依赖文件：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#aosp</span><br><span class="line">$ sudo apt-get install git-core gnupg flex bison build-essential zip \</span><br><span class="line">    curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 \</span><br><span class="line">    lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev \</span><br><span class="line">    libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig</span><br></pre></td></tr></table></figure>
+<p>（2）如果想使用<code>adb/fastboot</code>工具，可以执行以下命令获取：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install android-tools-adb android-tools-fastboot</span><br></pre></td></tr></table></figure>
+<p>（3）为了确保 qemu 可以正常编译，请执行以下命令安装依赖文件：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#qemu</span><br><span class="line">$ sudo apt-get install autoconf cscope gdisk libfdt-dev libglib2.<span class="number">0</span>-dev \</span><br><span class="line">    libstdc++<span class="number">6</span>:i386 libz1:i386 netcat uuid-dev xz-utils xterm \</span><br><span class="line">    python-crypto python-serial python-wand</span><br></pre></td></tr></table></figure>
+<h4 id="2-从-GitHub-获取-OPEN-TEE-源码"><a href="#2-从-GitHub-获取-OPEN-TEE-源码" class="headerlink" title="2. 从 GitHub 获取 OPEN-TEE 源码"></a>2. 从 GitHub 获取 OPEN-TEE 源码</h4><p>（1）可以使用<code>repo</code>工具下载整个 OPEN-TEE 项目代码：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mkdir</span> -p linaro_optee</span><br><span class="line">$ <span class="built_in">cd</span> linaro_optee</span><br><span class="line">$ repo init -u https://github.com/OP-TEE/manifest.git -m default.xml -b master</span><br><span class="line">$ repo sync -j4 --no-clone-bundle</span><br></pre></td></tr></table></figure>
+<p>（2）也可以使用<code>git clone</code>命令或直接从 GitHub 下载所需的单个仓库代码：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#OP-TEE gits</span><br><span class="line">$ git clone https://github.com/OP-TEE/optee_client.git</span><br><span class="line">$ git clone https://github.com/OP-TEE/optee_os.git</span><br><span class="line">$ git clone https://github.com/OP-TEE/optee_test.git</span><br><span class="line">$ git clone https://github.com/OP-TEE/build.git</span><br><span class="line">#linaro-swg gits</span><br><span class="line">$ git clone https://github.com/linaro-swg/linux.git</span><br><span class="line">$ git clone https://github.com/linaro-swg/optee_benchmark.git</span><br><span class="line">$ git clone https://github.com/linaro-swg/optee_examples.git</span><br><span class="line">$ git clone https://github.com/linaro-swg/soc_term.git</span><br><span class="line">#Misc gits</span><br><span class="line">$ git clone https://github.com/buildroot/buildroot.git</span><br><span class="line">$ git clone https://github.com/qemu/qemu.git</span><br><span class="line">$ git clone https://github.com/TF-A/trusted-firmware-a.git</span><br><span class="line">$ git clone https://github.com/u-boot.git</span><br><span class="line"></span><br><span class="line">#$ git clone https://github.com/OP-TEE/manifest.git</span><br><span class="line">#$ git clone https://github.com/linaro-swg/arm-trusted-firmware.git</span><br><span class="line">#$ git clone https://github.com/OP-TEE/optee_docs.git</span><br><span class="line">#$ git clone https://github.com/OP-TEE/optee_linuxdriver.git</span><br><span class="line">#$ git clone https://github.com/OP-TEE/optee_website.git</span><br><span class="line">#$ git clone https://github.com/linaro-swg/optee_android_manifest.git</span><br><span class="line">#$ git clone https://github.com/linaro-swg/optee_android_tools.git</span><br><span class="line">#$ git clone https://github.com/linaro-swg/bios_qemu_tz_arm.git</span><br><span class="line">#$ git clone https://github.com/linaro-swg/gen_rootfs.git</span><br><span class="line">#$ git clone https://github.com/linaro-swg/qemu.git</span><br><span class="line">#$ git clone https://github.com/linaro-swg/u-boot.git</span><br></pre></td></tr></table></figure>
+<h4 id="3-获取交叉编译工具链"><a href="#3-获取交叉编译工具链" class="headerlink" title="3. 获取交叉编译工具链"></a>3. 获取交叉编译工具链</h4><p>（1）使用 build 目录的<code>toolchain.mk</code>和<code>get_clang.sh</code>脚本自动下载解压<code>gcc/clang</code>编译工具：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#Using git scripts</span><br><span class="line">$ <span class="built_in">cd</span> linaro_optee</span><br><span class="line">$ git clone https://github.com/OP-TEE/build.git</span><br><span class="line">$ <span class="built_in">cd</span> build</span><br><span class="line">$ make -f toolchain.mk toolchains <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee toolchains.log</span><br><span class="line">$ make -f toolchain.mk clang-toolchains <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee clang-toolchains.log</span><br></pre></td></tr></table></figure>
+<p>（2）也可以手动执行下面命令依次下载并解压<code>gcc/clang</code>编译工具：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#Direct download</span><br><span class="line">$ <span class="built_in">mkdir</span> toolchains &amp;&amp; <span class="built_in">cd</span> toolchains</span><br><span class="line">$ wget -nv https://developer.arm.com/-/media/Files/downloads/gnu-a/<span class="number">8</span>.<span class="number">3</span>-<span class="number">2019</span>.<span class="number">03</span>/binrel/gcc-arm-<span class="number">8</span>.<span class="number">3</span>-<span class="number">2019</span>.<span class="number">03</span>-x86_64-arm-linux-gnueabihf.tar.xz</span><br><span class="line">$ <span class="built_in">mkdir</span> aarch32</span><br><span class="line">$ tar xf gcc-arm-<span class="number">8</span>.<span class="number">3</span>-<span class="number">2019</span>.<span class="number">03</span>-x86_64-arm-linux-gnueabihf.tar.xz -C aarch32 --strip-components=<span class="number">1</span></span><br><span class="line">$ wget -nv https://developer.arm.com/-/media/Files/downloads/gnu-a/<span class="number">8</span>.<span class="number">3</span>-<span class="number">2019</span>.<span class="number">03</span>/binrel/gcc-arm-<span class="number">8</span>.<span class="number">3</span>-<span class="number">2019</span>.<span class="number">03</span>-x86_64-aarch64-linux-gnu.tar.xz</span><br><span class="line">$ <span class="built_in">mkdir</span> aarch64</span><br><span class="line">$ tar xf gcc-arm-<span class="number">8</span>.<span class="number">3</span>-<span class="number">2019</span>.<span class="number">03</span>-x86_64-aarch64-linux-gnu.tar.xz -C aarch64 --strip-components=<span class="number">1</span></span><br><span class="line">$ wget -nv https://github.com/llvm/llvm-project/releases/download/llvmorg-<span class="number">9</span>.<span class="number">0</span>.<span class="number">1</span>/clang+llvm-<span class="number">9</span>.<span class="number">0</span>.<span class="number">1</span>-aarch64-linux-gnu.tar.xz</span><br><span class="line">$ <span class="built_in">cd</span> .. &amp;&amp; <span class="built_in">mkdir</span> clang-<span class="number">9</span>.<span class="number">0</span>.<span class="number">1</span> &amp;&amp; <span class="built_in">cd</span> clang-<span class="number">9</span>.<span class="number">0</span>.<span class="number">1</span></span><br><span class="line">$ tar xf clang+llvm-<span class="number">9</span>.<span class="number">0</span>.<span class="number">1</span>-aarch64-linux-gnu.tar.xz -C clang-aarch64 --strip-components=<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<h4 id="4-编译-QEMU-平台工程"><a href="#4-编译-QEMU-平台工程" class="headerlink" title="4. 编译 QEMU 平台工程"></a>4. 编译 QEMU 平台工程</h4><p>执行下面命令可以选择<code>qemu.mk</code>编译 QEMU 平台工程：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> build</span><br><span class="line">$ make -f qemu.mk all <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee qemu_all.log</span><br></pre></td></tr></table></figure>
+<p>下面整理了编译过程中所遇到的 4个编译报错及其解决方案。</p>
+<p>（1）Error 1 – Cryptodome</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#error log</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;scripts/pem_to_pub_c.py&quot;, line 61, in &lt;module&gt;</span><br><span class="line">    main()</span><br><span class="line">  File &quot;scripts/pem_to_pub_c.py&quot;, line 24, in main</span><br><span class="line">    from Cryptodome.PublicKey import RSA</span><br><span class="line">ImportError: No module named &apos;Cryptodome&apos;</span><br><span class="line">mk/subdir.mk:161: recipe for target &apos;out/arm/core/ta_pub_key.c&apos; failed</span><br><span class="line">make[1]: *** [out/arm/core/ta_pub_key.c] Error 1</span><br><span class="line">make[1]: Leaving directory &apos;/media/xiezeyang/CODE/linaro_optee/optee_os&apos;</span><br><span class="line">common.mk:370: recipe for target &apos;optee-os-common&apos; failed</span><br><span class="line">make: *** [optee-os-common] Error 2</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#solution</span><br><span class="line">$ pip3 install pycryptodomex</span><br><span class="line">#$ sudo apt install python3-pycryptodomex</span><br></pre></td></tr></table></figure>
+<p>（2）Error 2 – elftools</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#error log</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;scripts/gen_ldelf_hex.py&quot;, line 13, in &lt;module&gt;</span><br><span class="line">    from elftools.elf.elffile import ELFFile</span><br><span class="line">ImportError: No module named &apos;elftools&apos;</span><br><span class="line">mk/subdir.mk:161: recipe for target &apos;out/arm/core/ldelf_hex.c&apos; failed</span><br><span class="line">make[1]: *** [out/arm/core/ldelf_hex.c] Error 1</span><br><span class="line">make[1]: Leaving directory &apos;/media/xiezeyang/CODE/linaro_optee/optee_os&apos;</span><br><span class="line">common.mk:370: recipe for target &apos;optee-os-common&apos; failed</span><br><span class="line">make: *** [optee-os-common] Error 2</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#solution</span><br><span class="line">$ pip3 install pyelftools</span><br><span class="line">#$ sudo apt install python3-pyelftools</span><br></pre></td></tr></table></figure>
+<p>（3）Error 3 – pixman</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#error log</span><br><span class="line">ERROR: pixman &gt;= 0.21.8 not present.</span><br><span class="line">       Please install the pixman devel package.</span><br><span class="line"></span><br><span class="line">qemu.mk:83: recipe for target &apos;qemu&apos; failed</span><br><span class="line">make: *** [qemu] Error 1</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#solution</span><br><span class="line">$ sudo apt install libpixman-<span class="number">1</span>-dev</span><br></pre></td></tr></table></figure>
+<h4 id="5-启动-QEMU-平台的-OPEN-TEE"><a href="#5-启动-QEMU-平台的-OPEN-TEE" class="headerlink" title="5. 启动 QEMU 平台的 OPEN-TEE"></a>5. 启动 QEMU 平台的 OPEN-TEE</h4><p>（1）使用下面指令可启动基于 QEMU 平台的 OPEN-TEE：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> build</span><br><span class="line">$ make -f qemu.mk run-only <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee qemu_run_only.log</span><br></pre></td></tr></table></figure>
+<p>（2）在启动 OPEN-TEE 的窗口输入<code>c</code>会启动2个新的终端窗口，一个是 OP-TEE 的终端窗口（对应安全世界状态），另一个是 linux 的终端窗口（对应正常世界状态）。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">QEMU <span class="number">5</span>.<span class="number">0</span>.<span class="number">0</span> monitor - <span class="built_in">type</span> '<span class="built_in">help</span>' <span class="keyword">for</span> <span class="built_in">more</span> information</span><br><span class="line">#continue</span><br><span class="line">(qemu) c</span><br></pre></td></tr></table></figure>
+<p>（3）在 linux 的终端窗口输入 hello_world 或 xtest 指令会执行测试的 CA 文件：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">root@Vexpress:/ <span class="title">hello_world</span></span></span><br><span class="line"><span class="function"><span class="title">Invoking</span> <span class="title">TA</span> <span class="title">to</span> <span class="title">increment</span> 42</span></span><br><span class="line"><span class="function"><span class="title">TA</span> <span class="title">incremented</span> <span class="title">value</span> <span class="title">to</span> 43</span></span><br></pre></td></tr></table></figure>
+<p>（4）在启动 OPEN-TEE 的终端窗口输入<code>q</code>会退出 OPEN-TEE：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">QEMU <span class="number">5</span>.<span class="number">0</span>.<span class="number">0</span> monitor - <span class="built_in">type</span> '<span class="built_in">help</span>' <span class="keyword">for</span> <span class="built_in">more</span> information</span><br><span class="line">#quit</span><br><span class="line">(qemu) q</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+            <a href="/tags/TrustZone/" rel="tag"># TrustZone</a>
+          
+            <a href="/tags/TEE/" rel="tag"># TEE</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/25/Build/Android11-beta2-编译报错问题处理/" rel="next" title="Android 11 Beta2 编译报错问题处理">
+                <i class="fa fa-chevron-left"></i> Android 11 Beta2 编译报错问题处理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">100</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-安装-OPEN-TEE-编译所依赖的库或工具"><span class="nav-text">1. 安装 OPEN-TEE 编译所依赖的库或工具</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-从-GitHub-获取-OPEN-TEE-源码"><span class="nav-text">2. 从 GitHub 获取 OPEN-TEE 源码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-获取交叉编译工具链"><span class="nav-text">3. 获取交叉编译工具链</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-编译-QEMU-平台工程"><span class="nav-text">4. 编译 QEMU 平台工程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-启动-QEMU-平台的-OPEN-TEE"><span class="nav-text">5. 启动 QEMU 平台的 OPEN-TEE</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
