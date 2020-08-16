@@ -98,18 +98,18 @@
 
 
 
-  <meta name="description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构： linaro_optee/├── build├── buildroot├── clang-9.0.1├── linux├── optee_benchmar">
+  <meta name="description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构：">
 <meta name="keywords" content="Security,TrustZone,TEE">
 <meta property="og:type" content="article">
 <meta property="og:title" content="OPEN-TEE 代码目录结构及编译目标">
 <meta property="og:url" content="http://www.xiezeyang.com/2020/08/16/Security/OPEN-TEE代码目录结构及编译目标/index.html">
 <meta property="og:site_name" content="Young&#39;s Blog">
-<meta property="og:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构： linaro_optee/├── build├── buildroot├── clang-9.0.1├── linux├── optee_benchmar">
+<meta property="og:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构：">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-16T07:51:58.048Z">
+<meta property="og:updated_time" content="2020-08-16T07:58:04.566Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OPEN-TEE 代码目录结构及编译目标">
-<meta name="twitter:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构： linaro_optee/├── build├── buildroot├── clang-9.0.1├── linux├── optee_benchmar">
+<meta name="twitter:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构：">
 
 
 
@@ -427,6 +427,7 @@
       
         <h4 id="1-代码目录结构"><a href="#1-代码目录结构" class="headerlink" title="1. 代码目录结构"></a>1. 代码目录结构</h4><p>下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。</p>
 <p>qemu-armv7 目录树结构：</p>
+<a id="more"></a>
 <p>linaro_optee/<br>├── build<br>├── buildroot<br>├── clang-9.0.1<br>├── linux<br>├── optee_benchmark<br>├── optee_client<br>├── optee_examples<br>├── optee_os<br>├── optee_test<br>├── out<br>├── out-br<br>├── qemu<br>├── soc_term<br>├── toolchains<br>├── trusted-firmware-a<br>└── u-boot</p>
 <p>qemu-armv8 目录树结构：</p>
 <p>linaro_optee_v8/<br>├── build<br>├── buildroot<br>├── clang-9.0.1<br>├── edk<br>├── linux<br>├── mbedtls<br>├── optee_benchmark<br>├── optee_client<br>├── optee_examples<br>├── optee_os<br>├── optee_test<br>├── out<br>├── out-br<br>├── qemu<br>├── soc_term<br>├── toolchains<br>├── trusted-firmware-a</p>
