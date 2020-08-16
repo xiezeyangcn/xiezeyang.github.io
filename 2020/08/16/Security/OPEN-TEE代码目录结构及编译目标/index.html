@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构： linaro_optee/├── build├── buildroot├── clang-9.0.1├── linux├── optee_benchmar">
+<meta name="keywords" content="Security,TrustZone,TEE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OPEN-TEE 代码目录结构及编译目标">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/08/16/Security/OPEN-TEE代码目录结构及编译目标/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构： linaro_optee/├── build├── buildroot├── clang-9.0.1├── linux├── optee_benchmar">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-08-16T07:51:58.048Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OPEN-TEE 代码目录结构及编译目标">
+<meta name="twitter:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构： linaro_optee/├── build├── buildroot├── clang-9.0.1├── linux├── optee_benchmar">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/08/16/Security/OPEN-TEE代码目录结构及编译目标/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>OPEN-TEE 代码目录结构及编译目标 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/08/16/Security/OPEN-TEE代码目录结构及编译目标/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">OPEN-TEE 代码目录结构及编译目标
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-08-16 00:00:00" itemprop="dateCreated datePublished" datetime="2020-08-16T00:00:00+08:00">2020-08-16</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="1-代码目录结构"><a href="#1-代码目录结构" class="headerlink" title="1. 代码目录结构"></a>1. 代码目录结构</h4><p>下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。</p>
+<p>qemu-armv7 目录树结构：</p>
+<p>linaro_optee/<br>├── build<br>├── buildroot<br>├── clang-9.0.1<br>├── linux<br>├── optee_benchmark<br>├── optee_client<br>├── optee_examples<br>├── optee_os<br>├── optee_test<br>├── out<br>├── out-br<br>├── qemu<br>├── soc_term<br>├── toolchains<br>├── trusted-firmware-a<br>└── u-boot</p>
+<p>qemu-armv8 目录树结构：</p>
+<p>linaro_optee_v8/<br>├── build<br>├── buildroot<br>├── clang-9.0.1<br>├── edk<br>├── linux<br>├── mbedtls<br>├── optee_benchmark<br>├── optee_client<br>├── optee_examples<br>├── optee_os<br>├── optee_test<br>├── out<br>├── out-br<br>├── qemu<br>├── soc_term<br>├── toolchains<br>├── trusted-firmware-a</p>
+<p>各子目录说明如下：</p>
+<p>（1）build：<br>包含不同平台的 makefiles 及对应的 kconfig 文件。</p>
+<p>（2）buildroot：<br>一个简单高效且易于使用的工具，可通过交叉编译来生成嵌入式 Linux 系统。其操作步骤如下：<br>a.运行’make menuconfig’；<br>b.选择目标架构和要编译的软件包；<br>c.运行’make’；<br>d.等待编译；<br>e.在输出/映像中找到内核，引导加载程序，根文件系统等。<br>更多信息详见：<a href="https://buildroot.org。" target="_blank" rel="noopener">https://buildroot.org。</a></p>
+<p>（3）clang-9.0.1：<br>一款用于编译 C/C++ 的 clang + llvm 工具链。<br>更多信息详见：<a href="https://clang.llvm.org。" target="_blank" rel="noopener">https://clang.llvm.org。</a></p>
+<p>（4）edk2：<br>包含遵循 UEFI 标准的 booloader 源代码。<br>更多信息详见：<a href="https://www.uefi.org。" target="_blank" rel="noopener">https://www.uefi.org。</a></p>
+<p>（5）linux：<br>包含 linux kernel 源代码。<br>更多信息详见：<a href="https://www.kernel.org。" target="_blank" rel="noopener">https://www.kernel.org。</a></p>
+<p>（6）mbedtls：<br>开源的 ssl/tls 加密组件，轻量级，更适用于嵌入式产品。<br>更多信息详见：<a href="https://tls.mbed.org。" target="_blank" rel="noopener">https://tls.mbed.org。</a></p>
+<p>（7）optee_benchmark：<br>包含 OPEN-TEE 项目基准框架的源代码。</p>
+<p>（8）optee_client：<br>包含 OPEN-TEE 项目的 Non-Secure 侧实现的源代码，该源代码构成了客户端库和 tee-supplicant。</p>
+<p>（9）optee_examples：<br>包含可直接在 OPEN-TEE 项目中使用的示例 CA 和 TA 的源代码。</p>
+<p>（10）optee_os：<br>包含 OPEN-TEE 项目的 os 源代码。</p>
+<p>（11）optee_test：<br>包含用于 OPEN-TEE 项目的测试套件（xtest）源代码。</p>
+<p>（12）out：<br>用于存储下载烧录的 image，如 bl1.bin、bl2.bin、bl32.bin、bl32_extra1.bin、bl32_extra2.bin、bl33.bin、rootfs.cpio.gz、zImage等。</p>
+<p>（13）out-br：<br>用于存放 buildroot 工具编译生成的文件的目录。</p>
+<p>（14）qemu：<br>一个通用的开源的仿真模拟器的源代码。<br>更多信息详见：<a href="https://qemu.org。" target="_blank" rel="noopener">https://qemu.org。</a></p>
+<p>（15）soc_term：<br>用于监听 Linux 和 OPEN-TEE 两个终端的端口，以便其 log 能正确重定向至对应的终端中。</p>
+<p>（16）toolchains：<br>包含编译时所需的工具链 AARCH32_CROSS + AARCH32_GCC（AARCH64_CROSS + AARCH64_GCC）。</p>
+<p>（17）trusted-firmware-a：<br>用于<code>Arm A-Profile</code>体系结构（Armv8-A和Armv7-A）的 Secure Word 软件的参考实现，其中包括 Exception Level3（EL3）– Secure Monitor。它为在 AArch32 或 AArch64 执行状态下的 Secure Word 启动和运行时固件产品化提供了一个合适的起点。其接口标准包括：<br>a.电源状态协调接口（PSCI）；<br>b.可信的板级启动客户端（TBBR-CLIENT）；<br>c.SMC调用约定；<br>d.系统控制和管理接口（SCMI）；<br>e.软件异常接口（SDEI）。<br>更多信息详见：<a href="https://www.trustedfirmware.org。" target="_blank" rel="noopener">https://www.trustedfirmware.org。</a></p>
+<p>（18）u-boot：<br>包含用于 PowerPC，ARM，MIPS 等其他嵌入式处理器上的，安装在引导 ROM 中并用于初始化、测试硬件、下载并运行的 bootloader 源代码。<br>更多信息详见：<a href="https://www.denx.de/wiki/U-Boot。" target="_blank" rel="noopener">https://www.denx.de/wiki/U-Boot。</a></p>
+<h4 id="2-编译目标"><a href="#2-编译目标" class="headerlink" title="2. 编译目标"></a>2. 编译目标</h4><p>根据 makefile/cmake 并结合 log 整理出编译目标依赖关系如下：</p>
+<p>all<br>├── arm-tf<br>|  ├── optee-os<br>|  |── edk2<br>|  |  └── build_edk2<br>|  └── u-boot<br>|     └── build_uboot<br>├── buildroot<br>|  └── optee-os<br>├── linux<br>|  └── linux-common<br>|     └── linux-defconfig<br>├── optee-os<br>|  └── optee-os-common<br>├── qemu<br>|  └── build_qemu<br>├── soc-term<br>|  └── build_socterm<br>├── xtest<br>|  └── xtest-common<br>|     ├── optee-os<br>|     └── optee-client<br>├── benchmark-app<br>|  └── benchmark-app-common<br>|     ├── optee-os<br>|     └── optee-client<br>├── optee_examples<br>|  └── optee-examples-common<br>|     ├── optee-os<br>|     └── optee-client<br>|       ├── install<br>|       ├── copy_export<br>|       └── build<br>|           ├── build-tee-supplicant<br>|           |  └── build-libteec<br>|           └── build-libckteec<br>|             └── build-libteec</p>
+<p>（1）arm-tf 会编译 trusted-firmware-a 目录生成 bl1 / bl2 / bl31 等文件。</p>
+<p>（2）edk2 和 u-boot 会分别编译生成 edk / uboot bin 文件。</p>
+<p>（3）linux 会编译 linux 目录生成 kernel 文件。</p>
+<p>（4）optee_examples 会编译 optee_examples 目录生成 OPEN-TEE 提供的 ca / ta 文件。</p>
+<p>（5）optee_os 会编译 optee_os 目录生成 tee bin 文件。</p>
+<p>（6）qemu 会切换至 qemu 目录编译 qemu 相关文件。</p>
+<p>（7）soc-term 会编译 soc-term 目录生成 soc-term 文件。</p>
+<p>（8）xtest 会编译 optee_test 目录生成 xtest 使用的 ta / ca 文件。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+            <a href="/tags/TrustZone/" rel="tag"># TrustZone</a>
+          
+            <a href="/tags/TEE/" rel="tag"># TEE</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/08/09/Security/OPEN-TEE代码同步及编译环境配置过程/" rel="next" title="OPEN-TEE 代码同步及编译环境配置过程">
+                <i class="fa fa-chevron-left"></i> OPEN-TEE 代码同步及编译环境配置过程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">101</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-代码目录结构"><span class="nav-text">1. 代码目录结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-编译目标"><span class="nav-text">2. 编译目标</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
