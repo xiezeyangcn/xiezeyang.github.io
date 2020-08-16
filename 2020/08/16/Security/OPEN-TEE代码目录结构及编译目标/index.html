@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构：">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-16T07:58:04.566Z">
+<meta property="og:updated_time" content="2020-08-16T08:01:25.839Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OPEN-TEE 代码目录结构及编译目标">
 <meta name="twitter:description" content="1. 代码目录结构下面是 armv7 和 armv8 QEMU 的 OPEN-TEE 目录结构，主要差在于 arm v8 用 UEFI-EDK2 替换了 U-Boot-LK，并引入了加密组件 mbedtls。 qemu-armv7 目录树结构：">
@@ -451,7 +451,7 @@
 <p>（17）trusted-firmware-a：<br>用于<code>Arm A-Profile</code>体系结构（Armv8-A和Armv7-A）的 Secure Word 软件的参考实现，其中包括 Exception Level3（EL3）– Secure Monitor。它为在 AArch32 或 AArch64 执行状态下的 Secure Word 启动和运行时固件产品化提供了一个合适的起点。其接口标准包括：<br>a.电源状态协调接口（PSCI）；<br>b.可信的板级启动客户端（TBBR-CLIENT）；<br>c.SMC调用约定；<br>d.系统控制和管理接口（SCMI）；<br>e.软件异常接口（SDEI）。<br>更多信息详见：<a href="https://www.trustedfirmware.org。" target="_blank" rel="noopener">https://www.trustedfirmware.org。</a></p>
 <p>（18）u-boot：<br>包含用于 PowerPC，ARM，MIPS 等其他嵌入式处理器上的，安装在引导 ROM 中并用于初始化、测试硬件、下载并运行的 bootloader 源代码。<br>更多信息详见：<a href="https://www.denx.de/wiki/U-Boot。" target="_blank" rel="noopener">https://www.denx.de/wiki/U-Boot。</a></p>
 <h4 id="2-编译目标"><a href="#2-编译目标" class="headerlink" title="2. 编译目标"></a>2. 编译目标</h4><p>根据 makefile/cmake 并结合 log 整理出编译目标依赖关系如下：</p>
-<p>all<br>├── arm-tf<br>|  ├── optee-os<br>|  |── edk2<br>|  |  └── build_edk2<br>|  └── u-boot<br>|     └── build_uboot<br>├── buildroot<br>|  └── optee-os<br>├── linux<br>|  └── linux-common<br>|     └── linux-defconfig<br>├── optee-os<br>|  └── optee-os-common<br>├── qemu<br>|  └── build_qemu<br>├── soc-term<br>|  └── build_socterm<br>├── xtest<br>|  └── xtest-common<br>|     ├── optee-os<br>|     └── optee-client<br>├── benchmark-app<br>|  └── benchmark-app-common<br>|     ├── optee-os<br>|     └── optee-client<br>├── optee_examples<br>|  └── optee-examples-common<br>|     ├── optee-os<br>|     └── optee-client<br>|       ├── install<br>|       ├── copy_export<br>|       └── build<br>|           ├── build-tee-supplicant<br>|           |  └── build-libteec<br>|           └── build-libckteec<br>|             └── build-libteec</p>
+<p>all<br>├── arm-tf<br>│  ├── optee-os<br>│  │── edk2<br>│  │  └── build_edk2<br>│  └── u-boot<br>│     └── build_uboot<br>├── buildroot<br>│  └── optee-os<br>├── linux<br>│  └── linux-common<br>│     └── linux-defconfig<br>├── optee-os<br>│  └── optee-os-common<br>├── qemu<br>│  └── build_qemu<br>├── soc-term<br>│  └── build_socterm<br>├── xtest<br>│  └── xtest-common<br>│     ├── optee-os<br>│     └── optee-client<br>├── benchmark-app<br>│  └── benchmark-app-common<br>│     ├── optee-os<br>│     └── optee-client<br>├── optee_examples<br>│  └── optee-examples-common<br>│     ├── optee-os<br>│     └── optee-client<br>│       ├── install<br>│       ├── copy_export<br>│       └── build<br>│           ├── build-tee-supplicant<br>│           │  └── build-libteec<br>│           └── build-libckteec<br>│             └── build-libteec</p>
 <p>（1）arm-tf 会编译 trusted-firmware-a 目录生成 bl1 / bl2 / bl31 等文件。</p>
 <p>（2）edk2 和 u-boot 会分别编译生成 edk / uboot bin 文件。</p>
 <p>（3）linux 会编译 linux 目录生成 kernel 文件。</p>
