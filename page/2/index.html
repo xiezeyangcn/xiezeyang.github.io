@@ -329,6 +329,503 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/03/21/IPC/NativeBinder之IServiceManager/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/03/21/IPC/NativeBinder之IServiceManager/" class="post-title-link" itemprop="url">Native Binder 之 IServiceManager</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-21 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-21T00:00:00+08:00">2020-03-21</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>涉及代码：<br>frameworks/native/libs/binder/BpBinder.cpp<br>frameworks/native/libs/binder/IServiceManager.cpp</p>
+<h3 id="1-IServiceManager"><a href="#1-IServiceManager" class="headerlink" title="1. IServiceManager"></a>1. IServiceManager</h3>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2020/03/21/IPC/NativeBinder之IServiceManager/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/03/14/IPC/NativeBinder之servicemanager/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/03/14/IPC/NativeBinder之servicemanager/" class="post-title-link" itemprop="url">Native Binder 之 servicemanager</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-14 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-14T00:00:00+08:00">2020-03-14</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>涉及代码：<br>frameworks/native/cmds/servicemanager/binder.c<br>frameworks/native/cmds/servicemanager/service_manager.c</p>
+<h3 id="1-service-manager"><a href="#1-service-manager" class="headerlink" title="1. service_manager"></a>1. service_manager</h3>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2020/03/14/IPC/NativeBinder之servicemanager/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/02/08/IPC/BinderDriver初始化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/02/08/IPC/BinderDriver初始化/" class="post-title-link" itemprop="url">Binder Driver 初始化</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-08 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-08T00:00:00+08:00">2020-02-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IPC/" itemprop="url" rel="index"><span itemprop="name">IPC</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h4 id="1-Binder-简介"><a href="#1-Binder-简介" class="headerlink" title="1. Binder 简介"></a>1. Binder 简介</h4><p>Binder是Android引入的一种进程间通信(IPC)机制，其底层驱动和其它Linux驱动类似，以misc设备来注册的。主要包括以下几个部分：</p>
+<p>(1)调用binder_init函数创建/dev/binder设备节点；</p>
+<p>(2)调用binder_open函数获取binder驱动文件描述符；</p>
+<p>(3)调用binder_mmap函数分配内存存放数据；</p>
+<p>(4)调用binder_ioctl函数进行IPC数据操作。</p>
+<p>Client，Service以及Service Manager是运行在用户空间的，而binder驱动是运行在内核空间的，需要通过系统调用(syscall)来内核态和用户态切换，如下图所示：</p>
+<p><img src="/images/binder_user_kernel_syscall.png" alt></p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2020/02/08/IPC/BinderDriver初始化/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/01/24/IPC/BinderDriverI:O操作/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1472,506 +1969,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/23/Security/AndroidVerifiedBoot问题分析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/23/Security/AndroidVerifiedBoot问题分析/" class="post-title-link" itemprop="url">Android Verified Boot 问题分析</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-23T00:00:00+08:00">2019-11-23</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、问题处理思路"><a href="#一、问题处理思路" class="headerlink" title="一、问题处理思路"></a>一、问题处理思路</h3><h4 id="1-1-dm-verity问题处理流程"><a href="#1-1-dm-verity问题处理流程" class="headerlink" title="1.1 dm-verity问题处理流程"></a>1.1 dm-verity问题处理流程</h4><p>(1)回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。</p>
-<p>(2)将mmc / ufs寄给供应商，以检查物理块是否损坏。 </p>
-<p>(3)擦除分区并下载软件。</p>
-<p>(4)做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快复制速度。若可以复现该问题，则删除损坏的物理块，请转到步骤3。若不能复现问题，则重复步骤4，或继续观察设备。如果复现问题并重复执行步骤3和步骤4超过 3次，且物理块始终相同，请返回到步骤2。如果物理块并不总是相同，则转到步骤5。</p>
-<p>(5)检查dmesg日志，看是否有任何mmc驱动程序/UFS驱动程序故障。如果有，则向mmc/ufs team提交case协助分析。否则执行步骤6。</p>
-<p>(6)mmc/ufs硬件/驱动程序基本被排除嫌疑，此时可以从DDR角度进行检查。在此设备上进行Qblizzard压力测试。如果测试结果良好，则执行步骤7。如果测试fail，则向DDR team提交case协助分析。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/11/23/Security/AndroidVerifiedBoot问题分析/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/17/Security/AndroidVerifiedBoot相关工具/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/17/Security/AndroidVerifiedBoot相关工具/" class="post-title-link" itemprop="url">Android Verified Boot 相关工具</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-17 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-17T00:00:00+08:00">2019-11-17</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、libavb库"><a href="#一、libavb库" class="headerlink" title="一、libavb库"></a>一、libavb库</h3><h4 id="1-1-目录结构"><a href="#1-1-目录结构" class="headerlink" title="1.1 目录结构"></a>1.1 目录结构</h4><p>libavb库用于在设备端执行所有验证，在代码中的路径是external/avb。其目录结构如下：</p>
-<p>(1)libavb：image验证的实现。具有高度可移植性。此代码会兼容C99的C编译器。其中avb_rsa.c/avb_rsa.h和avb_sha.c/avb_sha.h用于内部实现，不应在外部被使用。avb_sysdeps.h用于定义由平台提供的系统依赖项。如果平台提供了标准的C runtime，则可以使用avb_sysdeps_posix.c。</p>
-<p>(2)libavb_atx：用于验证public key metadata的Android Things扩展。</p>
-<p>(3)libavb_user：用于Android用户空间的AvbOps实现。在boot_control.avb和avbctl中被使用。</p>
-<p>(4)libavb_ab：用于bootloader和适用于A/B系统的AVB实现(已于2018年6月1日弃用，必须定义AVB_AB_I_UNDERSTAND_LIBAVB_AB_IS_DEPRECATED才能使用它）。</p>
-<p>(5)boot_control：使用libavb_ab 堆栈与bootloader一起使用的Android boot_control HAL的实现（已于2018年6月1日弃用）。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/11/17/Security/AndroidVerifiedBoot相关工具/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/10/Security/AndroidVerifiedBoot使能方式/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/10/Security/AndroidVerifiedBoot使能方式/" class="post-title-link" itemprop="url">Android Verified Boot 使能方式</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-10 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-10T00:00:00+08:00">2019-11-10</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、使能Verified-Boot-1-0"><a href="#一、使能Verified-Boot-1-0" class="headerlink" title="一、使能Verified Boot 1.0"></a>一、使能Verified Boot 1.0</h3><h4 id="1-1-QCT平台使能配置"><a href="#1-1-QCT平台使能配置" class="headerlink" title="1.1 QCT平台使能配置"></a>1.1 QCT平台使能配置</h4><p>(1)在kernel/msm-4.4/arch/arm64/configs/$project_defconfig中打开dm-verity功能：</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_DM_VERITY=y</span><br><span class="line">CONFIG_DM_VERITY_FEC=y</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/11/10/Security/AndroidVerifiedBoot使能方式/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2020,7 +2017,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">101</span>
+                    <span class="site-state-item-count">104</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

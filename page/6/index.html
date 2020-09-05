@@ -329,6 +329,500 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/29/Filesystem/Vold进程的启动/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/29/Filesystem/Vold进程的启动/" class="post-title-link" itemprop="url">Vold 进程的启动</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-29 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-29T00:00:00+08:00">2018-12-29</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-init解析rc时启动vold进程"><a href="#1-init解析rc时启动vold进程" class="headerlink" title="1. init解析rc时启动vold进程"></a>1. init解析rc时启动vold进程</h3><p>system/core/rootdir/init.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">on post-fs-data</span><br><span class="line">    start vold</span><br></pre></td></tr></table></figure>
+<p>system/vold/vold.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">service vold /system/bin/vold \</span><br><span class="line">        --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \</span><br><span class="line">        --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0</span><br><span class="line">    class core</span><br><span class="line">    ioprio be 2</span><br><span class="line">    writepid /dev/cpuset/foreground/tasks</span><br><span class="line">    shutdown critical</span><br><span class="line">    group reserved_disk</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/29/Filesystem/Vold进程的启动/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/23/Filesystem/fs_mgr解析fstab文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/23/Filesystem/fs_mgr解析fstab文件/" class="post-title-link" itemprop="url">fs_mgr 解析 fstab 文件</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-23 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-23T00:00:00+08:00">2018-12-23</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>涉及代码：<br>system/core/fs_mgr/fs_mgr_fstab.cpp<br>system/core/fs_mgr/fs_mgr_slotselect.cpp<br>system/core/fs_mgr/fs_mgr_boot_config.cpp</p>
+<h3 id="1-1-fs-mgr-fstab-cpp-gt-fs-mgr-read-fstab-default"><a href="#1-1-fs-mgr-fstab-cpp-gt-fs-mgr-read-fstab-default" class="headerlink" title="1.1 fs_mgr_fstab.cpp-&gt;fs_mgr_read_fstab_default"></a>1.1 fs_mgr_fstab.cpp-&gt;fs_mgr_read_fstab_default</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 尝试从/odm/etc,/vendor/etc等目录加载fstab.&lt;hardware&gt;文件，并将第1个找到的fstab和从设备树中传入的组合在一起</span></span><br><span class="line"><span class="function">struct fstab *<span class="title">fs_mgr_read_fstab_default</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> hw;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> default_fstab;</span><br><span class="line">    <span class="comment">// 分别用不同fstab路径启动正常启动或recovery启动</span></span><br><span class="line">    <span class="keyword">if</span> (access(<span class="string">"/sbin/recovery"</span>, F_OK) == <span class="number">0</span>) &#123; <span class="comment">// recovery启动</span></span><br><span class="line">        default_fstab = <span class="string">"/etc/recovery.fstab"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (fs_mgr_get_boot_config(<span class="string">"hardware"</span>, &amp;hw)) &#123;  <span class="comment">// 正常启动</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">char</span> *prefix : &#123;<span class="string">"/odm/etc/fstab."</span>,<span class="string">"/vendor/etc/fstab."</span>, <span class="string">"/fstab."</span>&#125;) &#123;</span><br><span class="line">            default_fstab = prefix + hw;</span><br><span class="line">            <span class="keyword">if</span> (access(default_fstab.c_str(), F_OK) == <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        LWARNING &lt;&lt; __FUNCTION__ &lt;&lt; <span class="string">"(): failed to find device hardware name"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将从设备树中传入的fstab条目和从默认fstab找到的条目对应组合在一起</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fstab</span> *<span class="title">fstab_dt</span> = <span class="title">fs_mgr_read_fstab_dt</span>();</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fstab</span> *<span class="title">fstab</span> = <span class="title">fs_mgr_read_fstab</span>(<span class="title">default_fstab</span>.<span class="title">c_str</span>());</span></span><br><span class="line">    <span class="keyword">return</span> in_place_merge(fstab_dt, fstab);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/23/Filesystem/fs_mgr解析fstab文件/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/15/Filesystem/Userdata分区resize功能/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/15/Filesystem/Userdata分区resize功能/" class="post-title-link" itemprop="url">Userdata 分区 resize 功能</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-15 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-15T00:00:00+08:00">2018-12-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-挂载分区时添加resize功能"><a href="#1-挂载分区时添加resize功能" class="headerlink" title="1. 挂载分区时添加resize功能"></a>1. 挂载分区时添加resize功能</h3><p>system/core/fs_mgr/fs_mgr.cpp</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cryptfs.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> RESIZE2FS_BIN   <span class="meta-string">"/system/bin/resize2fs"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">resize_fs</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *blk_device, <span class="keyword">char</span> *fs_type, <span class="keyword">char</span> *key_loc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sz;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_ss;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sn;</span><br><span class="line">    <span class="keyword">int</span> status = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    android::base::<span class="function">unique_fd <span class="title">fd</span><span class="params">(TEMP_FAILURE_RETRY(open(blk_device, O_RDONLY | O_CLOEXEC)))</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"Failed to open '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"'"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Cannot use BLKGETSIZE to get the number of sectors,</span></span><br><span class="line"><span class="comment">    * because need to do device_sz -= CRYPT_FOOTER_OFFSET</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKGETSIZE64, &amp;device_sz)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKGETSIZE64) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKSSZGET, &amp;device_ss)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKSSZGET) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Format the partition using the calculated length */</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(key_loc, KEY_IN_FOOTER))</span><br><span class="line">        device_sz -= CRYPT_FOOTER_OFFSET;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (is_extfs(fs_type)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (access(RESIZE2FS_BIN, X_OK)) &#123;</span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Not running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device</span><br><span class="line">            &lt;&lt; <span class="string">" (executable not in system image)"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> size_kb_str(android::base::StringPrintf(<span class="string">"%"</span> PRIu64 <span class="string">"K"</span>, device_sz / <span class="number">1024</span>));</span><br><span class="line"></span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/* extX cmd */</span></span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span> *resize2fs_argv[] = &#123;</span><br><span class="line">                RESIZE2FS_BIN,</span><br><span class="line">                <span class="string">"-f"</span>,</span><br><span class="line">                blk_device,</span><br><span class="line">                size_kb_str.c_str()</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            ret = android_fork_execvp_ext(ARRAY_SIZE(resize2fs_argv),</span><br><span class="line">                <span class="keyword">const_cast</span>&lt;<span class="keyword">char</span> **&gt;(resize2fs_argv),</span><br><span class="line">                &amp;status, <span class="literal">true</span>, LOG_KLOG,</span><br><span class="line">                <span class="literal">false</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">/* No need to check for error in fork, we can't really handle it now */</span></span><br><span class="line">                LERROR &lt;&lt; <span class="string">"Failed trying to run "</span> &lt;&lt; RESIZE2FS_BIN;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">prepare_fs_for_mount</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* blk_device, <span class="keyword">const</span> struct fstab_rec* rec)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> ((rec-&gt;fs_mgr_flags &amp; MF_RESIZE) &amp;&amp; !<span class="built_in">strcmp</span>(blk_device, rec-&gt;blk_device)) &#123;</span><br><span class="line">        resize_fs(blk_device, rec-&gt;fs_type, rec-&gt;key_loc);</span><br><span class="line">        check_fs(blk_device, rec-&gt;fs_type, rec-&gt;mount_point, &amp;fs_stat);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/15/Filesystem/Userdata分区resize功能/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/08/Filesystem/MTK平台新增一个分区/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1466,497 +1960,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/10/05/Framework/Framework层Recovery浅析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/05/Framework/Framework层Recovery浅析/" class="post-title-link" itemprop="url">Framework 层 Recovery 浅析</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-05 00:00:00" itemprop="dateCreated datePublished" datetime="2018-10-05T00:00:00+08:00">2018-10-05</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>本文主要介绍Framework层Recovery相关内容，包括Recovery服务启动，升级包验证、解密、安装，恢复出厂等流程。</p>
-<h3 id="1-启动RecoverySystemService"><a href="#1-启动RecoverySystemService" class="headerlink" title="1.启动RecoverySystemService"></a>1.启动RecoverySystemService</h3><h4 id="1-1-SystemServer启动RecoverySystemService"><a href="#1-1-SystemServer启动RecoverySystemService" class="headerlink" title="1.1 SystemServer启动RecoverySystemService"></a>1.1 SystemServer启动RecoverySystemService</h4><p>作为系统启动关键服务，需要在SystemServer的startBootstrapServices中通过SystemServiceManager来启动RecoverySystemService。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/java/com/android/server/SystemServer.java</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startBootstrapServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        mSystemServiceManager.startService(RecoverySystemService.class);</span><br><span class="line">        ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/10/05/Framework/Framework层Recovery浅析/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/07/Framework/WindowsManagerService的启动过程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/09/07/Framework/WindowsManagerService的启动过程/" class="post-title-link" itemprop="url">WindowsManagerService 的启动过程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-09-07 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-07T00:00:00+08:00">2018-09-07</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、WMS的启动"><a href="#一、WMS的启动" class="headerlink" title="一、WMS的启动"></a>一、WMS的启动</h3><h4 id="1-SystemServer启动WMS"><a href="#1-SystemServer启动WMS" class="headerlink" title="1. SystemServer启动WMS"></a>1. SystemServer启动WMS</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/java/com/android/server/SystemServer.java</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startOtherServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            ...</span><br><span class="line">            <span class="comment">// WMS依赖sensor服务</span></span><br><span class="line">            ConcurrentUtils.waitForFutureNoInterrupt(mSensorServiceStart, START_SENSOR_SERVICE);</span><br><span class="line">            mSensorServiceStart = <span class="keyword">null</span>;</span><br><span class="line">            wm = WindowManagerService.main(context, inputManager,</span><br><span class="line">                    mFactoryTestMode != FactoryTest.FACTORY_TEST_LOW_LEVEL,</span><br><span class="line">                    !mFirstBoot, mOnlyCore, <span class="keyword">new</span> PhoneWindowManager());</span><br><span class="line">            ServiceManager.addService(Context.WINDOW_SERVICE, wm, <span class="comment">/* allowIsolated= */</span> <span class="keyword">false</span>,</span><br><span class="line">                    DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PROTO);</span><br><span class="line">            ServiceManager.addService(Context.INPUT_SERVICE, inputManager,</span><br><span class="line">                    <span class="comment">/* allowIsolated= */</span> <span class="keyword">false</span>, DUMP_FLAG_PRIORITY_CRITICAL);</span><br><span class="line">            mActivityManagerService.setWindowManager(wm);</span><br><span class="line">            wm.onInitReady();</span><br><span class="line">            ...</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RuntimeException e) &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/09/07/Framework/WindowsManagerService的启动过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/09/01/Framework/Launcher的启动过程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/09/01/Framework/Launcher的启动过程/" class="post-title-link" itemprop="url">Launcher 的启动过程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-09-01 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-01T00:00:00+08:00">2018-09-01</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h4 id="1-调用AMS的startHomeActivityLocked方法"><a href="#1-调用AMS的startHomeActivityLocked方法" class="headerlink" title="1.调用AMS的startHomeActivityLocked方法"></a>1.调用AMS的startHomeActivityLocked方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">startHomeActivityLocked</span><span class="params">(<span class="keyword">int</span> userId, String reason)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mFactoryTest == FactoryTest.FACTORY_TEST_LOW_LEVEL</span><br><span class="line">                &amp;&amp; mTopAction == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 在工厂测试模式下，无法找到工厂测试应用，所以只需显示错误消息，不用尝试启动任何操作。</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        Intent intent = getHomeIntent();</span><br><span class="line">        <span class="comment">// 拿到launcher应用的activity/package信息</span></span><br><span class="line">        ActivityInfo aInfo = resolveActivityInfo(intent, STOCK_PM_FLAGS, userId);</span><br><span class="line">        <span class="keyword">if</span> (aInfo != <span class="keyword">null</span>) &#123;</span><br><span class="line">            intent.setComponent(<span class="keyword">new</span> ComponentName(aInfo.applicationInfo.packageName, aInfo.name));</span><br><span class="line">            <span class="comment">// 如果launcher当前正在instrumented则不进行该操作</span></span><br><span class="line">            aInfo = <span class="keyword">new</span> ActivityInfo(aInfo);</span><br><span class="line">            aInfo.applicationInfo = getAppInfoForUser(aInfo.applicationInfo, userId);</span><br><span class="line">            ProcessRecord app = getProcessRecordLocked(aInfo.processName,</span><br><span class="line">                    aInfo.applicationInfo.uid, <span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">if</span> (app == <span class="keyword">null</span> || app.instr == <span class="keyword">null</span>) &#123;</span><br><span class="line">                intent.setFlags(intent.getFlags() | FLAG_ACTIVITY_NEW_TASK);</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> resolvedUserId = UserHandle.getUserId(aInfo.applicationInfo.uid);</span><br><span class="line">                <span class="comment">//用于ANR调试，确认该activity是否是实际启动的activty中的某一个</span></span><br><span class="line">                <span class="keyword">final</span> String myReason = reason + <span class="string">":"</span> + userId + <span class="string">":"</span> + resolvedUserId;</span><br><span class="line">                <span class="comment">//启动launcher应用activity</span></span><br><span class="line">                mActivityStartController.startHomeActivity(intent, aInfo, myReason);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Slog.wtf(TAG, <span class="string">"No home screen found for "</span> + intent, <span class="keyword">new</span> Throwable());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/09/01/Framework/Launcher的启动过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2005,7 +2008,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">101</span>
+                    <span class="site-state-item-count">104</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

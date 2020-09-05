@@ -329,6 +329,506 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/23/Security/AndroidVerifiedBoot问题分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/23/Security/AndroidVerifiedBoot问题分析/" class="post-title-link" itemprop="url">Android Verified Boot 问题分析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-23T00:00:00+08:00">2019-11-23</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、问题处理思路"><a href="#一、问题处理思路" class="headerlink" title="一、问题处理思路"></a>一、问题处理思路</h3><h4 id="1-1-dm-verity问题处理流程"><a href="#1-1-dm-verity问题处理流程" class="headerlink" title="1.1 dm-verity问题处理流程"></a>1.1 dm-verity问题处理流程</h4><p>(1)回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。</p>
+<p>(2)将mmc / ufs寄给供应商，以检查物理块是否损坏。 </p>
+<p>(3)擦除分区并下载软件。</p>
+<p>(4)做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快复制速度。若可以复现该问题，则删除损坏的物理块，请转到步骤3。若不能复现问题，则重复步骤4，或继续观察设备。如果复现问题并重复执行步骤3和步骤4超过 3次，且物理块始终相同，请返回到步骤2。如果物理块并不总是相同，则转到步骤5。</p>
+<p>(5)检查dmesg日志，看是否有任何mmc驱动程序/UFS驱动程序故障。如果有，则向mmc/ufs team提交case协助分析。否则执行步骤6。</p>
+<p>(6)mmc/ufs硬件/驱动程序基本被排除嫌疑，此时可以从DDR角度进行检查。在此设备上进行Qblizzard压力测试。如果测试结果良好，则执行步骤7。如果测试fail，则向DDR team提交case协助分析。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/11/23/Security/AndroidVerifiedBoot问题分析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/17/Security/AndroidVerifiedBoot相关工具/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/17/Security/AndroidVerifiedBoot相关工具/" class="post-title-link" itemprop="url">Android Verified Boot 相关工具</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-17 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-17T00:00:00+08:00">2019-11-17</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、libavb库"><a href="#一、libavb库" class="headerlink" title="一、libavb库"></a>一、libavb库</h3><h4 id="1-1-目录结构"><a href="#1-1-目录结构" class="headerlink" title="1.1 目录结构"></a>1.1 目录结构</h4><p>libavb库用于在设备端执行所有验证，在代码中的路径是external/avb。其目录结构如下：</p>
+<p>(1)libavb：image验证的实现。具有高度可移植性。此代码会兼容C99的C编译器。其中avb_rsa.c/avb_rsa.h和avb_sha.c/avb_sha.h用于内部实现，不应在外部被使用。avb_sysdeps.h用于定义由平台提供的系统依赖项。如果平台提供了标准的C runtime，则可以使用avb_sysdeps_posix.c。</p>
+<p>(2)libavb_atx：用于验证public key metadata的Android Things扩展。</p>
+<p>(3)libavb_user：用于Android用户空间的AvbOps实现。在boot_control.avb和avbctl中被使用。</p>
+<p>(4)libavb_ab：用于bootloader和适用于A/B系统的AVB实现(已于2018年6月1日弃用，必须定义AVB_AB_I_UNDERSTAND_LIBAVB_AB_IS_DEPRECATED才能使用它）。</p>
+<p>(5)boot_control：使用libavb_ab 堆栈与bootloader一起使用的Android boot_control HAL的实现（已于2018年6月1日弃用）。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/11/17/Security/AndroidVerifiedBoot相关工具/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/10/Security/AndroidVerifiedBoot使能方式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/10/Security/AndroidVerifiedBoot使能方式/" class="post-title-link" itemprop="url">Android Verified Boot 使能方式</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-10 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-10T00:00:00+08:00">2019-11-10</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、使能Verified-Boot-1-0"><a href="#一、使能Verified-Boot-1-0" class="headerlink" title="一、使能Verified Boot 1.0"></a>一、使能Verified Boot 1.0</h3><h4 id="1-1-QCT平台使能配置"><a href="#1-1-QCT平台使能配置" class="headerlink" title="1.1 QCT平台使能配置"></a>1.1 QCT平台使能配置</h4><p>(1)在kernel/msm-4.4/arch/arm64/configs/$project_defconfig中打开dm-verity功能：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_DM_VERITY=y</span><br><span class="line">CONFIG_DM_VERITY_FEC=y</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/11/10/Security/AndroidVerifiedBoot使能方式/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/11/02/Security/AndroidVerifiedBootVBMeta简介/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1460,497 +1960,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/07/14/Boot/开机时间优化总结/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/07/14/Boot/开机时间优化总结/" class="post-title-link" itemprop="url">开机时间优化总结</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-14 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-14T00:00:00+08:00">2019-07-14</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>开机时间：从按下Power键到进入Launcher界面这个过程所花费的时间。<br>开机顺序：(preloader -&gt;) lk -&gt; kernel -&gt; init -&gt; Zygote -&gt; SystemServer -&gt; PMS -&gt; Launcher。<br>关于每个阶段的启动细节请参阅前面的文章，本文将重点介绍开机时间优化的策略。</p>
-<h3 id="一、分析工具"><a href="#一、分析工具" class="headerlink" title="一、分析工具"></a>一、分析工具</h3><p>除了uart 、 logcat日志，Android提供了bootchart，MTK提供了bootprof用于分析开机时间。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/07/14/Boot/开机时间优化总结/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/07/06/Other/VNDK那些事儿/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/07/06/Other/VNDK那些事儿/" class="post-title-link" itemprop="url">VNDK 那些事儿</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-06 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-06T00:00:00+08:00">2019-07-06</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Other/" itemprop="url" rel="index"><span itemprop="name">Other</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、VNDK概述"><a href="#一、VNDK概述" class="headerlink" title="一、VNDK概述"></a>一、VNDK概述</h3><p>VNDK(Vendor Native Development Kit)是一组专门用于vendor实现其HAL的lib库。因为自Android 8.0以来，Google引入了Treble架构，希望对vendor和system分区进行解耦处理，期待实现：framwork进程不加载vendor共享库，vendor进程仅加载vendor共享库（和部分framework共享库），而framework进程和vendor进程之间通过HIDL和hwbinder来通信。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/07/06/Other/VNDK那些事儿/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/06/22/Boot/SystemServer启动流程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/22/Boot/SystemServer启动流程/" class="post-title-link" itemprop="url">SystemServer 的启动流程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-22 00:00:00" itemprop="dateCreated datePublished" datetime="2019-06-22T00:00:00+08:00">2019-06-22</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>在Android中，包括AMS、PMS、WMS在内几乎所有核心服务都会运行在SystemServer进程里。它是由Zygote fork生成的（前面我们已经分析过Zygote的启动），下面我们一起来分析下SystemServer的启动过程。</p>
-<p><img src="/images/boot_system_server.png" alt></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/06/22/Boot/SystemServer启动流程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1999,7 +2008,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">101</span>
+                    <span class="site-state-item-count">104</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
