@@ -428,7 +428,8 @@
 
       
         
-          <p>(1)PackageManagerService.addForInitLI<br>(2)PackageManagerService.collectCertificatesLI<br>(3)PackageParser.setSigningDetails<br>(4)ParsingPackageUtils.getSigningDetails<br>(5)ApkSignatureVerifier.verify<br>(6)ApkSignatureVerifier.verifySignatures<br>(7)ApkSignatureVerifier.verifyV3AndBelowSignatures<br>(8)ApkSignatureVerifier.verifyV3Signature<br>(9)ApkSignatureSchemeV3Verifier.verify<br>(11)ApkSignatureSchemeV3Verifier.findSignature<br>(11)ApkSigningBlockUtils.findSignature<br>(12)ApkSigningBlockUtils.getEocd<br>(13)ZipUtils.findZipEndOfCentralDirectoryRecord<br>(14)ZipUtils.isZip64EndOfCentralDirectoryLocatorPresent<br>(15)ApkSigningBlockUtils.getCentralDirOffset<br>(16)ZipUtils.getZipEocdCentralDirectoryOffset<br>(17)ZipUtils.getZipEocdCentralDirectorySizeBytes<br>(18)ApkSigningBlockUtils.findApkSigningBlock<br>(19)ApkSigningBlockUtils.findApkSignatureSchemeBlock<br>(20)ApkSigningBlockUtils.sliceFromTo<br>(21)ApkSignatureSchemeV3Verifier.verifySigner<br>(22)ApkSigningBlockUtils.isSupportedSignatureAlgorithm<br>(23)ApkSigningBlockUtils.compareSignatureAlgorithm<br>(24)ApkSigningBlockUtils.getSignatureAlgorithmContentDigestAlgorithm<br>(25)ApkSigningBlockUtils.compareContentDigestAlgorithm<br>(26)ApkSigningBlockUtils.getSignatureAlgorithmJcaKeyAlgorithm<br>(27)ApkSigningBlockUtils.getSignatureAlgorithmJcaSignatureAlgorithm<br>(28)ApkSignatureSchemeV3Verifier.verifyAdditionalAttributes<br>(29)ApkSignatureSchemeV3Verifier.verifyProofOfRotationStruct<br>(30)ApkSignatureSchemeV3Verifier.VerifiedProofOfRotation<br>(31)ApkSignatureSchemeV3Verifier.VerifiedSigner<br>(32)ApkSigningBlockUtils.verifyIntegrity<br>(33)ApkSigningBlockUtils.verifyIntegrityFor1MbChunkBasedAlgorithm<br>(34)ApkSigningBlockUtils.computeContentDigestsPer1MbChunk<br>(35)ApkSigningBlockUtils.getContentDigestAlgorithmOutputSizeBytes<br>(36)ApkSigningBlockUtils.setUnsignedInt32LittleEndian<br>(37)ApkSigningBlockUtils.MultipleDigestDataDigester<br>(38)ApkSigningBlockUtils.getContentDigestAlgorithmJcaDigestAlgorithm<br>(39)ApkSigningBlockUtils.verifyIntegrityForVerityBasedAlgorithm<br>(40)ApkSigningBlockUtils.parseVerityDigestAndVerifySourceLength<br>(41)ApkSignatureVerifier.convertToSignatures</p>
+          <p>若之前有跟过 APK 的安装过程，就会知道：无论是用户自己安装 APK 还是开机系统扫描安装预置 APK，都会在 PMS 的 addForInitLI 方法中调用 PackageParser 来解析它。只是系统预置的 APK 验证过程有些不同，因为系统分区受 AVB 保护，所以默认该分区中的应用是可信的，通常不会进行完整的验证，而是只验证 Signing Block 的数据加快安装速度。</p>
+<p>首先，来看看采用 v3 签名方案的 APK 的验证过程时序图：</p>
 <p><img src="/images/verify_v3_signature_flow.png" alt></p>
           <!--noindex-->
           
@@ -593,7 +594,6 @@
       
         
           <p>若之前有跟过 APK 的安装过程，就会知道：无论是用户自己安装 APK 还是开机系统扫描安装预置 APK，都会在 PMS 的 addForInitLI 方法中调用 PackageParser 来解析它。只是系统预置的 APK 验证过程有些不同，因为系统分区受 AVB 保护，所以默认该分区中的应用是可信的，通常不会进行完整的验证，而是只验证 Signing Block 的数据加快安装速度。</p>
-<p>如果你有解压过 v2 签名的 APK 就会发现在 META-INF 文件夹，包含 CERT.RSA、CERT.SF、MANIFEST.MF 三个文件。这些文件在 APK 验签过程中分别扮演什么角色呢？请跟着本文来了解一下 v2 签名方案的验证过程吧。</p>
 <p>首先，来看看采用 v2 签名方案的 APK 的验证过程时序图：</p>
 <p><img src="/images/verify_v2_signature_flow.png" alt></p>
           <!--noindex-->
