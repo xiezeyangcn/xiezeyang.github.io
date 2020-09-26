@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="一、Linux Capabilites1.1 Linux Capabilities 概述为了执行权限检查，传统的 UNIX 将进程分为两类：特权进程（user ID为0，对应 root 用户）和非特权进程（UID 非零）。特权进程能绕过所有 kernel 权限检查，而非特权进程则根据进程的凭据（有效 UID、GID 和附加 group）接受完整的权限检查。以前作为普通用户，如果想执行一些只有管理员">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-09-26T06:15:59.467Z">
+<meta property="og:updated_time" content="2020-09-26T06:20:12.074Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux 及 Android Capabilities 概述">
 <meta name="twitter:description" content="一、Linux Capabilites1.1 Linux Capabilities 概述为了执行权限检查，传统的 UNIX 将进程分为两类：特权进程（user ID为0，对应 root 用户）和非特权进程（UID 非零）。特权进程能绕过所有 kernel 权限检查，而非特权进程则根据进程的凭据（有效 UID、GID 和附加 group）接受完整的权限检查。以前作为普通用户，如果想执行一些只有管理员">
@@ -426,6 +426,7 @@
 
       
         <h4 id="一、Linux-Capabilites"><a href="#一、Linux-Capabilites" class="headerlink" title="一、Linux Capabilites"></a>一、Linux Capabilites</h4><h5 id="1-1-Linux-Capabilities-概述"><a href="#1-1-Linux-Capabilities-概述" class="headerlink" title="1.1 Linux Capabilities 概述"></a>1.1 Linux Capabilities 概述</h5><p>为了执行权限检查，传统的 UNIX 将进程分为两类：特权进程（user ID为0，对应 root 用户）和非特权进程（UID 非零）。特权进程能绕过所有 kernel 权限检查，而非特权进程则根据进程的凭据（有效 UID、GID 和附加 group）接受完整的权限检查。以前作为普通用户，如果想执行一些只有管理员具备的权限操作，只有两种方法：一种是通过”sudo”提升权限，但用户太多时管理配置十分麻烦；另一种方法是通过 SUID(set-user-id on execution)让普通用于允许一个 owner 为 root 的可执行文件具备 root 权限。但是 SUID 机制存在一个安全风险，即通常只需要一部分特权，但如果使用 SUID 会授予 root 的全部权限，这样被攻击的安全风险就被增加了。于是，从 kernel 2.2 开始，Linux 将传统上与 root 用户相关的特权划分为不同的单元，称为功能（Capabilities），可以独立地被启用和禁用。Capabilities 是每个线程的属性。它可以按需授权，更安全。</p>
+<a id="more"></a>
 <h6 id="1-1-1-Linux-Capabilities-列表"><a href="#1-1-1-Linux-Capabilities-列表" class="headerlink" title="1.1.1 Linux Capabilities 列表"></a>1.1.1 Linux Capabilities 列表</h6><p>下面列出了 Linux 上实现的 capabilities，以及每种 capablities 允许的操作或行为：</p>
 <table>
 <thead>

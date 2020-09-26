@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="1. APK 签名方案简介在 Android 上，APK 签名是将 APK 放入 APK Sandbox 的第一步。已签名的 APK 证书定义了哪个用户 ID 与哪个 APK 关联，不同 APK 要以不同的用户 ID 运行。APK 签名可确保一个 APK 无法访问任何其他 APK 的数据。当 APK 安装到设备上时，PackageManagerService 会验证 APK 是否已经签过名。若其签">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-09-26T06:06:17.778Z">
+<meta property="og:updated_time" content="2020-09-26T06:20:17.336Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="APK 签名方案概述">
 <meta name="twitter:description" content="1. APK 签名方案简介在 Android 上，APK 签名是将 APK 放入 APK Sandbox 的第一步。已签名的 APK 证书定义了哪个用户 ID 与哪个 APK 关联，不同 APK 要以不同的用户 ID 运行。APK 签名可确保一个 APK 无法访问任何其他 APK 的数据。当 APK 安装到设备上时，PackageManagerService 会验证 APK 是否已经签过名。若其签">
@@ -427,6 +427,7 @@
       
         <h4 id="1-APK-签名方案简介"><a href="#1-APK-签名方案简介" class="headerlink" title="1. APK 签名方案简介"></a>1. APK 签名方案简介</h4><p>在 Android 上，APK 签名是将 APK 放入 APK Sandbox 的第一步。已签名的 APK 证书定义了哪个用户 ID 与哪个 APK 关联，不同 APK 要以不同的用户 ID 运行。APK 签名可确保一个 APK 无法访问任何其他 APK 的数据。当 APK 安装到设备上时，PackageManagerService 会验证 APK 是否已经签过名。若其签名证书和其他 APK 的签名一致，则它们会共用一个UID。</p>
 <p>Android 支持以下四种签名方案：<br>（1）v1: 是一种基于 JAR 签名的方案，Android 系统一开始对其提供支持。它不保护 APK 的 ZIP 元数据部分，存在的安全风险较大。<br>（2）v2: 是 Android 7.0 引入的一种全文件签名方案，它能够发现对 APK 受保护部分进行的所有更改，从而提升验证速度并增强完整性保护。在签名时，会在 APK 文件中插入一个 “APK Signing Block”，该分块位于 “ZIP Central Dirctory” 部分之前并金紧邻该部分。v2 签名和签名者身份信息会存储在 “APK Signing Block” 内。<br>（3）v3: 9.0 引入的，会将 APK 视为 blob，并对整个文件进行签名检查。对 APK 进行的任何修改都会使 APK 签名作废。其验证不仅速度要更快，而且能发现未经授权的篡改。<br>（4）v4: 11.0 引入的 APK 签名方案。</p>
+<a id="more"></a>
 <h4 id="2-V1-签名方案"><a href="#2-V1-签名方案" class="headerlink" title="2. V1 签名方案"></a>2. V1 签名方案</h4><p>JAR 签名的 APK 是一种标准的签名 JAR，其中包含的条目必须与 META-INF/MANIFEST.MF 中列出的条目完全相同，并且所有条目都必须由同一组签名者签名。其完整性按照以下方式进行验证：<br>(1)每个签名者均由一个包含 META-INF/<signer>.SF 和 META-INF/<signer>.(RSA|DSA|EC) 的 JAR 条目来表示。<br>(2)<signer>.(RSA|DSA|EC) 是具有 SignedData 结构的 PKCS #7 CMS ContentInfo，其签名通过 <signer>.SF 进行验证。<br>(3)<signer>.SF 文件包含 META-INF/MANIFEST.MF 的全文件摘要和 META-INF/MANIFEST.MF 各个部分的摘要。需要验证 MANIFEST.MF 的全文件摘要。如果该验证失败，则改为验证 MANIFEST.MF 各个部分的摘要。<br>(4)对于每个受完整性保护的 JAR 条目，META-INF/MANIFEST.MF 都包含一个具有相应名称的部分，其中包含相应条目未压缩内容的摘要。所有这些摘要都需要验证。<br>(5)如果 APK 包含未在 MANIFEST.MF 中列出且不属于 JAR 签名一部分的 JAR 条目，APK 验证将会失败。</signer></signer></signer></signer></signer></p>
 <p>因此，保护链是每个受完整性保护的 JAR 条目的 <signer>.(RSA|DSA|EC) -&gt; <signer>.SF -&gt; MANIFEST.MF -&gt; 内容。</signer></signer></p>
 <h4 id="3-V2-签名方案"><a href="#3-V2-签名方案" class="headerlink" title="3. V2 签名方案"></a>3. V2 签名方案</h4><h5 id="3-1-APK-Signing-Block"><a href="#3-1-APK-Signing-Block" class="headerlink" title="3.1 APK Signing Block"></a>3.1 APK Signing Block</h5><p>“APK Signing Block” 包含多个 “ID-Value” 对，其中 v2 签名对应的 ID 为 “0x7109871a”(4个字节)。”APK Signing Block” 中所有数字字段均采用小端字节排序，其格式如下：</p>
