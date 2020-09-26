@@ -825,6 +825,169 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/19/Security/LK的AVB验证流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/19/Security/LK的AVB验证流程/" class="post-title-link" itemprop="url">LK 的 AVB 验证流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-19 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-19T00:00:00+08:00">2019-01-19</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-load-vfy-boot函数"><a href="#1-load-vfy-boot函数" class="headerlink" title="1 load_vfy_boot函数"></a>1 load_vfy_boot函数</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">load_vfy_boot</span><span class="params">(<span class="keyword">uint32_t</span> bootimg_type, <span class="keyword">uint32_t</span> addr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> FEATURE_XBOOT</span></span><br><span class="line">    <span class="keyword">if</span>(bootimg_type != BOOTIMG_TYPE_XFL) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">uint32_t</span> img_vfy_time = <span class="number">0</span>;</span><br><span class="line">    AvbSlotVerifyResult ret = AVB_SLOT_VERIFY_RESULT_OK;</span><br><span class="line">    AvbSlotVerifyData *slot_data = <span class="literal">NULL</span>;</span><br><span class="line">    AvbSlotVerifyFlags avb_flag = AVB_SLOT_VERIFY_FLAGS_NONE;</span><br><span class="line">    <span class="keyword">uint32_t</span> lock_state = LKS_DEFAULT;</span><br><span class="line">    img_vfy_time = get_timer(<span class="number">0</span>);</span><br><span class="line">    g_boot_state = BOOT_STATE_RED;</span><br><span class="line">    <span class="keyword">if</span> (load_bootimg_hdr(bootimg_type) != <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">/* heap initialization for avb */</span></span><br><span class="line">    avb_heap_sz = AVB_HEAP_SZ;</span><br><span class="line">    pal_log_debug(<span class="string">"[avb] avb heap alloc size 0x%x\n"</span>, avb_heap_sz);</span><br><span class="line">    avb_heap = (<span class="keyword">void</span> *)mblock_reserve_ext(&amp;g_boot_arg-&gt;mblock_info,</span><br><span class="line">                          avb_heap_sz,</span><br><span class="line">                          <span class="number">4</span> * KB,</span><br><span class="line">                          <span class="number">0xc0000000</span>,</span><br><span class="line">                          <span class="number">0</span>,</span><br><span class="line">                          <span class="string">"avb"</span>);</span><br><span class="line">    <span class="keyword">if</span> (avb_heap == <span class="number">0</span>) &#123;</span><br><span class="line">        pal_log_err(<span class="string">"[avb] avb heap alloc fails\n"</span>);</span><br><span class="line">        avb_heap_sz = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        pal_log_debug(<span class="string">"[avb] avb heap alloc 0x%x\n"</span>, (<span class="keyword">uint32_t</span>)avb_heap);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (boot_authentication(bootimg_type) == <span class="number">0</span>)</span><br><span class="line">        avb_flag = AVB_SLOT_VERIFY_FLAGS_ALLOW_VERIFICATION_ERROR;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (bootimg_type) &#123;</span><br><span class="line">    <span class="keyword">case</span> BOOTIMG_TYPE_BOOT:</span><br><span class="line">    <span class="keyword">case</span> BOOTIMG_TYPE_RECOVERY:</span><br><span class="line">        <span class="comment">// Both preloader and avb_ab_flow function decrease tries_remaining variable</span></span><br><span class="line">        <span class="comment">// when successfully_boot is equal to 0, so it needs to increase tries_remaining</span></span><br><span class="line">        <span class="comment">// here.</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// Increase tries_remaining only in following three conditions</span></span><br><span class="line">        <span class="comment">// 1. tries_remaining &lt; AVB_AB_MAX_TRIES_REMAINING</span></span><br><span class="line">        <span class="comment">// 2. tries_remaining &gt; 0 </span></span><br><span class="line">        <span class="comment">// 3. successful_boot is equal to 0</span></span><br><span class="line">        increase_tries_remaining();</span><br><span class="line">        ret = avb_ab_flow(&amp;ab_ops,</span><br><span class="line">                  boot_partitions,</span><br><span class="line">                  avb_flag,</span><br><span class="line">                  AVB_HASHTREE_ERROR_MODE_RESTART_AND_INVALIDATE,</span><br><span class="line">                  &amp;slot_data);</span><br><span class="line"></span><br><span class="line">        pal_log_err(<span class="string">"[avb] load_vfy_boot: avb_flag = %d\n"</span>, avb_flag);</span><br><span class="line">        <span class="keyword">if</span> (avb_flag &amp; AVB_SLOT_VERIFY_FLAGS_ALLOW_VERIFICATION_ERROR)</span><br><span class="line">            ret = AVB_SLOT_VERIFY_RESULT_OK;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (ret != AVB_SLOT_VERIFY_RESULT_OK)</span><br><span class="line">            <span class="keyword">goto</span> end;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        ret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_ARGUMENT;</span><br><span class="line">        <span class="keyword">goto</span> end;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ret == AVB_SLOT_VERIFY_RESULT_OK) &#123;</span><br><span class="line">        ret = boot_post_processing(bootimg_type, slot_data);</span><br><span class="line">        <span class="keyword">if</span> (ret)</span><br><span class="line">            <span class="keyword">goto</span> end;</span><br><span class="line">        g_boot_state = BOOT_STATE_GREEN;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">end:</span><br><span class="line">    pal_log_err(<span class="string">"[avb] boot/recovery vfy time = %d ms\n"</span>,</span><br><span class="line">            (<span class="keyword">unsigned</span> <span class="keyword">int</span>)get_timer(img_vfy_time));</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* After this function call, memory is returned to lk.</span></span><br><span class="line"><span class="comment">     * Please avoid using avb_heap after this function call</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    mblock_create(&amp;g_boot_arg-&gt;mblock_info,</span><br><span class="line">              &amp;g_boot_arg-&gt;orig_dram_info,</span><br><span class="line">              (<span class="keyword">uint64_t</span>)avb_heap &amp; <span class="number">0xffffffff</span>,</span><br><span class="line">              (<span class="keyword">uint64_t</span>)avb_heap_sz &amp; <span class="number">0xffffffff</span>);</span><br><span class="line"></span><br><span class="line">    pal_log_err(<span class="string">"[avb] load_vfy_boot: ret = %d\n"</span>, ret);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* if device state is "unlocked," override</span></span><br><span class="line"><span class="comment">     * boot state with "ORANGE."</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ret = get_lock_state(&amp;lock_state);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">0</span> &amp;&amp; lock_state == LKS_UNLOCK)</span><br><span class="line">        g_boot_state = BOOT_STATE_ORANGE;</span><br><span class="line"></span><br><span class="line">    ret = (<span class="keyword">int</span>)handle_vboot_state();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> FEATURE_XBOOT</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">int</span> status = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">char</span> bootimg_name[<span class="number">16</span>];</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">int</span> kimg_load_addr = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">char</span> vboot_cmdline[TMPBUF_SIZE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">        <span class="keyword">char</span> vboot_cmdline_ab[TMPBUF_SIZE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (load_bootimg_hdr(bootimg_type) != <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g_is_64bit_kernel)</span><br><span class="line">            kimg_load_addr = (<span class="keyword">uint32_t</span>)target_get_scratch_address();</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            kimg_load_addr = (<span class="keyword">uint32_t</span>)get_kernel_target_addr();</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* load xflimg with suffix: xfl_a or xfl_b */</span></span><br><span class="line">        <span class="built_in">snprintf</span>(bootimg_name, <span class="keyword">sizeof</span>(bootimg_name), <span class="string">"xfl%s"</span>, get_suffix());</span><br><span class="line"></span><br><span class="line">        status = mboot_android_load_bootimg_hdr(bootimg_name, addr);</span><br><span class="line">        <span class="keyword">if</span> (status &lt; <span class="number">0</span>)</span><br><span class="line">            msg_header_error(<span class="string">"Android Boot Image"</span>);</span><br><span class="line"></span><br><span class="line">        status = mboot_android_load_bootimg(bootimg_name, kimg_load_addr);</span><br><span class="line">        <span class="keyword">if</span> (status &lt; <span class="number">0</span>)</span><br><span class="line">            msg_img_error(<span class="string">"Android Boot Image"</span>);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            set_bootimg_loaded(kimg_load_addr);</span><br><span class="line"></span><br><span class="line">        cmdline_append(<span class="string">"root=/dev/ram"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">snprintf</span>(vboot_cmdline_ab, TMPBUF_SIZE,</span><br><span class="line">            <span class="string">"androidboot.slot_suffix=%s androidboot.slot=%s"</span>,</span><br><span class="line">            get_suffix(), get_suffix() + <span class="number">1</span>);</span><br><span class="line">        cmdline_append(vboot_cmdline_ab);</span><br><span class="line"></span><br><span class="line">        dm_verity_handler();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> status;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/01/19/Security/LK的AVB验证流程/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/12/Security/Keymaster的SPL版本绑定/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1758,174 +1921,6 @@
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/12/02/OTA/AB系统升级之bootctrl流程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/24/OTA/AB系统升级概述/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/11/24/OTA/AB系统升级概述/" class="post-title-link" itemprop="url">AB 系统升级概述</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-11-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-24T00:00:00+08:00">2018-11-24</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OTA/" itemprop="url" rel="index"><span itemprop="name">OTA</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、A-B系统更新的特点"><a href="#一、A-B系统更新的特点" class="headerlink" title="一、A/B系统更新的特点"></a>一、A/B系统更新的特点</h3><p>&emsp;所谓A/B系统，即有A和B两套系统，一套系统分区，另一套备份分区。这两套系统出厂时一样，此后可能不一样。即一个新版本，另一个旧版本，旧版本升级至新版本，不断更新切换。</p>
-<p>&emsp;A/B系统更新又称之为无缝更新(Seamless updates),具有以下几个特点：</p>
-<p>&emsp;<1>OTA更新在系统后台运行，该过程中用户仍可以正常使用设备。待更新完成后，需重启一次方可进入新系统。</1></p>
-<p>&emsp;<2>OTA更新失败后(OTA更新无法应用或应用后无法启动)，设备可重启回滚到旧分区继续使用，并重新尝试更新升级。</2></p>
-<p>&emsp;<3>可采用流式升级方式，即无需/data或/cache分区留出足够空间用于存储下载的升级包，也可进行OTA升级。</3></p>
-<p>&emsp;<4>确保在OTA更新期间磁盘上保留一套可以正常启动使用的系统，减少刷机变砖的可能性，减轻售后服务工作量。</4></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/11/24/OTA/AB系统升级概述/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>

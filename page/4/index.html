@@ -1907,7 +1907,7 @@
       
         
           <p>LK的全称是litter kernel，同u-boot类似，它也是一种bootloader程序。</p>
-<p>lk代码通常位于bootable/bootloader/lk目录，其树结构如下：<br>├── AndroidBoot.mk<br>├── app                   :lk中应用，如fastboot，shell等<br>├── arch                  :架构相关，如arm，x86等<br>├── dev                   :通用设备接口，如usb，lcm等<br>├── include               :头文件<br>├── kernel                :lk核心模块，包括thread，timer等<br>├── lib                   :–&gt;一些c库<br>├── LICENSE<br>├── make                  :lk编译脚本<br>├── makefile<br>├── platform              :不同平台/芯片对应的mtk驱动<br>├── project               :不同项目的makefile文件<br>├── scripts               :JTAG脚本<br>├── target                :具体目标设备的定义及初始化</p>
+<p>lk代码通常位于bootable/bootloader/lk目录，其树结构如下：<br>├── AndroidBoot.mk<br>├── app                   :lk中应用，如fastboot，shell等<br>├── arch                  :架构相关，如arm，x86等<br>├── dev                   :通用设备接口，如usb，lcm等<br>├── include               :头文件<br>├── kernel                :lk核心模块，包括thread，timer等<br>├── lib                   :–&gt;一些c库<br>├── LICENSE<br>├── make                  :lk编译脚本<br>├── makefile<br>├── platform              :不同平台/芯片对应的驱动<br>├── project               :不同项目的makefile文件<br>├── scripts               :JTAG脚本<br>├── target                :具体目标设备的定义及初始化</p>
 <p>lk主要完成以下工作：<br>1.初始化硬件，设置中断向量表，初始化MMU，Cache，USB等。<br>2.加载boot.img，引导系统启动。<br>3.对不同boot模式的支持，如fastboot，recovery，download mode等。</p>
           <!--noindex-->
           
