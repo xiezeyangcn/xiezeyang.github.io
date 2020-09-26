@@ -111,7 +111,7 @@
 <meta property="og:image" content="http://www.xiezeyang.com/images/defconfig_changed.png">
 <meta property="og:image" content="http://www.xiezeyang.com/images/load_vfy_boot_ab_changed.png">
 <meta property="og:image" content="http://www.xiezeyang.com/images/avb_slot_verify_changed2.png">
-<meta property="og:updated_time" content="2019-12-08T06:30:20.742Z">
+<meta property="og:updated_time" content="2020-09-26T05:28:40.053Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android Verified Boot 问题分析">
 <meta name="twitter:description" content="一、问题处理思路1.1 dm-verity问题处理流程(1)回读整个system分区并与正确的分区进行比较。确认system.img中的数据是否已损坏？若是，则执行步骤2或步骤3。若不是，则执行步骤4。 (2)将mmc / ufs寄给供应商，以检查物理块是否损坏。  (3)擦除分区并下载软件。 (4)做更多的压力测试以验证system.img。如将数据从system复制到userdata分区以加快">
@@ -522,7 +522,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[partition_get_index]find boot_b index 38</span><br><span class="line">[AVB20]malloc: heap size not enough</span><br><span class="line">avbutil.c[2701] 199[2701]: ERROR: [2701] Failed to allocate memory.</span><br></pre></td></tr></table></figure>
 <p>(2)解决方案：</p>
 <p>修改boot分区大小时同步修改AVB_HEAP_SZ</p>
-<p>vendor/mediatek/proprietary/bootable/bootloader/lk/platform/common/boot/avb20/load_vfy_boot_ab.c</p>
+<p>bootable/bootloader/lk/platform/common/boot/avb20/load_vfy_boot_ab.c</p>
 <p><img src="/images/load_vfy_boot_ab_changed.png" alt></p>
 <h4 id="2-5-分区slot后缀未过滤导致无法加载"><a href="#2-5-分区slot后缀未过滤导致无法加载" class="headerlink" title="2.5 分区slot后缀未过滤导致无法加载"></a>2.5 分区slot后缀未过滤导致无法加载</h4><p>(1)uart异常日志:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[3590] Loading image system_a</span><br><span class="line">[3610] read from system_a, 0x740 bytes at Offset 0xfff2a000, partition size 3011510272</span><br><span class="line">[3630] LastBlock 0x7ff953, ReadOffset 0x0, read_size 0x140</span><br><span class="line">[3630] FullBlock 0x7ff950, ReadOffset 0x0, read_size 0x600 outside range. StartPageReadSize 0x0 PageSize 512 ptn 0xb3800000 Buffer 0x8f7aedc0</span><br><span class="line">[3670] ReadRollbackIndex Location 2, RollbackIndex 0</span><br><span class="line">[3690] avb_slot_verify.c: dtbo_a : Loading entire partition.</span><br><span class="line">[3690] avb_slot_verify.c: load_and_verify_hash_partition.</span><br><span class="line">[3720] Loaded image [boot|22044672]</span><br><span class="line">[3720] Loaded image [dtbo|8388608]</span><br><span class="line">[3720] Loaded image [vbmeta|65536]</span><br><span class="line">[3730] Loading image dtbo_a</span><br><span class="line">[3750] read from dtbo_a, 0x800000 bytes at Offset 0x0, partition size 260046848</span><br><span class="line">[3770] FullBlock 0x0, ReadOffset 0x0, read_size 0x800000 outside range. StartPageReadSize 0x0 PageSize 512 ptn 0xf800000 Buffer 0x8f77b428</span><br><span class="line">[3780] Error: ADMA error</span><br><span class="line">[3780] MMC card is not in TRAN state</span><br><span class="line">[3790] Failed Reading block @ 7c000</span><br><span class="line">[3790] ReadBlocks failed 1</span><br><span class="line">[3790] data abort, halting</span><br></pre></td></tr></table></figure>
@@ -578,8 +578,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/12/08/Security/MTK平台SecureBoot配置过程/" rel="prev" title="MTK 平台 Secure Boot 配置过程">
-                MTK 平台 Secure Boot 配置过程 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/12/15/Tool/Image文件解包及类型转换方法/" rel="prev" title="Image 文件解包及类型转换方法">
+                Image 文件解包及类型转换方法 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -651,7 +651,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">104</span>
+                    <span class="site-state-item-count">98</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

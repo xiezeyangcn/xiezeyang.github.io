@@ -329,664 +329,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/24/Boot/Init-rc文件语法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/24/Boot/Init-rc文件语法/" class="post-title-link" itemprop="url">Init rc 文件语法</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-24 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-24T00:00:00+08:00">2019-03-24</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>Android init语言支持这五类语句：Actions, Commands, Services, Options, and Imports。其中<code>#</code>是注释符号，init.rc是主rc文件。</p>
-<h3 id="一、Actions"><a href="#一、Actions" class="headerlink" title="一、Actions"></a>一、Actions</h3><p>Actions种命令序列，它有一个trigger用于确定何时执行该操作。当一个事件同一个action的trigger匹配时，则将该action添加至待执行命令序列的队尾（除非已经存在于队列中）。队列中每个action都是按顺序出列执行的，包括设备创建/销毁、属性设置、进程重启等行为。其格式如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">on &lt;trigger1&gt;</span><br><span class="line">    &lt;command1&gt;</span><br><span class="line">on &lt;trigger2&gt; [&amp;&amp; &lt;trigger2&gt;]*</span><br><span class="line">    &lt;command2&gt;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/03/24/Boot/Init-rc文件语法/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/16/Boot/Init的启动流程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/16/Boot/Init的启动流程/" class="post-title-link" itemprop="url">Init 的启动流程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-16T00:00:00+08:00">2019-03-16</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>下面先看看main函数</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(basename(argv[<span class="number">0</span>]), <span class="string">"ueventd"</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> ueventd_main(argc, argv);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(basename(argv[<span class="number">0</span>]), <span class="string">"watchdogd"</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> watchdogd_main(argc, argv);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (argc &gt; <span class="number">1</span> &amp;&amp; !<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"subcontext"</span>)) &#123;</span><br><span class="line">        InitKernelLogging(argv);</span><br><span class="line">        <span class="keyword">const</span> BuiltinFunctionMap function_map;</span><br><span class="line">        <span class="keyword">return</span> SubcontextMain(argc, argv, &amp;function_map);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Debug版本init crash时重启引导加载程序</span></span><br><span class="line">    <span class="keyword">if</span> (REBOOT_BOOTLOADER_ON_PANIC) &#123;</span><br><span class="line">        InstallRebootSignalHandlers();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 进入init第一阶段</span></span><br><span class="line">    <span class="keyword">bool</span> is_first_stage = (getenv(<span class="string">"INIT_SECOND_STAGE"</span>) == <span class="literal">nullptr</span>);</span><br><span class="line">    <span class="keyword">if</span> (is_first_stage) &#123;</span><br><span class="line">        boot_clock::time_point start_time = boot_clock::now();</span><br><span class="line">        <span class="comment">// 重新设置文件属性0777</span></span><br><span class="line">        umask(<span class="number">0</span>);</span><br><span class="line">        <span class="comment">// 清除环境变量</span></span><br><span class="line">        clearenv();</span><br><span class="line">        setenv(<span class="string">"PATH"</span>, _PATH_DEFPATH, <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// 先获取需要在'/'上需要置于initramdisk中的基础文件系统设置，剩下的则在rc文件中处理</span></span><br><span class="line">        mount(<span class="string">"tmpfs"</span>, <span class="string">"/dev"</span>, <span class="string">"tmpfs"</span>, MS_NOSUID, <span class="string">"mode=0755"</span>);</span><br><span class="line">        mkdir(<span class="string">"/dev/pts"</span>, <span class="number">0755</span>);</span><br><span class="line">        mkdir(<span class="string">"/dev/socket"</span>, <span class="number">0755</span>);</span><br><span class="line">        mount(<span class="string">"devpts"</span>, <span class="string">"/dev/pts"</span>, <span class="string">"devpts"</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">        <span class="meta">#<span class="meta-keyword">define</span> MAKE_STR(x) __STRING(x)</span></span><br><span class="line">        mount(<span class="string">"proc"</span>, <span class="string">"/proc"</span>, <span class="string">"proc"</span>, <span class="number">0</span>, <span class="string">"hidepid=2,gid="</span> MAKE_STR(AID_READPROC));</span><br><span class="line">        <span class="comment">// 不可将原始的commandline开放给非特权进程</span></span><br><span class="line">        chmod(<span class="string">"/proc/cmdline"</span>, <span class="number">0440</span>);</span><br><span class="line">        <span class="keyword">gid_t</span> groups[] = &#123; AID_READPROC &#125;;</span><br><span class="line">        setgroups(arraysize(groups), groups);</span><br><span class="line">        mount(<span class="string">"sysfs"</span>, <span class="string">"/sys"</span>, <span class="string">"sysfs"</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">        mount(<span class="string">"selinuxfs"</span>, <span class="string">"/sys/fs/selinux"</span>, <span class="string">"selinuxfs"</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">        mknod(<span class="string">"/dev/kmsg"</span>, S_IFCHR | <span class="number">0600</span>, makedev(<span class="number">1</span>, <span class="number">11</span>));</span><br><span class="line">        <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(WORLD_WRITABLE_KMSG)</span> </span>&#123;</span><br><span class="line">            mknod(<span class="string">"/dev/kmsg_debug"</span>, S_IFCHR | <span class="number">0622</span>, makedev(<span class="number">1</span>, <span class="number">11</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        mknod(<span class="string">"/dev/random"</span>, S_IFCHR | <span class="number">0666</span>, makedev(<span class="number">1</span>, <span class="number">8</span>));</span><br><span class="line">        mknod(<span class="string">"/dev/urandom"</span>, S_IFCHR | <span class="number">0666</span>, makedev(<span class="number">1</span>, <span class="number">9</span>));</span><br><span class="line">        <span class="comment">// 为vold挂载进程管理的设备设置临时挂载区域</span></span><br><span class="line">        mount(<span class="string">"tmpfs"</span>, <span class="string">"/mnt"</span>, <span class="string">"tmpfs"</span>, MS_NOEXEC | MS_NOSUID | MS_NODEV,</span><br><span class="line">              <span class="string">"mode=0755,uid=0,gid=1000"</span>);</span><br><span class="line">        <span class="comment">// /mnt/vendor用于挂载不属于vendor分区的但由vendor指定的分区，因为它们会以读写权限挂载</span></span><br><span class="line">        mkdir(<span class="string">"/mnt/vendor"</span>, <span class="number">0755</span>);</span><br><span class="line">        <span class="comment">// tmpfs已被挂载在/dev路径下了，即意味着我们可使用/dev/kmsg进行kernel log初始化操作了</span></span><br><span class="line">        InitKernelLogging(argv);</span><br><span class="line">        LOG(INFO) &lt;&lt; <span class="string">"init first stage started!"</span>;</span><br><span class="line">        <span class="keyword">if</span> (!DoFirstStageMount()) &#123;</span><br><span class="line">            LOG(FATAL) &lt;&lt; <span class="string">"Failed to mount required partitions early ..."</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 在recovery下设置AVB版本</span></span><br><span class="line">        SetInitAvbVersionInRecovery();</span><br><span class="line">        <span class="comment">// 若全局启动选项pass，则使能seccop，否则在zygote中使能seccomp</span></span><br><span class="line">        global_seccomp();</span><br><span class="line">        <span class="comment">// 启动SELinux，加载SELinux策略</span></span><br><span class="line">        <span class="comment">// 将selinux相关log写入kmsg</span></span><br><span class="line">        SelinuxSetupKernelLogging();</span><br><span class="line">        SelinuxInitialize();</span><br><span class="line">        <span class="comment">// 当前处于内核域，所以在加载SELinux策略后，需重新执行init以转换至init域</span></span><br><span class="line">        <span class="keyword">if</span> (selinux_android_restorecon(<span class="string">"/init"</span>, <span class="number">0</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">            PLOG(FATAL) &lt;&lt; <span class="string">"restorecon failed of /init failed"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 设置第二阶段环境变量</span></span><br><span class="line">        setenv(<span class="string">"INIT_SECOND_STAGE"</span>, <span class="string">"true"</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">uint32_t</span> kNanosecondsPerMillisecond = <span class="number">1e6</span>;</span><br><span class="line">        <span class="keyword">uint64_t</span> start_ms = start_time.time_since_epoch().count() / kNanosecondsPerMillisecond;</span><br><span class="line">        setenv(<span class="string">"INIT_STARTED_AT"</span>, <span class="built_in">std</span>::to_string(start_ms).c_str(), <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">char</span>* path = argv[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">char</span>* args[] = &#123; path, <span class="literal">nullptr</span> &#125;;</span><br><span class="line">        execv(path, args);</span><br><span class="line">        <span class="comment">// `execv()`仅在发生错误的时候返回，且在该情况下会产生panic并永远无法通过该条件</span></span><br><span class="line">        PLOG(FATAL) &lt;&lt; <span class="string">"execv(\""</span> &lt;&lt; path &lt;&lt; <span class="string">"\") failed"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 开始进入init第二阶段</span></span><br><span class="line">    InitKernelLogging(argv);</span><br><span class="line">    LOG(INFO) &lt;&lt; <span class="string">"init second stage started!"</span>;</span><br><span class="line">    <span class="comment">// 设置所有进程都可以访问的会话密钥环，包括类似FBE加密相关密钥。任何进程都不会覆盖它的会话密钥环。</span></span><br><span class="line">    keyctl_get_keyring_ID(KEY_SPEC_SESSION_KEYRING, <span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 正在后台启动fw加载器等</span></span><br><span class="line">    close(open(<span class="string">"/dev/.booting"</span>, O_WRONLY | O_CREAT | O_CLOEXEC, <span class="number">0000</span>));</span><br><span class="line">    <span class="comment">// 初始化属性</span></span><br><span class="line">    property_init();</span><br><span class="line">    <span class="comment">// 如果在commandline和DT中参数都是pass，则DT中设置的属性优先级总高于command line。</span></span><br><span class="line">    process_kernel_dt();</span><br><span class="line">    process_kernel_cmdline();</span><br><span class="line">    <span class="comment">// init根据当前需要的属性，将内核变量传入内部变量</span></span><br><span class="line">    export_kernel_boot_props();</span><br><span class="line">    <span class="comment">// 标记init启动的时间，并为bootstat记录</span></span><br><span class="line">    property_set(<span class="string">"ro.boottime.init"</span>, getenv(<span class="string">"INIT_STARTED_AT"</span>));</span><br><span class="line">    property_set(<span class="string">"ro.boottime.init.selinux"</span>, getenv(<span class="string">"INIT_SELINUX_TOOK"</span>));</span><br><span class="line">    <span class="comment">// 在支持Treble的软件中，为framework ota设置libavb版本</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* avb_version = getenv(<span class="string">"INIT_AVB_VERSION"</span>);</span><br><span class="line">    <span class="keyword">if</span> (avb_version) property_set(<span class="string">"ro.boot.avb_version"</span>, avb_version);</span><br><span class="line">    <span class="comment">// 基于kernel cmdline参数设置memcg属性值</span></span><br><span class="line">    <span class="keyword">bool</span> memcg_enabled = android::base::GetBoolProperty(<span class="string">"ro.boot.memcg"</span>,<span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">if</span> (memcg_enabled) &#123;</span><br><span class="line">       <span class="comment">// 设定root mem crgoup</span></span><br><span class="line">       mkdir(<span class="string">"/dev/memcg"</span>, <span class="number">0700</span>);</span><br><span class="line">       chown(<span class="string">"/dev/memcg"</span>,AID_ROOT,AID_SYSTEM);</span><br><span class="line">       mount(<span class="string">"none"</span>, <span class="string">"/dev/memcg"</span>, <span class="string">"cgroup"</span>, <span class="number">0</span>, <span class="string">"memory"</span>);</span><br><span class="line">       <span class="comment">// 设置app mem cgroups，用于activity manager, lmkd and zygote</span></span><br><span class="line">       mkdir(<span class="string">"/dev/memcg/apps/"</span>,<span class="number">0755</span>);</span><br><span class="line">       chown(<span class="string">"/dev/memcg/apps/"</span>,AID_SYSTEM,AID_SYSTEM);</span><br><span class="line">       mkdir(<span class="string">"/dev/memcg/system"</span>,<span class="number">0550</span>);</span><br><span class="line">       chown(<span class="string">"/dev/memcg/system"</span>,AID_SYSTEM,AID_SYSTEM);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 清空之前设置的环境变量</span></span><br><span class="line">    unsetenv(<span class="string">"INIT_SECOND_STAGE"</span>);</span><br><span class="line">    unsetenv(<span class="string">"INIT_STARTED_AT"</span>);</span><br><span class="line">    unsetenv(<span class="string">"INIT_SELINUX_TOOK"</span>);</span><br><span class="line">    unsetenv(<span class="string">"INIT_AVB_VERSION"</span>);</span><br><span class="line">    <span class="comment">// 为第二阶段设置SELinux</span></span><br><span class="line">    SelinuxSetupKernelLogging();</span><br><span class="line">    <span class="comment">// 设置selinux上下文</span></span><br><span class="line">    SelabelInitialize();</span><br><span class="line">    <span class="comment">// 在/dev之前恢复正确的selinux file context</span></span><br><span class="line">    SelinuxRestoreContext();</span><br><span class="line">    epoll_fd = epoll_create1(EPOLL_CLOEXEC);</span><br><span class="line">    <span class="keyword">if</span> (epoll_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(FATAL) &lt;&lt; <span class="string">"epoll_create1 failed"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 初始化SIGCHLD信号处理程序</span></span><br><span class="line">    sigchld_handler_init();</span><br><span class="line">    <span class="keyword">if</span> (!IsRebootCapable()) &#123;</span><br><span class="line">        <span class="comment">// 若init没有CAP_SYS_BOOT能力，则其运行于容器之中。这种情况下如果接收到SIGTERM则会引发系统关机</span></span><br><span class="line">        InstallSigtermHandler();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 加载build.prop,default.prop，prop.default</span></span><br><span class="line">    property_load_boot_defaults();</span><br><span class="line">    <span class="comment">// 导出oem lock状态</span></span><br><span class="line">    export_oem_lock_status();</span><br><span class="line">    <span class="comment">// 启动属性服务</span></span><br><span class="line">    start_property_service();</span><br><span class="line">    <span class="comment">// 设置usb控制器</span></span><br><span class="line">    set_usb_controller();</span><br><span class="line">    <span class="keyword">const</span> BuiltinFunctionMap function_map;</span><br><span class="line">    Action::set_function_map(&amp;function_map);</span><br><span class="line">    subcontexts = InitializeSubcontexts();</span><br><span class="line">    ActionManager&amp; am = ActionManager::GetInstance();</span><br><span class="line">    ServiceList&amp; sm = ServiceList::GetInstance();</span><br><span class="line">    <span class="comment">// 加载解析system/odm/product/vendor目录下init.rc文件</span></span><br><span class="line">    LoadBootScripts(am, sm);</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">false</span>) DumpState();</span><br><span class="line">    <span class="comment">// 为了知晓ueventd时设置的所有/dev，所以此处会将冷启动相关操作列入队列</span></span><br><span class="line">    am.QueueEventTrigger(<span class="string">"early-init"</span>);</span><br><span class="line">    am.QueueBuiltinAction(wait_for_coldboot_done_action, <span class="string">"wait_for_coldboot_done"</span>);</span><br><span class="line">    am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, <span class="string">"MixHwrngIntoLinuxRng"</span>);</span><br><span class="line">    am.QueueBuiltinAction(SetMmapRndBitsAction, <span class="string">"SetMmapRndBits"</span>);</span><br><span class="line">    am.QueueBuiltinAction(SetKptrRestrictAction, <span class="string">"SetKptrRestrict"</span>);</span><br><span class="line">    am.QueueBuiltinAction(keychord_init_action, <span class="string">"keychord_init"</span>);</span><br><span class="line">    am.QueueBuiltinAction(console_init_action, <span class="string">"console_init"</span>);</span><br><span class="line">    <span class="comment">// 触发所有启动操作</span></span><br><span class="line">    am.QueueEventTrigger(<span class="string">"init"</span>);</span><br><span class="line">    <span class="comment">// 若在wait_for_coldboot_done之后/dev/hw_random或/dev/random为设置就绪，则重复mix_hwrng_into_linux_rng</span></span><br><span class="line">    am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, <span class="string">"MixHwrngIntoLinuxRng"</span>);</span><br><span class="line">    <span class="comment">// 在充电模式下不挂载文件系统，也不启动核心系统服务</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> bootmode = GetProperty(<span class="string">"ro.bootmode"</span>, <span class="string">""</span>);</span><br><span class="line">    <span class="keyword">if</span> (bootmode == <span class="string">"charger"</span>) &#123;</span><br><span class="line">        am.QueueEventTrigger(<span class="string">"charger"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        am.QueueEventTrigger(<span class="string">"late-init"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 基于当前属性状态，运行所有属性触发器</span></span><br><span class="line">    am.QueueBuiltinAction(queue_property_triggers_action, <span class="string">"queue_property_triggers"</span>);</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="comment">// 默认sleep，除非被触发</span></span><br><span class="line">        <span class="keyword">int</span> epoll_timeout_ms = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">if</span> (do_shutdown &amp;&amp; !shutting_down) &#123;</span><br><span class="line">            do_shutdown = <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span> (HandlePowerctlMessage(shutdown_command)) &#123;</span><br><span class="line">                shutting_down = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!(waiting_for_prop || Service::is_exec_service_running())) &#123;</span><br><span class="line">            am.ExecuteOneCommand();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!(waiting_for_prop || Service::is_exec_service_running())) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!shutting_down) &#123;</span><br><span class="line">                <span class="keyword">auto</span> next_process_restart_time = RestartProcesses();</span><br><span class="line">                <span class="comment">// 如果有一个进程需要重启，则需及时唤醒</span></span><br><span class="line">                <span class="keyword">if</span> (next_process_restart_time) &#123;</span><br><span class="line">                    epoll_timeout_ms = <span class="built_in">std</span>::chrono::<span class="built_in">ceil</span>&lt;<span class="built_in">std</span>::chrono::milliseconds&gt;(</span><br><span class="line">                                           *next_process_restart_time - boot_clock::now())</span><br><span class="line">                                           .count();</span><br><span class="line">                    <span class="keyword">if</span> (epoll_timeout_ms &lt; <span class="number">0</span>) epoll_timeout_ms = <span class="number">0</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 若需要做更多工作，则再次正常唤醒</span></span><br><span class="line">            <span class="keyword">if</span> (am.HasMoreCommands()) epoll_timeout_ms = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        epoll_event ev;</span><br><span class="line">        <span class="keyword">int</span> nr = TEMP_FAILURE_RETRY(epoll_wait(epoll_fd, &amp;ev, <span class="number">1</span>, epoll_timeout_ms));</span><br><span class="line">        <span class="keyword">if</span> (nr == <span class="number">-1</span>) &#123;</span><br><span class="line">            PLOG(ERROR) &lt;&lt; <span class="string">"epoll_wait failed"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nr == <span class="number">1</span>) &#123;</span><br><span class="line">            ((<span class="keyword">void</span> (*)()) ev.data.ptr)();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/03/16/Boot/Init的启动流程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/09/Boot/LK引导流程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/09/Boot/LK引导流程/" class="post-title-link" itemprop="url">LK 引导流程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-09 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-09T00:00:00+08:00">2019-03-09</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="一、Qualcomm平台"><a href="#一、Qualcomm平台" class="headerlink" title="一、Qualcomm平台"></a>一、Qualcomm平台</h3><h4 id="1-1-aboot-init函数"><a href="#1-1-aboot-init函数" class="headerlink" title="1.1 aboot_init函数"></a>1.1 aboot_init函数</h4><p><code>app/aboot/aboot.c</code></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">aboot_init</span><span class="params">(<span class="keyword">const</span> struct app_descriptor *app)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> reboot_mode = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> boot_err_type = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> boot_slot = INVALID;</span><br><span class="line">    <span class="comment">// 初始化wdog</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> WDOG_SUPPORT</span></span><br><span class="line">    msm_wdog_init();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// 设置EMMC/NAND页大小</span></span><br><span class="line">    <span class="keyword">if</span> (target_is_emmc_boot())</span><br><span class="line">    &#123;</span><br><span class="line">        page_size = mmc_page_size();</span><br><span class="line">        page_mask = page_size - <span class="number">1</span>;</span><br><span class="line">        mmc_blocksize = mmc_get_device_blocksize();</span><br><span class="line">        mmc_blocksize_mask = mmc_blocksize - <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        page_size = flash_page_size();</span><br><span class="line">        page_mask = page_size - <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ASSERT((MEMBASE + MEMSIZE) &gt; MEMBASE);</span><br><span class="line">    <span class="comment">// 读取设备信息</span></span><br><span class="line">    read_device_info(&amp;device);</span><br><span class="line">    <span class="comment">// 读取允许oem解锁信息</span></span><br><span class="line">    read_allow_oem_unlock(&amp;device);</span><br><span class="line">    <span class="comment">// 检查多插槽的支持情况</span></span><br><span class="line">    <span class="keyword">if</span> (partition_multislot_is_supported())</span><br><span class="line">    &#123;</span><br><span class="line">        boot_slot = partition_find_active_slot();</span><br><span class="line">        <span class="keyword">if</span> (boot_slot == INVALID)</span><br><span class="line">        &#123;</span><br><span class="line">            boot_into_fastboot = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 将系统状态设置为活跃启动插槽</span></span><br><span class="line">            partition_mark_active_slot(boot_slot);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果启用则显示splash启动屏幕</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> DISPLAY_SPLASH_SCREEN</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> NO_ALARM_DISPLAY</span></span><br><span class="line">    <span class="keyword">if</span> (!check_alarm_boot()) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> DISPLAY_HDMI_PRIMARY</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strlen</span>(device.display_panel))</span><br><span class="line">        strlcpy(device.display_panel, DISPLAY_PANEL_HDMI,</span><br><span class="line">            <span class="keyword">sizeof</span>(device.display_panel));</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ENABLE_WBC</span></span><br><span class="line">        <span class="comment">// 等待显示器关闭的过程</span></span><br><span class="line">        <span class="keyword">while</span>(pm_app_display_shutdown_in_prgs());</span><br><span class="line">        <span class="keyword">if</span> (!pm_appsbl_display_init_done())</span><br><span class="line">            target_display_init(device.display_panel);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            display_image_on_screen();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        target_display_init(device.display_panel);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> NO_ALARM_DISPLAY</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// 设置设备序列号SN</span></span><br><span class="line">    target_serialno((<span class="keyword">unsigned</span> <span class="keyword">char</span> *) sn_buf);</span><br><span class="line">    <span class="comment">// 初始化显存</span></span><br><span class="line">    <span class="built_in">memset</span>(display_panel_buf, <span class="string">'\0'</span>, MAX_PANEL_BUF_SIZE);</span><br><span class="line">    <span class="comment">// 检查关机理由，如果是用户强制关机了则正常启动</span></span><br><span class="line">    <span class="keyword">if</span> (is_user_force_reset())</span><br><span class="line">        <span class="keyword">goto</span> normal_boot;</span><br><span class="line">    <span class="comment">// 同时按音量上下键则重启手机进入紧急下载模式9008</span></span><br><span class="line">    <span class="keyword">if</span> (keys_get_state(KEY_VOLUMEUP) &amp;&amp; keys_get_state(KEY_VOLUMEDOWN))</span><br><span class="line">    &#123;</span><br><span class="line">        reboot_device(EMERGENCY_DLOAD);</span><br><span class="line">        boot_into_fastboot = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!boot_into_fastboot)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 进入recovery模式</span></span><br><span class="line">        <span class="keyword">if</span> (keys_get_state(KEY_HOME) || keys_get_state(KEY_VOLUMEUP))</span><br><span class="line">            boot_into_recovery = <span class="number">1</span>;</span><br><span class="line">        <span class="comment">// 进入fastboot模式</span></span><br><span class="line">        <span class="keyword">if</span> (!boot_into_recovery &amp;&amp;</span><br><span class="line">            (keys_get_state(KEY_BACK) || keys_get_state(KEY_VOLUMEDOWN)))</span><br><span class="line">            boot_into_fastboot = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> NO_KEYPAD_DRIVER</span></span><br><span class="line">    <span class="keyword">if</span> (fastboot_trigger())</span><br><span class="line">        boot_into_fastboot = <span class="literal">true</span>;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// 检查重启模式，并进入相应模式</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> USE_PON_REBOOT_REG</span></span><br><span class="line">    reboot_mode = check_hard_reboot_mode();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    reboot_mode = check_reboot_mode();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">// recovery模式</span></span><br><span class="line">    <span class="keyword">if</span> (reboot_mode == RECOVERY_MODE)</span><br><span class="line">    &#123;</span><br><span class="line">        boot_into_recovery = <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// fastboot模式</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(reboot_mode == FASTBOOT_MODE)</span><br><span class="line">    &#123;</span><br><span class="line">        boot_into_fastboot = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// alarm模式</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(reboot_mode == ALARM_BOOT)</span><br><span class="line">    &#123;</span><br><span class="line">        boot_reason_alarm = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// dm verify验证</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> VERIFIED_BOOT</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (VB_V2 == target_get_vb_version())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (reboot_mode == DM_VERITY_ENFORCING)</span><br><span class="line">        &#123;</span><br><span class="line">            device.verity_mode = <span class="number">1</span>;</span><br><span class="line">            write_device_info(&amp;device);</span><br><span class="line">        &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ENABLE_VB_ATTEST</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (reboot_mode == DM_VERITY_EIO)</span><br><span class="line">#<span class="keyword">else</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (reboot_mode == DM_VERITY_LOGGING)</span><br><span class="line">#endif</span><br><span class="line">        &#123;</span><br><span class="line">            device.verity_mode = <span class="number">0</span>;</span><br><span class="line">            write_device_info(&amp;device);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (reboot_mode == DM_VERITY_KEYSCLEAR)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(send_delete_keys_to_tz())</span><br><span class="line">                ASSERT(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">normal_boot:</span><br><span class="line">    <span class="keyword">if</span> (!boot_into_fastboot)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (target_is_emmc_boot())</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(emmc_recovery_init())</span><br><span class="line">            <span class="keyword">if</span>(target_use_signed_kernel())</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>((device.is_unlocked) || (device.is_tampered))</span><br><span class="line">                &#123;</span><br><span class="line">                <span class="meta">#<span class="meta-keyword">ifdef</span> TZ_TAMPER_FUSE</span></span><br><span class="line">                    set_tamper_fuse_cmd();</span><br><span class="line">                <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">                <span class="meta">#<span class="meta-keyword">if</span> USE_PCOM_SECBOOT</span></span><br><span class="line">                    set_tamper_flag(device.is_tampered);</span><br><span class="line">                <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">retry_boot:</span><br><span class="line">            <span class="comment">// 尝试启动active分区</span></span><br><span class="line">            <span class="keyword">if</span> (partition_multislot_is_supported())</span><br><span class="line">            &#123;</span><br><span class="line">                boot_slot = partition_find_boot_slot();</span><br><span class="line">                partition_mark_active_slot(boot_slot);</span><br><span class="line">                <span class="keyword">if</span> (boot_slot == INVALID)</span><br><span class="line">                    <span class="keyword">goto</span> fastboot;</span><br><span class="line">            &#125;</span><br><span class="line">            boot_err_type = boot_linux_from_mmc();</span><br><span class="line">            <span class="keyword">switch</span> (boot_err_type)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">case</span> ERR_INVALID_PAGE_SIZE:</span><br><span class="line">                <span class="keyword">case</span> ERR_DT_PARSE:</span><br><span class="line">                <span class="keyword">case</span> ERR_ABOOT_ADDR_OVERLAP:</span><br><span class="line">                <span class="keyword">case</span> ERR_INVALID_BOOT_MAGIC:</span><br><span class="line">                    <span class="keyword">if</span>(partition_multislot_is_supported())</span><br><span class="line">                    &#123;</span><br><span class="line">                        <span class="comment">// 启动失败则取消激活当前插槽，尝试使用另一个插槽启动</span></span><br><span class="line">                        partition_deactivate_slot(boot_slot);</span><br><span class="line">                        <span class="keyword">goto</span> retry_boot;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            recovery_init();</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> USE_PCOM_SECBOOT</span></span><br><span class="line">        <span class="keyword">if</span>((device.is_unlocked) || (device.is_tampered))</span><br><span class="line">            set_tamper_flag(device.is_tampered);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">            boot_linux_from_flash();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">fastboot:</span><br><span class="line">    <span class="comment">// 注册特定的fastboot命令</span></span><br><span class="line">    aboot_fastboot_register_commands();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* dump partition table for debug info */</span></span><br><span class="line">    <span class="comment">// dump分区信息用于debug</span></span><br><span class="line">    partition_dump();</span><br><span class="line">    <span class="comment">// 初始化进入fastboot模式</span></span><br><span class="line">    fastboot_init(target_get_scratch_address(), target_get_max_flash_size());</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> FBCON_DISPLAY_MSG</span></span><br><span class="line">    <span class="comment">// 显示fastboot界面</span></span><br><span class="line">    display_fastboot_menu();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/03/09/Boot/LK引导流程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/02/Boot/LK初始化流程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/02/Boot/LK初始化流程/" class="post-title-link" itemprop="url">LK 初始化流程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-02 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-02T00:00:00+08:00">2019-03-02</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>LK的全称是litter kernel，同u-boot类似，它也是一种bootloader程序。</p>
-<p>lk代码通常位于bootable/bootloader/lk目录，其树结构如下：<br>├── AndroidBoot.mk<br>├── app                   :lk中应用，如fastboot，shell等<br>├── arch                  :架构相关，如arm，x86等<br>├── dev                   :通用设备接口，如usb，lcm等<br>├── include               :头文件<br>├── kernel                :lk核心模块，包括thread，timer等<br>├── lib                   :–&gt;一些c库<br>├── LICENSE<br>├── make                  :lk编译脚本<br>├── makefile<br>├── platform              :不同平台/芯片对应的mtk驱动<br>├── project               :不同项目的makefile文件<br>├── scripts               :JTAG脚本<br>├── target                :具体目标设备的定义及初始化</p>
-<p>lk主要完成以下工作：<br>1.初始化硬件，设置中断向量表，初始化MMU，Cache，USB等。<br>2.加载boot.img，引导系统启动。<br>3.对不同boot模式的支持，如fastboot，recovery，download mode等。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/03/02/Boot/LK初始化流程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/02/24/Boot/Bootloader之二三事/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1483,169 +825,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/19/Security/LK的AVB验证流程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/19/Security/LK的AVB验证流程/" class="post-title-link" itemprop="url">LK 的 AVB 验证流程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-19 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-19T00:00:00+08:00">2019-01-19</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-load-vfy-boot函数"><a href="#1-load-vfy-boot函数" class="headerlink" title="1 load_vfy_boot函数"></a>1 load_vfy_boot函数</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">load_vfy_boot</span><span class="params">(<span class="keyword">uint32_t</span> bootimg_type, <span class="keyword">uint32_t</span> addr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> FEATURE_XBOOT</span></span><br><span class="line">    <span class="keyword">if</span>(bootimg_type != BOOTIMG_TYPE_XFL) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">uint32_t</span> img_vfy_time = <span class="number">0</span>;</span><br><span class="line">    AvbSlotVerifyResult ret = AVB_SLOT_VERIFY_RESULT_OK;</span><br><span class="line">    AvbSlotVerifyData *slot_data = <span class="literal">NULL</span>;</span><br><span class="line">    AvbSlotVerifyFlags avb_flag = AVB_SLOT_VERIFY_FLAGS_NONE;</span><br><span class="line">    <span class="keyword">uint32_t</span> lock_state = LKS_DEFAULT;</span><br><span class="line">    img_vfy_time = get_timer(<span class="number">0</span>);</span><br><span class="line">    g_boot_state = BOOT_STATE_RED;</span><br><span class="line">    <span class="keyword">if</span> (load_bootimg_hdr(bootimg_type) != <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">/* heap initialization for avb */</span></span><br><span class="line">    avb_heap_sz = AVB_HEAP_SZ;</span><br><span class="line">    pal_log_debug(<span class="string">"[avb] avb heap alloc size 0x%x\n"</span>, avb_heap_sz);</span><br><span class="line">    avb_heap = (<span class="keyword">void</span> *)mblock_reserve_ext(&amp;g_boot_arg-&gt;mblock_info,</span><br><span class="line">                          avb_heap_sz,</span><br><span class="line">                          <span class="number">4</span> * KB,</span><br><span class="line">                          <span class="number">0xc0000000</span>,</span><br><span class="line">                          <span class="number">0</span>,</span><br><span class="line">                          <span class="string">"avb"</span>);</span><br><span class="line">    <span class="keyword">if</span> (avb_heap == <span class="number">0</span>) &#123;</span><br><span class="line">        pal_log_err(<span class="string">"[avb] avb heap alloc fails\n"</span>);</span><br><span class="line">        avb_heap_sz = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        pal_log_debug(<span class="string">"[avb] avb heap alloc 0x%x\n"</span>, (<span class="keyword">uint32_t</span>)avb_heap);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (boot_authentication(bootimg_type) == <span class="number">0</span>)</span><br><span class="line">        avb_flag = AVB_SLOT_VERIFY_FLAGS_ALLOW_VERIFICATION_ERROR;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (bootimg_type) &#123;</span><br><span class="line">    <span class="keyword">case</span> BOOTIMG_TYPE_BOOT:</span><br><span class="line">    <span class="keyword">case</span> BOOTIMG_TYPE_RECOVERY:</span><br><span class="line">        <span class="comment">// Both preloader and avb_ab_flow function decrease tries_remaining variable</span></span><br><span class="line">        <span class="comment">// when successfully_boot is equal to 0, so it needs to increase tries_remaining</span></span><br><span class="line">        <span class="comment">// here.</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// Increase tries_remaining only in following three conditions</span></span><br><span class="line">        <span class="comment">// 1. tries_remaining &lt; AVB_AB_MAX_TRIES_REMAINING</span></span><br><span class="line">        <span class="comment">// 2. tries_remaining &gt; 0 </span></span><br><span class="line">        <span class="comment">// 3. successful_boot is equal to 0</span></span><br><span class="line">        increase_tries_remaining();</span><br><span class="line">        ret = avb_ab_flow(&amp;ab_ops,</span><br><span class="line">                  boot_partitions,</span><br><span class="line">                  avb_flag,</span><br><span class="line">                  AVB_HASHTREE_ERROR_MODE_RESTART_AND_INVALIDATE,</span><br><span class="line">                  &amp;slot_data);</span><br><span class="line"></span><br><span class="line">        pal_log_err(<span class="string">"[avb] load_vfy_boot: avb_flag = %d\n"</span>, avb_flag);</span><br><span class="line">        <span class="keyword">if</span> (avb_flag &amp; AVB_SLOT_VERIFY_FLAGS_ALLOW_VERIFICATION_ERROR)</span><br><span class="line">            ret = AVB_SLOT_VERIFY_RESULT_OK;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (ret != AVB_SLOT_VERIFY_RESULT_OK)</span><br><span class="line">            <span class="keyword">goto</span> end;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        ret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_ARGUMENT;</span><br><span class="line">        <span class="keyword">goto</span> end;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ret == AVB_SLOT_VERIFY_RESULT_OK) &#123;</span><br><span class="line">        ret = boot_post_processing(bootimg_type, slot_data);</span><br><span class="line">        <span class="keyword">if</span> (ret)</span><br><span class="line">            <span class="keyword">goto</span> end;</span><br><span class="line">        g_boot_state = BOOT_STATE_GREEN;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">end:</span><br><span class="line">    pal_log_err(<span class="string">"[avb] boot/recovery vfy time = %d ms\n"</span>,</span><br><span class="line">            (<span class="keyword">unsigned</span> <span class="keyword">int</span>)get_timer(img_vfy_time));</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* After this function call, memory is returned to lk.</span></span><br><span class="line"><span class="comment">     * Please avoid using avb_heap after this function call</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    mblock_create(&amp;g_boot_arg-&gt;mblock_info,</span><br><span class="line">              &amp;g_boot_arg-&gt;orig_dram_info,</span><br><span class="line">              (<span class="keyword">uint64_t</span>)avb_heap &amp; <span class="number">0xffffffff</span>,</span><br><span class="line">              (<span class="keyword">uint64_t</span>)avb_heap_sz &amp; <span class="number">0xffffffff</span>);</span><br><span class="line"></span><br><span class="line">    pal_log_err(<span class="string">"[avb] load_vfy_boot: ret = %d\n"</span>, ret);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* if device state is "unlocked," override</span></span><br><span class="line"><span class="comment">     * boot state with "ORANGE."</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ret = get_lock_state(&amp;lock_state);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">0</span> &amp;&amp; lock_state == LKS_UNLOCK)</span><br><span class="line">        g_boot_state = BOOT_STATE_ORANGE;</span><br><span class="line"></span><br><span class="line">    ret = (<span class="keyword">int</span>)handle_vboot_state();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> FEATURE_XBOOT</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">int</span> status = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">char</span> bootimg_name[<span class="number">16</span>];</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">int</span> kimg_load_addr = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">char</span> vboot_cmdline[TMPBUF_SIZE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">        <span class="keyword">char</span> vboot_cmdline_ab[TMPBUF_SIZE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (load_bootimg_hdr(bootimg_type) != <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g_is_64bit_kernel)</span><br><span class="line">            kimg_load_addr = (<span class="keyword">uint32_t</span>)target_get_scratch_address();</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            kimg_load_addr = (<span class="keyword">uint32_t</span>)get_kernel_target_addr();</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* load xflimg with suffix: xfl_a or xfl_b */</span></span><br><span class="line">        <span class="built_in">snprintf</span>(bootimg_name, <span class="keyword">sizeof</span>(bootimg_name), <span class="string">"xfl%s"</span>, get_suffix());</span><br><span class="line"></span><br><span class="line">        status = mboot_android_load_bootimg_hdr(bootimg_name, addr);</span><br><span class="line">        <span class="keyword">if</span> (status &lt; <span class="number">0</span>)</span><br><span class="line">            msg_header_error(<span class="string">"Android Boot Image"</span>);</span><br><span class="line"></span><br><span class="line">        status = mboot_android_load_bootimg(bootimg_name, kimg_load_addr);</span><br><span class="line">        <span class="keyword">if</span> (status &lt; <span class="number">0</span>)</span><br><span class="line">            msg_img_error(<span class="string">"Android Boot Image"</span>);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            set_bootimg_loaded(kimg_load_addr);</span><br><span class="line"></span><br><span class="line">        cmdline_append(<span class="string">"root=/dev/ram"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">snprintf</span>(vboot_cmdline_ab, TMPBUF_SIZE,</span><br><span class="line">            <span class="string">"androidboot.slot_suffix=%s androidboot.slot=%s"</span>,</span><br><span class="line">            get_suffix(), get_suffix() + <span class="number">1</span>);</span><br><span class="line">        cmdline_append(vboot_cmdline_ab);</span><br><span class="line"></span><br><span class="line">        dm_verity_handler();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> status;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/01/19/Security/LK的AVB验证流程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/12/Security/Keymaster的SPL版本绑定/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1964,11 +1143,838 @@
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/29/Filesystem/Vold进程的启动/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/29/Filesystem/Vold进程的启动/" class="post-title-link" itemprop="url">Vold 进程的启动</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-29 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-29T00:00:00+08:00">2018-12-29</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-init解析rc时启动vold进程"><a href="#1-init解析rc时启动vold进程" class="headerlink" title="1. init解析rc时启动vold进程"></a>1. init解析rc时启动vold进程</h3><p>system/core/rootdir/init.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">on post-fs-data</span><br><span class="line">    start vold</span><br></pre></td></tr></table></figure>
+<p>system/vold/vold.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">service vold /system/bin/vold \</span><br><span class="line">        --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \</span><br><span class="line">        --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0</span><br><span class="line">    class core</span><br><span class="line">    ioprio be 2</span><br><span class="line">    writepid /dev/cpuset/foreground/tasks</span><br><span class="line">    shutdown critical</span><br><span class="line">    group reserved_disk</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/29/Filesystem/Vold进程的启动/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/23/Filesystem/fs_mgr解析fstab文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/23/Filesystem/fs_mgr解析fstab文件/" class="post-title-link" itemprop="url">fs_mgr 解析 fstab 文件</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-23 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-23T00:00:00+08:00">2018-12-23</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>涉及代码：<br>system/core/fs_mgr/fs_mgr_fstab.cpp<br>system/core/fs_mgr/fs_mgr_slotselect.cpp<br>system/core/fs_mgr/fs_mgr_boot_config.cpp</p>
+<h3 id="1-1-fs-mgr-fstab-cpp-gt-fs-mgr-read-fstab-default"><a href="#1-1-fs-mgr-fstab-cpp-gt-fs-mgr-read-fstab-default" class="headerlink" title="1.1 fs_mgr_fstab.cpp-&gt;fs_mgr_read_fstab_default"></a>1.1 fs_mgr_fstab.cpp-&gt;fs_mgr_read_fstab_default</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 尝试从/odm/etc,/vendor/etc等目录加载fstab.&lt;hardware&gt;文件，并将第1个找到的fstab和从设备树中传入的组合在一起</span></span><br><span class="line"><span class="function">struct fstab *<span class="title">fs_mgr_read_fstab_default</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> hw;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> default_fstab;</span><br><span class="line">    <span class="comment">// 分别用不同fstab路径启动正常启动或recovery启动</span></span><br><span class="line">    <span class="keyword">if</span> (access(<span class="string">"/sbin/recovery"</span>, F_OK) == <span class="number">0</span>) &#123; <span class="comment">// recovery启动</span></span><br><span class="line">        default_fstab = <span class="string">"/etc/recovery.fstab"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (fs_mgr_get_boot_config(<span class="string">"hardware"</span>, &amp;hw)) &#123;  <span class="comment">// 正常启动</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">char</span> *prefix : &#123;<span class="string">"/odm/etc/fstab."</span>,<span class="string">"/vendor/etc/fstab."</span>, <span class="string">"/fstab."</span>&#125;) &#123;</span><br><span class="line">            default_fstab = prefix + hw;</span><br><span class="line">            <span class="keyword">if</span> (access(default_fstab.c_str(), F_OK) == <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        LWARNING &lt;&lt; __FUNCTION__ &lt;&lt; <span class="string">"(): failed to find device hardware name"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将从设备树中传入的fstab条目和从默认fstab找到的条目对应组合在一起</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fstab</span> *<span class="title">fstab_dt</span> = <span class="title">fs_mgr_read_fstab_dt</span>();</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fstab</span> *<span class="title">fstab</span> = <span class="title">fs_mgr_read_fstab</span>(<span class="title">default_fstab</span>.<span class="title">c_str</span>());</span></span><br><span class="line">    <span class="keyword">return</span> in_place_merge(fstab_dt, fstab);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/23/Filesystem/fs_mgr解析fstab文件/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/15/Filesystem/Userdata分区resize功能/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/15/Filesystem/Userdata分区resize功能/" class="post-title-link" itemprop="url">Userdata 分区 resize 功能</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-15 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-15T00:00:00+08:00">2018-12-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="1-挂载分区时添加resize功能"><a href="#1-挂载分区时添加resize功能" class="headerlink" title="1. 挂载分区时添加resize功能"></a>1. 挂载分区时添加resize功能</h3><p>system/core/fs_mgr/fs_mgr.cpp</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cryptfs.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> RESIZE2FS_BIN   <span class="meta-string">"/system/bin/resize2fs"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">resize_fs</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *blk_device, <span class="keyword">char</span> *fs_type, <span class="keyword">char</span> *key_loc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sz;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_ss;</span><br><span class="line">    <span class="keyword">uint64_t</span> device_sn;</span><br><span class="line">    <span class="keyword">int</span> status = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    android::base::<span class="function">unique_fd <span class="title">fd</span><span class="params">(TEMP_FAILURE_RETRY(open(blk_device, O_RDONLY | O_CLOEXEC)))</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"Failed to open '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"'"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Cannot use BLKGETSIZE to get the number of sectors,</span></span><br><span class="line"><span class="comment">    * because need to do device_sz -= CRYPT_FOOTER_OFFSET</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKGETSIZE64, &amp;device_sz)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKGETSIZE64) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((ioctl(fd, BLKSSZGET, &amp;device_ss)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PERROR &lt;&lt; <span class="string">"(BLKSSZGET) Can't get '"</span> &lt;&lt; blk_device &lt;&lt; <span class="string">"' size"</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Format the partition using the calculated length */</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(key_loc, KEY_IN_FOOTER))</span><br><span class="line">        device_sz -= CRYPT_FOOTER_OFFSET;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (is_extfs(fs_type)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (access(RESIZE2FS_BIN, X_OK)) &#123;</span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Not running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device</span><br><span class="line">            &lt;&lt; <span class="string">" (executable not in system image)"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span> size_kb_str(android::base::StringPrintf(<span class="string">"%"</span> PRIu64 <span class="string">"K"</span>, device_sz / <span class="number">1024</span>));</span><br><span class="line"></span><br><span class="line">            LINFO &lt;&lt; <span class="string">"Running "</span> &lt;&lt; RESIZE2FS_BIN &lt;&lt; <span class="string">" on "</span> &lt;&lt; blk_device;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/* extX cmd */</span></span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span> *resize2fs_argv[] = &#123;</span><br><span class="line">                RESIZE2FS_BIN,</span><br><span class="line">                <span class="string">"-f"</span>,</span><br><span class="line">                blk_device,</span><br><span class="line">                size_kb_str.c_str()</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            ret = android_fork_execvp_ext(ARRAY_SIZE(resize2fs_argv),</span><br><span class="line">                <span class="keyword">const_cast</span>&lt;<span class="keyword">char</span> **&gt;(resize2fs_argv),</span><br><span class="line">                &amp;status, <span class="literal">true</span>, LOG_KLOG,</span><br><span class="line">                <span class="literal">false</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">/* No need to check for error in fork, we can't really handle it now */</span></span><br><span class="line">                LERROR &lt;&lt; <span class="string">"Failed trying to run "</span> &lt;&lt; RESIZE2FS_BIN;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">prepare_fs_for_mount</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* blk_device, <span class="keyword">const</span> struct fstab_rec* rec)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> ((rec-&gt;fs_mgr_flags &amp; MF_RESIZE) &amp;&amp; !<span class="built_in">strcmp</span>(blk_device, rec-&gt;blk_device)) &#123;</span><br><span class="line">        resize_fs(blk_device, rec-&gt;fs_type, rec-&gt;key_loc);</span><br><span class="line">        check_fs(blk_device, rec-&gt;fs_type, rec-&gt;mount_point, &amp;fs_stat);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/15/Filesystem/Userdata分区resize功能/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/12/02/OTA/AB系统升级之bootctrl流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/02/OTA/AB系统升级之bootctrl流程/" class="post-title-link" itemprop="url">AB 系统升级之 bootctrl 流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-02 00:00:00" itemprop="dateCreated datePublished" datetime="2018-12-02T00:00:00+08:00">2018-12-02</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OTA/" itemprop="url" rel="index"><span itemprop="name">OTA</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>涉及代码：</p>
+<p>Google Code:<br>hardware/libhardware/include/hardware/boot_control.h<br>system/extras/bootctl/bootctl.cpp<br>system/extras/boot_control_copy/bootinfo.h<br>system/extras/boot_control_copy/bootinfo.c<br>system/extras/boot_control_copy/boot_control_copy.c</p>
+<p>Qualcomm Code:<br>hardware/qcom/bootctrl/boot_control.cpp</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/02/OTA/AB系统升级之bootctrl流程/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2018/11/24/OTA/AB系统升级概述/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/24/OTA/AB系统升级概述/" class="post-title-link" itemprop="url">AB 系统升级概述</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-24T00:00:00+08:00">2018-11-24</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OTA/" itemprop="url" rel="index"><span itemprop="name">OTA</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="一、A-B系统更新的特点"><a href="#一、A-B系统更新的特点" class="headerlink" title="一、A/B系统更新的特点"></a>一、A/B系统更新的特点</h3><p>&emsp;所谓A/B系统，即有A和B两套系统，一套系统分区，另一套备份分区。这两套系统出厂时一样，此后可能不一样。即一个新版本，另一个旧版本，旧版本升级至新版本，不断更新切换。</p>
+<p>&emsp;A/B系统更新又称之为无缝更新(Seamless updates),具有以下几个特点：</p>
+<p>&emsp;<1>OTA更新在系统后台运行，该过程中用户仍可以正常使用设备。待更新完成后，需重启一次方可进入新系统。</1></p>
+<p>&emsp;<2>OTA更新失败后(OTA更新无法应用或应用后无法启动)，设备可重启回滚到旧分区继续使用，并重新尝试更新升级。</2></p>
+<p>&emsp;<3>可采用流式升级方式，即无需/data或/cache分区留出足够空间用于存储下载的升级包，也可进行OTA升级。</3></p>
+<p>&emsp;<4>确保在OTA更新期间磁盘上保留一套可以正常启动使用的系统，减少刷机变砖的可能性，减轻售后服务工作量。</4></p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/24/OTA/AB系统升级概述/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2012,7 +2018,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">104</span>
+                    <span class="site-state-item-count">98</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
