@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. APK 签名方案简介在 Android 上，APK 签名是将 APK 放入 APK Sandbox 的第一步。已签名的 APK 证书定义了哪个用户 ID 与哪个 APK 关联，不同 APK 要以不同的用户 ID 运行。APK 签名可确保一个 APK 无法访问任何其他 APK 的数据。当 APK 安装到设备上时，PackageManagerService 会验证 APK 是否已经签过名。若其签">
+<meta name="keywords" content="Framework,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="APK 签名方案概述">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/09/20/Security/APK签名方案概述/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="1. APK 签名方案简介在 Android 上，APK 签名是将 APK 放入 APK Sandbox 的第一步。已签名的 APK 证书定义了哪个用户 ID 与哪个 APK 关联，不同 APK 要以不同的用户 ID 运行。APK 签名可确保一个 APK 无法访问任何其他 APK 的数据。当 APK 安装到设备上时，PackageManagerService 会验证 APK 是否已经签过名。若其签">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-09-26T06:06:17.778Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="APK 签名方案概述">
+<meta name="twitter:description" content="1. APK 签名方案简介在 Android 上，APK 签名是将 APK 放入 APK Sandbox 的第一步。已签名的 APK 证书定义了哪个用户 ID 与哪个 APK 关联，不同 APK 要以不同的用户 ID 运行。APK 签名可确保一个 APK 无法访问任何其他 APK 的数据。当 APK 安装到设备上时，PackageManagerService 会验证 APK 是否已经签过名。若其签">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/09/20/Security/APK签名方案概述/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>APK 签名方案概述 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/09/20/Security/APK签名方案概述/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">APK 签名方案概述
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-09-20 00:00:00" itemprop="dateCreated datePublished" datetime="2020-09-20T00:00:00+08:00">2020-09-20</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="1-APK-签名方案简介"><a href="#1-APK-签名方案简介" class="headerlink" title="1. APK 签名方案简介"></a>1. APK 签名方案简介</h4><p>在 Android 上，APK 签名是将 APK 放入 APK Sandbox 的第一步。已签名的 APK 证书定义了哪个用户 ID 与哪个 APK 关联，不同 APK 要以不同的用户 ID 运行。APK 签名可确保一个 APK 无法访问任何其他 APK 的数据。当 APK 安装到设备上时，PackageManagerService 会验证 APK 是否已经签过名。若其签名证书和其他 APK 的签名一致，则它们会共用一个UID。</p>
+<p>Android 支持以下四种签名方案：<br>（1）v1: 是一种基于 JAR 签名的方案，Android 系统一开始对其提供支持。它不保护 APK 的 ZIP 元数据部分，存在的安全风险较大。<br>（2）v2: 是 Android 7.0 引入的一种全文件签名方案，它能够发现对 APK 受保护部分进行的所有更改，从而提升验证速度并增强完整性保护。在签名时，会在 APK 文件中插入一个 “APK Signing Block”，该分块位于 “ZIP Central Dirctory” 部分之前并金紧邻该部分。v2 签名和签名者身份信息会存储在 “APK Signing Block” 内。<br>（3）v3: 9.0 引入的，会将 APK 视为 blob，并对整个文件进行签名检查。对 APK 进行的任何修改都会使 APK 签名作废。其验证不仅速度要更快，而且能发现未经授权的篡改。<br>（4）v4: 11.0 引入的 APK 签名方案。</p>
+<h4 id="2-V1-签名方案"><a href="#2-V1-签名方案" class="headerlink" title="2. V1 签名方案"></a>2. V1 签名方案</h4><p>JAR 签名的 APK 是一种标准的签名 JAR，其中包含的条目必须与 META-INF/MANIFEST.MF 中列出的条目完全相同，并且所有条目都必须由同一组签名者签名。其完整性按照以下方式进行验证：<br>(1)每个签名者均由一个包含 META-INF/<signer>.SF 和 META-INF/<signer>.(RSA|DSA|EC) 的 JAR 条目来表示。<br>(2)<signer>.(RSA|DSA|EC) 是具有 SignedData 结构的 PKCS #7 CMS ContentInfo，其签名通过 <signer>.SF 进行验证。<br>(3)<signer>.SF 文件包含 META-INF/MANIFEST.MF 的全文件摘要和 META-INF/MANIFEST.MF 各个部分的摘要。需要验证 MANIFEST.MF 的全文件摘要。如果该验证失败，则改为验证 MANIFEST.MF 各个部分的摘要。<br>(4)对于每个受完整性保护的 JAR 条目，META-INF/MANIFEST.MF 都包含一个具有相应名称的部分，其中包含相应条目未压缩内容的摘要。所有这些摘要都需要验证。<br>(5)如果 APK 包含未在 MANIFEST.MF 中列出且不属于 JAR 签名一部分的 JAR 条目，APK 验证将会失败。</signer></signer></signer></signer></signer></p>
+<p>因此，保护链是每个受完整性保护的 JAR 条目的 <signer>.(RSA|DSA|EC) -&gt; <signer>.SF -&gt; MANIFEST.MF -&gt; 内容。</signer></signer></p>
+<h4 id="3-V2-签名方案"><a href="#3-V2-签名方案" class="headerlink" title="3. V2 签名方案"></a>3. V2 签名方案</h4><h5 id="3-1-APK-Signing-Block"><a href="#3-1-APK-Signing-Block" class="headerlink" title="3.1 APK Signing Block"></a>3.1 APK Signing Block</h5><p>“APK Signing Block” 包含多个 “ID-Value” 对，其中 v2 签名对应的 ID 为 “0x7109871a”(4个字节)。”APK Signing Block” 中所有数字字段均采用小端字节排序，其格式如下：</p>
+<p>块大小 size of block ： unit64 字节数；<br>“ID-Value” 对：unit32 ID 和 可变长度的 value；<br>魔数 magic：”APK Sig Block 42” 16字节。</p>
+<h5 id="3-2-解析-APK-过程"><a href="#3-2-解析-APK-过程" class="headerlink" title="3.2 解析 APK 过程"></a>3.2 解析 APK 过程</h5><p>在文件末尾找到 “ZIP Central Dirctory” 记录，然后从该记录中读取 “ZIP Central Dirctory” 的起始偏移量。通过 “magic” 值，可快速确定 “ZIP Central Dirctory” 前面可能是 “APK Signing Block”，然后通过 “size of block” 值找到 “APK Signing Block” 在文件中的起始位置。</p>
+<h5 id="3-3-APK-Signature-Scheme-v2-Block"><a href="#3-3-APK-Signature-Scheme-v2-Block" class="headerlink" title="3.3 APK Signature Scheme v2 Block"></a>3.3 APK Signature Scheme v2 Block</h5><p>APK 支持一个或多个签名者/身份签名，每个签名者/身份均由一个签名密钥来表示，它会以 “APK Signature Scheme v2 Block” 的形式存储。每个签名者会存储下面信息：<br>(1)签名算法、摘要、签名。<br>(2)表示签名者身份的 X.509 证书链。<br>(3)采用键值对形式的其它属性。</p>
+<p>“APK Signature Scheme v2 Block” 所有数字均采用小端字节排序，所有带长度前缀的字段均使用 unit32 值表示长度：<br>带长度前缀的 signer序列：<br>(1)带长度前缀的签名过的数据：<br>a.带长度前缀的摘要序列：签名算法 ID (unit32) + （带长度前缀）摘要。<br>b.带长度前缀的 X.509 证书序列：(ASN.1 DER格式)。<br>c.带长度前缀的 additional attributes 序列：ID (unit32) + 可变长度 value。<br>(2)带长度前缀的签名序列：<br>a.签名算法 ID (unit32)位；<br>b.已签名数据上带长度前缀的签名；<br>(3)带长度前缀的公钥（SubjectPublicKeyInfo,ASN.1 DER形式）</p>
+<h5 id="3-4-签名算法"><a href="#3-4-签名算法" class="headerlink" title="3.4 签名算法"></a>3.4 签名算法</h5><p>签名算法 ID<br>（1）0x0101 - 采用 SHA2-256 摘要、SHA2-256 MGF1、32 个字节的盐且尾部为 0xbc 的 RSASSA-PSS 算法。<br>（2）0x0102 - 采用 SHA2-512 摘要、SHA2-512 MGF1、64 个字节的盐且尾部为 0xbc 的 RSASSA-PSS 算法。<br>（3）0x0103 - 采用 SHA2-256 摘要的 RSASSA-PKCS1-v1_5 算法。此算法适用于需要确定性签名的构建系统。<br>（4）0x0104 - 采用 SHA2-512 摘要的 RSASSA-PKCS1-v1_5 算法。此算法适用于需要确定性签名的构建系统。<br>（5）0x0201 - 采用 SHA2-256 摘要的 ECDSA 算法。<br>（6）0x0202 - 采用 SHA2-512 摘要的 ECDSA 算法。<br>（7）0x0301 - 采用 SHA2-256 摘要的 DSA 算法。</p>
+<p>支持的密钥大小和 EC 曲线：<br>（1）RSA：1024、2048、4096、8192、16384。<br>（2）EC：NIST P-256、P-384、P-521。<br>（3）DSA：1024、2048、3072。</p>
+<h5 id="3-5-组成部分"><a href="#3-5-组成部分" class="headerlink" title="3.5 组成部分"></a>3.5 组成部分</h5><p>v2签名的 APK 包含下面4个部分：<br>(1) Contents of ZIP entries（从偏移量 0 处开始一直到 “APK Signing Block” 的起始位置）；<br>(2) APK Signing Block；<br>(3) ZIP Central Directory；<br>(4) End of ZIP Central Directory；</p>
+<p>v2签名保护(1)(3)(4)部分的完整性以及(2)的 “APK Signature Scheme v2 Block” 中已签名数据的完整性。通过一个或多个摘要来保护(1)(3)(4)部分，这些摘存储在(2)的已签名数据块中，然后这个签名数据库会通过一个或多个签名来保护。</p>
+<p>(1)(3)(4)部分的摘要采用的计算方式类似两级 Merkle 树。每个部分会被分成多个 1MB 的连续块。每个块的摘要均通过字节 “0xa5” 的串联、块的长度（小端字节排序的 unit32 值）和块的内容进行计算。顶级摘要通过字节 “0xa5” 的串联、块数（小端字节排序的 unit32 值）以及块的摘要的连接（块在 APK 中显示的顺序）进行计算。摘要以分块方式计算，以便通过并行处理来加快计算速度。</p>
+<p>(4)部分包含 “ZIP Central Directory” 的偏移量，所以该部分的保护比较复杂。当 “APK Signing Block” 的大小发生变化时，偏移量也会随之改变。因此，在通过 “ZIP Central Directory” 计算摘要时，必须将包含 “ZIP Central Directory” 偏移量的字段视为包含 “APK Signing Block” 的偏移量。</p>
+<p>攻击者可能会试图在对将带v2签名的 APK 作为带v1签名的 APK 进行验证。为了防范此类攻击，带v2签名的 APK 如果还带v1签名，其 “META-INF/*.SF” 文件中必须包含 “X-Android-APK-Signed” 属性。该属性的值是一组以英文逗号 “,” 分隔的 APK 签名方案 ID（v2 ID 是 2）。在验证v1签名时，如果 APK 没有相应的签名，APK 验证程序必须要拒绝这些 APK。另外，攻击者可能会试图从 “APK Signature Scheme v2 Block” 中删除安全系数较高的签名。为了防范此类攻击，对 APK 进行签名时使用的签名算法 ID 的列表会存储在通过各个签名保护的已签名数据块中。</p>
+<h5 id="3-6-验证过程"><a href="#3-6-验证过程" class="headerlink" title="3.6 验证过程"></a>3.6 验证过程</h5><p>(1)找到 “APK Signing Block” 并验证以下内容：<br>a.”APK Signing Block” 的两个大小字段包含相同的值。<br>b.”ZIP End of Central Directory” 紧跟在 “ZIP Central Directory” 记录后面。<br>c.”ZIP End of Central Directory” 之后没有任何数据。<br>(2)找到 “APK Signing Block” 中的第一个 “APK Signature Scheme v2 Block” 。如果 v2 分块存在，则继续执行第 3 步。否则，回退至使用 v1 方案验证 APK。<br>(3)对 “APK Signature Scheme v2 Block” 中的每个签名者执行以下操作：<br>a.从 signatures 中选择安全系数最高的受支持签名算法 ID。安全系数排序取决于各个实现/平台版本。<br>b.使用公钥并对照已签名的数据验证 signatures 的中对应的签名。<br>c.验证 digests 和 signatures 中的签名算法 ID 列表是否相同。<br>d.使用签名算法所用的同一种摘要算法计算 APK 内容的摘要。<br>e.验证计算出的摘要是否与 digests 中对应的摘要一致。<br>f.验证 certificates 中第一个证书的 SubjectPublicKeyInfo 是否与公钥相同。<br>(4)如果找到了至少一个签名者，并且对于每个找到的签名者，第(3)步都取得了成功，APK 验证将会成功。<br>注意：如果第(3)步或第(4)步失败了，则不得使用 v1 方案验证 APK。</p>
+<h4 id="4-v3-签名方案"><a href="#4-v3-签名方案" class="headerlink" title="4. v3 签名方案"></a>4. v3 签名方案</h4><h5 id="4-1-组成部分"><a href="#4-1-组成部分" class="headerlink" title="4.1 组成部分"></a>4.1 组成部分</h5><p>Android 9 引入的 v3 签名方案在 “APK Signing Block” 中添加了 “proof-of-rotation” 结构信息以支持 “APK key rotation”，这使 APK 能够在更新过程中更改其签名密钥。为了实现轮替，APK 必须指明新旧签名密钥之间的信任级别。</p>
+<p>v3 “APK Signing Block” 的格式与v2相同，它们采用相同的常规格式，并支持相同的签名算法 ID、密钥大小和 EC 曲线。APK 的 v3 签名会存储为一个“ID-值”对，其 ID 为 “0xf05368c0”。<br>“APK Signature Scheme v3 Block” 存储在 “APK Signing Block” 内，ID 为 “0xf05368c0”。</p>
+<p>“APK 签名方案 v3 分块”采用 v2 的格式：<br>带长度前缀的 signer 序列：<br>(1)带长度前缀的签名过的数据：<br>a.带长度前缀的摘要序列：签名算法 ID (unit32) + （带长度前缀）摘要。<br>b.带长度前缀的 X.509 证书序列：(ASN.1 DER格式)。<br>c.低于 minSDK(unit32) 或高于 maxSDK(unit32)则忽略该签名者。<br>c.带长度前缀的 additional attributes 序列：ID (unit32) + 可变长度 value + ID(0x3ba06f8c) + proof-of-rotation结构value。<br>(2)minSDK(uint32):签名数据部分中 minSDK 值的副本 - 用于在当前平台不在范围内时跳过对此签名的验证。必须与签名数据值匹配。<br>(3)maxSDK(uint32):签名数据部分中 maxSDK 值的副本 - 用于在当前平台不在范围内时跳过对此签名的验证。必须与签名数据值匹配。<br>(4)带长度前缀的签名序列：<br>a.签名算法 ID (unit32)位；<br>b.已签名数据上带长度前缀的签名；<br>(5)带长度前缀的公钥（SubjectPublicKeyInfo,ASN.1 DER形式）</p>
+<h5 id="4-2-Proof-of-rotation-和-self-trusted-old-certs-结构"><a href="#4-2-Proof-of-rotation-和-self-trusted-old-certs-结构" class="headerlink" title="4.2 Proof-of-rotation 和 self-trusted-old-certs 结构"></a>4.2 Proof-of-rotation 和 self-trusted-old-certs 结构</h5><p>proof-of rotation 结构允许 APK 轮替其签名证书，而不会使这些证书在与这些 APK 通信的其他 APK 上被屏蔽。为此，APK 签名包含两个新数据块：<br>(1)判断三方 APK 的签名证书是否可信（只要其先前证书可信）；<br>(2)APK 的旧签名证书（APK 本身仍信任这些证书）</p>
+<p>签名数据部分中的 proof-of-rotation 属性包含一个单链表，其中每个节点都包含用于为之前版本的 APK 签名的签名证书。此属性旨在包含概念性 proof-of-rotation 和 self-trusted-old-certs 数据结构。该单链表按版本排序，最旧的签名证书对应于根节点。在构建 proof-of-rotation 数据结构时，系统会让每个节点中的证书为列表中的下一个证书签名，从而为每个新密钥提供证据来证明它应该像旧密钥一样可信。<br>在构造 self-trusted-old-certs 数据结构时，系统会向每个节点添加标记来指示它在集合中的成员资格和属性。例如，可能存在一个标记，指示给定节点上的签名证书可信，可获得 Android 签名权限。此标记允许由旧证书签名的其他 APK 仍被授予由使用新签名证书签名的 APK 所定义的签名权限。由于整个 proof-of-rotation 属性都位于 v3 signer 字段的签名数据部分中，因此用于为所含 APK 签名的密钥会保护该属性。<br>此格式排除了多个签名密钥的情况和将不同祖先签名证书收敛到一个证书的情况（多个起始节点指向一个通用接收器）。</p>
+<p>proof-of-rotation 存储在 “APK Signature Scheme v3 Block” 内，ID 为 “0x3ba06f8c”。其格式为：<br>带长度前缀的 levels（带长度前缀）序列：<br>(1)带长度前缀的已签名数据（由上一个证书签名 - 如果存在）<br>a.带长度前缀的 X.509 证书（ASN.1 DER 格式）<br>b.签名算法 ID (uint32) – 上一级证书使用的算法<br>(2)flags (uint32) - 用于指示此证书是否应该在 self-trusted-old-certs 结构中，以及针对哪些操作。<br>(3)签名算法 ID (uint32) - 必须与下一级中的签名数据部分的 ID 一致。<br>(4)上述已签名数据的带长度前缀的签名。</p>
+<p>Android 目前将使用多个证书签名的 APK 视为具有与所含证书不同的签名身份。因此，签名数据部分中的 proof-of-rotation 属性构成了一个有向无环图，最好将其视为单链表，其中给定版本的每组签名者都表示一个节点。这使得 proof-of-rotation 结构（下面的多签名者版本）更复杂。排序成为一个特别突出的问题。更重要的是，无法再单独为 APK 签名，因为 proof-of-rotation 结构必须让旧签名证书为新的证书集签名，而不是逐个签名。例如，如果希望由两个新密钥 B 和 C 签名的 APK 是由密钥 A 签名的，则它不能让 B 签名者仅包含 A 或 B 的签名，因为这是与 B 和 C 不同的签名身份。这意味着签名者必须在构建此类结构之前进行协调。</p>
+<p>带长度前缀的 sets（带长度前缀）序列：<br>(1)已签名数据（由上一组证书签名 - 如果存在）<br>a.带长度前缀的 certificates 序列：带长度前缀的 X.509 证书（ASN.1 DER 格式）<br>b.签名算法 IDs (uint32) 序列 - 上一组证书中的每个证书对应一个序列，且采用相同顺序。<br>(2)flags (uint32) - 这些标记用于指示这组证书是否应该在 self-trusted-old-certs 结构中，以及针对哪些操作。<br>(3)带长度前缀的 signatures（带长度前缀）序列：<br>a.签名算法 ID (uint32) - 必须与签名数据部分中的相应 ID 一致；<br>b. 上述已签名数据带长度前缀的签名。</p>
+<p>v3 方案也无法处理两个不同密钥轮替到同一个应用的同一签名密钥的情形。这不同于收购情形，在收购情形中，收购公司希望转移收购的应用以使用其签名密钥来共享权限。收购被视为受支持的用例，因为新应用将通过其软件包名称来区分，并且可以包含自己的 proof-of-rotation 结构。不受支持的用例是，同一应用有两个不同的路径指向相同的证书，这打破了在密钥轮替设计中做出的许多假设。</p>
+<h5 id="4-3-验证过程"><a href="#4-3-验证过程" class="headerlink" title="4.3 验证过程"></a>4.3 验证过程</h5><p>(1)找到 “APK Signing Block” 并验证以下内容：<br>a.”APK Signing Block” 的两个大小字段包含相同的值。<br>b.”ZIP End of Central Directory” 紧跟在 “ZIP Central Directory” 记录后面。<br>c.”ZIP End of Central Directory” 之后没有任何数据。<br>(2)找到 “APK Signing Block” 中的第一个 “APK Signature Scheme v3 Block” 。如果 v3 分块存在，则继续执行第 3 步。否则，回退至使用 v2 方案验证 APK。<br>(3)对 “APK Signature Scheme v3 Block” 中的每个签名者执行以下操作：<br>a.从 signatures 中选择安全系数最高的受支持签名算法 ID。安全系数排序取决于各个实现/平台版本。<br>b.使用公钥并对照已签名的数据验证 signatures 的中对应的签名。<br>c.验证签名数据中的最低和最高 SDK 版本是否与为签名者指定的版本匹配。<br>d.验证 digests 和 signatures 中的签名算法 ID 列表是否相同。<br>e.使用签名算法所用的同一种摘要算法计算 APK 内容的摘要。<br>f.验证计算出的摘要是否与 digests 中对应的摘要一致。<br>g.验证 certificates 中第一个证书的 SubjectPublicKeyInfo 是否与公钥相同。<br>h.如果签名者存在 proof-of-rotation 属性，则验证结构是否有效，以及此签名者是否为列表中的最后一个证书。<br>(4)如果找到了至少一个签名者，并且对于每个找到的签名者，第(3)步都取得了成功，APK 验证将会成功。</p>
+<p>运行 cts/hostsidetests/appsecurity/src/android/appsecurity/cts/ 中的 PkgInstallSignatureVerificationTest.java CTS 测试。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/13/Security/Apk_v4_签名方案验证过程/" rel="next" title="APK v4 签名方案验证过程">
+                <i class="fa fa-chevron-left"></i> APK v4 签名方案验证过程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/09/26/Security/Linux及AndroidCapabilities概述/" rel="prev" title="Linux 及 Android Capabilities 概述">
+                Linux 及 Android Capabilities 概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">101</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">27</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-APK-签名方案简介"><span class="nav-text">1. APK 签名方案简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-V1-签名方案"><span class="nav-text">2. V1 签名方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-V2-签名方案"><span class="nav-text">3. V2 签名方案</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1-APK-Signing-Block"><span class="nav-text">3.1 APK Signing Block</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-解析-APK-过程"><span class="nav-text">3.2 解析 APK 过程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-3-APK-Signature-Scheme-v2-Block"><span class="nav-text">3.3 APK Signature Scheme v2 Block</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-4-签名算法"><span class="nav-text">3.4 签名算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-5-组成部分"><span class="nav-text">3.5 组成部分</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-6-验证过程"><span class="nav-text">3.6 验证过程</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-v3-签名方案"><span class="nav-text">4. v3 签名方案</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#4-1-组成部分"><span class="nav-text">4.1 组成部分</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-2-Proof-of-rotation-和-self-trusted-old-certs-结构"><span class="nav-text">4.2 Proof-of-rotation 和 self-trusted-old-certs 结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-3-验证过程"><span class="nav-text">4.3 验证过程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>

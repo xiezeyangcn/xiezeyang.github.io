@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Android 11 引入了 v4 签名方案来支持增量安装APK，其验证过程时序图如下：  1. PackageManagerService.addForInitLI123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263">
+<meta name="keywords" content="Framework,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="APK v4 签名方案验证过程">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/09/13/Security/Apk_v4_签名方案验证过程/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="Android 11 引入了 v4 签名方案来支持增量安装APK，其验证过程时序图如下：  1. PackageManagerService.addForInitLI123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.xiezeyang.com/images/verify_v4_signature_flow.png">
+<meta property="og:updated_time" content="2020-09-26T05:53:08.670Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="APK v4 签名方案验证过程">
+<meta name="twitter:description" content="Android 11 引入了 v4 签名方案来支持增量安装APK，其验证过程时序图如下：  1. PackageManagerService.addForInitLI123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263">
+<meta name="twitter:image" content="http://www.xiezeyang.com/images/verify_v4_signature_flow.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/09/13/Security/Apk_v4_签名方案验证过程/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>APK v4 签名方案验证过程 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/09/13/Security/Apk_v4_签名方案验证过程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">APK v4 签名方案验证过程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-09-13 00:00:00" itemprop="dateCreated datePublished" datetime="2020-09-13T00:00:00+08:00">2020-09-13</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Android 11 引入了 v4 签名方案来支持增量安装APK，其验证过程时序图如下：</p>
+<p><img src="/images/verify_v4_signature_flow.png" alt></p>
+<h4 id="1-PackageManagerService-addForInitLI"><a href="#1-PackageManagerService-addForInitLI" class="headerlink" title="1. PackageManagerService.addForInitLI"></a>1. PackageManagerService.addForInitLI</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java</span></span><br><span class="line"><span class="comment">// 在平台初始化期间向内部数据结构添加一个新包。添加后，该包对于系统是已知的，并且可以查询。</span></span><br><span class="line"><span class="comment">// 对于位于设备ROM上的软件包[例如位于 system，vendor 等的软件包中，则执行其他检查。</span></span><br><span class="line"><span class="comment">// 如果程序包与以前已知的程序包相同，则会进行基本验证（例如确保匹配的签名，检查版本代码等）。</span></span><br><span class="line"><span class="comment">// 如果软件包未通过签名检查，则将删除 data 上安装的版本。如果新软件包的版本小于/等于 data上的版本，它将被忽略。</span></span><br><span class="line"><span class="comment">// 无论包的位置如何，结果都将应用于内部结构，并且包可用于系统的其余部分。返回值应删除。 这是传入的包对象。</span></span><br><span class="line"><span class="meta">@GuardedBy</span>(&#123;<span class="string">"mInstallLock"</span>, <span class="string">"mLock"</span>&#125;)</span><br><span class="line"><span class="function"><span class="keyword">private</span> AndroidPackage <span class="title">addForInitLI</span><span class="params">(ParsedPackage parsedPackage,</span></span></span><br><span class="line"><span class="function"><span class="params">        @ParseFlags <span class="keyword">int</span> parseFlags, @ScanFlags <span class="keyword">int</span> scanFlags, <span class="keyword">long</span> currentTime,</span></span></span><br><span class="line"><span class="function"><span class="params">        @Nullable UserHandle user)</span></span></span><br><span class="line"><span class="function">                <span class="keyword">throws</span> PackageManagerException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> scanSystemPartition = (parseFlags &amp; PackageParser.PARSE_IS_SYSTEM_DIR) != <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">final</span> String renamedPkgName;</span><br><span class="line">    <span class="keyword">final</span> PackageSetting disabledPkgSetting;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> isSystemPkgUpdated;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> pkgAlreadyExists;</span><br><span class="line">    PackageSetting pkgSetting;</span><br><span class="line">    <span class="comment">// installPackageLI() 具有相同的代码来设置软件包的应用信息。</span></span><br><span class="line">    <span class="comment">// 这可能应该在调用堆栈中的较低位置进行，例如 scanPackageOnly()。但是在 scanPackageNew() 中之前验证了应用信息，因此必须尽早设置应用信息。</span></span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        renamedPkgName = mSettings.getRenamedPackageLPr(parsedPackage.getRealPackage());</span><br><span class="line">        <span class="keyword">final</span> String realPkgName = getRealPackageName(parsedPackage, renamedPkgName);</span><br><span class="line">        <span class="keyword">if</span> (realPkgName != <span class="keyword">null</span>) &#123;</span><br><span class="line">            ensurePackageRenamed(parsedPackage, renamedPkgName);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> PackageSetting originalPkgSetting = getOriginalPackageLocked(parsedPackage,</span><br><span class="line">                renamedPkgName);</span><br><span class="line">        <span class="keyword">final</span> PackageSetting installedPkgSetting = mSettings.getPackageLPr(</span><br><span class="line">                parsedPackage.getPackageName());</span><br><span class="line">        pkgSetting = originalPkgSetting == <span class="keyword">null</span> ? installedPkgSetting : originalPkgSetting;</span><br><span class="line">        pkgAlreadyExists = pkgSetting != <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">final</span> String disabledPkgName = pkgAlreadyExists</span><br><span class="line">                ? pkgSetting.name : parsedPackage.getPackageName();</span><br><span class="line">        <span class="keyword">if</span> (scanSystemPartition &amp;&amp; !pkgAlreadyExists</span><br><span class="line">                &amp;&amp; mSettings.getDisabledSystemPkgLPr(disabledPkgName) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 在 data apk 的数据意外丢失后， system apk 的升级数据与之不一致。为了恢复它，需启用 system apk 并将其安装为未升级的系统应用。</span></span><br><span class="line">            Slog.w(TAG, <span class="string">"Inconsistent package setting of updated system app for "</span></span><br><span class="line">                    + disabledPkgName + <span class="string">". To recover it, enable the system app"</span></span><br><span class="line">                    + <span class="string">"and install it as non-updated system app."</span>);</span><br><span class="line">            mSettings.removeDisabledSystemPackageLPw(disabledPkgName);</span><br><span class="line">        &#125;</span><br><span class="line">        disabledPkgSetting = mSettings.getDisabledSystemPkgLPr(disabledPkgName);</span><br><span class="line">        isSystemPkgUpdated = disabledPkgSetting != <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (DEBUG_INSTALL &amp;&amp; isSystemPkgUpdated) &#123;</span><br><span class="line">            Slog.d(TAG, <span class="string">"updatedPkg = "</span> + disabledPkgSetting);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> SharedUserSetting sharedUserSetting = (parsedPackage.getSharedUserId() != <span class="keyword">null</span>)</span><br><span class="line">                ? mSettings.getSharedUserLPw(parsedPackage.getSharedUserId(),</span><br><span class="line">                        <span class="number">0</span> <span class="comment">/*pkgFlags*/</span>, <span class="number">0</span> <span class="comment">/*pkgPrivateFlags*/</span>, <span class="keyword">true</span>)</span><br><span class="line">                : <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (DEBUG_PACKAGE_SCANNING</span><br><span class="line">                &amp;&amp; (parseFlags &amp; PackageParser.PARSE_CHATTY) != <span class="number">0</span></span><br><span class="line">                &amp;&amp; sharedUserSetting != <span class="keyword">null</span>) &#123;</span><br><span class="line">            Log.d(TAG, <span class="string">"Shared UserID "</span> + parsedPackage.getSharedUserId()</span><br><span class="line">                    + <span class="string">" (uid="</span> + sharedUserSetting.userId + <span class="string">"):"</span></span><br><span class="line">                    + <span class="string">" packages="</span> + sharedUserSetting.packages);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (scanSystemPartition) &#123;</span><br><span class="line">            <span class="comment">// 如果 system 分区上的应用已通过 OTA 更新，但 data 上的版本扔被禁用，则遍历其所有子程序包并删除不再定义的子程序。</span></span><br><span class="line">            <span class="keyword">if</span> (isSystemPkgUpdated) &#123;</span><br><span class="line">                <span class="keyword">boolean</span> isPlatformPackage = mPlatformPackage != <span class="keyword">null</span></span><br><span class="line">                        &amp;&amp; Objects.equals(mPlatformPackage.getPackageName(),</span><br><span class="line">                        parsedPackage.getPackageName());</span><br><span class="line">                <span class="comment">// 对正在升级的禁用的软件包进行扫描设置。</span></span><br><span class="line">                <span class="keyword">final</span> ScanRequest request = <span class="keyword">new</span> ScanRequest(parsedPackage, sharedUserSetting,</span><br><span class="line">                        <span class="keyword">null</span>, disabledPkgSetting <span class="comment">/* pkgSetting */</span>,</span><br><span class="line">                        <span class="keyword">null</span> <span class="comment">/* disabledPkgSetting */</span>, <span class="keyword">null</span> <span class="comment">/* originalPkgSetting */</span>,</span><br><span class="line">                        <span class="keyword">null</span>, parseFlags, scanFlags, isPlatformPackage, user, <span class="keyword">null</span>);</span><br><span class="line">                applyPolicy(parsedPackage, parseFlags, scanFlags, mPlatformPackage, <span class="keyword">true</span>);</span><br><span class="line">                <span class="keyword">final</span> ScanResult scanResult =</span><br><span class="line">                        scanPackageOnlyLI(request, mInjector, mFactoryTest, -<span class="number">1L</span>);</span><br><span class="line">                <span class="keyword">if</span> (scanResult.existingSettingCopied &amp;&amp; scanResult.request.pkgSetting != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    scanResult.request.pkgSetting.updateFrom(scanResult.pkgSetting);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> newPkgChangedPaths =</span><br><span class="line">            pkgAlreadyExists &amp;&amp; !pkgSetting.codePathString.equals(parsedPackage.getCodePath());</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> newPkgVersionGreater =</span><br><span class="line">            pkgAlreadyExists &amp;&amp; parsedPackage.getLongVersionCode() &gt; pkgSetting.versionCode;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> isSystemPkgBetter = scanSystemPartition &amp;&amp; isSystemPkgUpdated</span><br><span class="line">            &amp;&amp; newPkgChangedPaths &amp;&amp; newPkgVersionGreater;</span><br><span class="line">    <span class="keyword">if</span> (isSystemPkgBetter) &#123;</span><br><span class="line">        <span class="comment">// 如果 system 上的应用版本大于 data 上的版本，则切到 system 上的应用。</span></span><br><span class="line">        <span class="comment">// 假设 system 上的应用都将被正确扫描，否则将没有该应用的副本。</span></span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            <span class="comment">// 只需从软件包列表中删除已加载的条目。</span></span><br><span class="line">            mPackages.remove(pkgSetting.name);</span><br><span class="line">        &#125;</span><br><span class="line">        logCriticalInfo(Log.WARN,</span><br><span class="line">                <span class="string">"System package updated;"</span></span><br><span class="line">                + <span class="string">" name: "</span> + pkgSetting.name</span><br><span class="line">                + <span class="string">"; "</span> + pkgSetting.versionCode + <span class="string">" --&gt; "</span> + parsedPackage.getLongVersionCode()</span><br><span class="line">                + <span class="string">"; "</span> + pkgSetting.codePathString + <span class="string">" --&gt; "</span> + parsedPackage.getCodePath());</span><br><span class="line">        <span class="keyword">final</span> InstallArgs args = createInstallArgsForExisting(</span><br><span class="line">                pkgSetting.codePathString,</span><br><span class="line">                pkgSetting.resourcePathString, getAppDexInstructionSets(</span><br><span class="line">                        pkgSetting.primaryCpuAbiString, pkgSetting.secondaryCpuAbiString));</span><br><span class="line">        args.cleanUpResourcesLI();</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            mSettings.enableSystemPackageLPw(pkgSetting.name);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (scanSystemPartition &amp;&amp; isSystemPkgUpdated &amp;&amp; !isSystemPkgBetter) &#123;</span><br><span class="line">        <span class="comment">// 如果 system 分区上的应用版本小于 data 分区上的版本，则触发异常并使用 data 分区上已安装的应用。</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> PackageManagerException(Log.WARN, <span class="string">"Package "</span> + parsedPackage.getPackageName()</span><br><span class="line">                + <span class="string">" at "</span> + parsedPackage.getCodePath() + <span class="string">" ignored: updated version "</span></span><br><span class="line">                + pkgSetting.versionCode + <span class="string">" better than this "</span></span><br><span class="line">                + parsedPackage.getLongVersionCode());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果进行了升级，并且这是系统分区中的一个应用，或者这是升级的 priv-app，则将强制重新收集证书。</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> forceCollect = scanSystemPartition ? mIsUpgrade</span><br><span class="line">            : PackageManagerServiceUtils.isApkVerificationForced(pkgSetting);</span><br><span class="line">    <span class="keyword">if</span> (DEBUG_VERIFY &amp;&amp; forceCollect) &#123;</span><br><span class="line">        Slog.d(TAG, <span class="string">"Force collect certificate of "</span> + parsedPackage.getPackageName());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 仅 APK 位于经过验证的分区时，或在访问时跳过强制验证时，才可以跳过完整的 APK 验证，而改为仅验证签名块中的数据。</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> skipVerify = scanSystemPartition</span><br><span class="line">            || (forceCollect &amp;&amp; canSkipForcedPackageVerification(parsedPackage));</span><br><span class="line">    collectCertificatesLI(pkgSetting, parsedPackage, forceCollect, skipVerify);</span><br><span class="line">    <span class="comment">// 如果更改了应用版本，则重置配置文件。</span></span><br><span class="line">    maybeClearProfilesForUpgradesLI(pkgSetting, parsedPackage);</span><br><span class="line">    <span class="comment">// 出现了一个新的系统应用，但是之前已经安装了一个非系统的同名应用。</span></span><br><span class="line">    <span class="keyword">boolean</span> shouldHideSystemApp = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (scanSystemPartition &amp;&amp; !isSystemPkgUpdated &amp;&amp; pkgAlreadyExists</span><br><span class="line">            &amp;&amp; !pkgSetting.isSystem()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!parsedPackage.getSigningDetails()</span><br><span class="line">                .checkCapability(pkgSetting.signatures.mSigningDetails,</span><br><span class="line">                PackageParser.SigningDetails.CertCapabilities.INSTALLED_DATA)</span><br><span class="line">                        &amp;&amp; !pkgSetting.signatures.mSigningDetails.checkCapability(</span><br><span class="line">                                parsedPackage.getSigningDetails(),</span><br><span class="line">                                PackageParser.SigningDetails.CertCapabilities.ROLLBACK)) &#123;</span><br><span class="line">            logCriticalInfo(Log.WARN,</span><br><span class="line">                    <span class="string">"System package signature mismatch;"</span></span><br><span class="line">                    + <span class="string">" name: "</span> + pkgSetting.name);</span><br><span class="line">            <span class="keyword">try</span> (<span class="meta">@SuppressWarnings</span>(<span class="string">"unused"</span>) PackageFreezer freezer = freezePackage(</span><br><span class="line">                    parsedPackage.getPackageName(),</span><br><span class="line">                    <span class="string">"scanPackageInternalLI"</span>)) &#123;</span><br><span class="line">                deletePackageLIF(parsedPackage.getPackageName(), <span class="keyword">null</span>, <span class="keyword">true</span>, <span class="keyword">null</span>, <span class="number">0</span>, <span class="keyword">null</span>,</span><br><span class="line">                        <span class="keyword">false</span>, <span class="keyword">null</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            pkgSetting = <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (newPkgVersionGreater) &#123;</span><br><span class="line">            <span class="comment">// system 上的应用比 data 上的应用新。只需删除 data 上的应用[保留应用程序数据]，然后将其替换为 system 上的版本。</span></span><br><span class="line">            logCriticalInfo(Log.WARN,</span><br><span class="line">                    <span class="string">"System package enabled;"</span></span><br><span class="line">                            + <span class="string">" name: "</span> + pkgSetting.name</span><br><span class="line">                            + <span class="string">"; "</span> + pkgSetting.versionCode + <span class="string">" --&gt; "</span></span><br><span class="line">                            + parsedPackage.getLongVersionCode()</span><br><span class="line">                            + <span class="string">"; "</span> + pkgSetting.codePathString + <span class="string">" --&gt; "</span></span><br><span class="line">                            + parsedPackage.getCodePath());</span><br><span class="line">            InstallArgs args = createInstallArgsForExisting(</span><br><span class="line">                    pkgSetting.codePathString,</span><br><span class="line">                    pkgSetting.resourcePathString, getAppDexInstructionSets(</span><br><span class="line">                            pkgSetting.primaryCpuAbiString, pkgSetting.secondaryCpuAbiString));</span><br><span class="line">            <span class="keyword">synchronized</span> (mInstallLock) &#123;</span><br><span class="line">                args.cleanUpResourcesLI();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// system 上的应用比 data 上的应用旧。则隐藏 system 上的应用， data 上的版本将在以后扫描并像升级一样重新被添加。</span></span><br><span class="line">            shouldHideSystemApp = <span class="keyword">true</span>;</span><br><span class="line">            logCriticalInfo(Log.INFO,</span><br><span class="line">                    <span class="string">"System package disabled;"</span></span><br><span class="line">                            + <span class="string">" name: "</span> + pkgSetting.name</span><br><span class="line">                            + <span class="string">"; old: "</span> + pkgSetting.codePathString + <span class="string">" @ "</span></span><br><span class="line">                            + pkgSetting.versionCode</span><br><span class="line">                            + <span class="string">"; new: "</span> + parsedPackage.getCodePath() + <span class="string">" @ "</span></span><br><span class="line">                            + parsedPackage.getCodePath());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> ScanResult scanResult = scanPackageNewLI(parsedPackage, parseFlags, scanFlags</span><br><span class="line">            | SCAN_UPDATE_SIGNATURE, currentTime, user, <span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">if</span> (scanResult.success) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            <span class="keyword">boolean</span> appIdCreated = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> String pkgName = scanResult.pkgSetting.name;</span><br><span class="line">                <span class="keyword">final</span> Map&lt;String, ReconciledPackage&gt; reconcileResult = reconcilePackagesLocked(</span><br><span class="line">                        <span class="keyword">new</span> ReconcileRequest(</span><br><span class="line">                                Collections.singletonMap(pkgName, scanResult),</span><br><span class="line">                                mSharedLibraries,</span><br><span class="line">                                mPackages,</span><br><span class="line">                                Collections.singletonMap(</span><br><span class="line">                                        pkgName, getSettingsVersionForPackage(parsedPackage)),</span><br><span class="line">                                Collections.singletonMap(pkgName,</span><br><span class="line">                                        getSharedLibLatestVersionSetting(scanResult))),</span><br><span class="line">                        mSettings.mKeySetManagerService);</span><br><span class="line">                appIdCreated = optimisticallyRegisterAppId(scanResult);</span><br><span class="line">                commitReconciledScanResultLocked(</span><br><span class="line">                        reconcileResult.get(pkgName), mUserManager.getUserIds());</span><br><span class="line">            &#125; <span class="keyword">catch</span> (PackageManagerException e) &#123;</span><br><span class="line">                <span class="keyword">if</span> (appIdCreated) &#123;</span><br><span class="line">                    cleanUpAppIdCreation(scanResult);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (shouldHideSystemApp) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            mSettings.disableSystemPackageLPw(parsedPackage.getPackageName(), <span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> scanResult.pkgSetting.pkg;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-PackageManagerService-collectCertificatesLI"><a href="#2-PackageManagerService-collectCertificatesLI" class="headerlink" title="2. PackageManagerService.collectCertificatesLI"></a>2. PackageManagerService.collectCertificatesLI</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">collectCertificatesLI</span><span class="params">(PackageSetting ps, ParsedPackage parsedPackage,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> forceCollect, <span class="keyword">boolean</span> skipVerify)</span> <span class="keyword">throws</span> PackageManagerException </span>&#123;</span><br><span class="line">    <span class="comment">// 若是从 pre-N MR1 升级上来的，则使用软件包目录的时间戳，否则使用 APK 文件来的时间戳。</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">long</span> lastModifiedTime = mIsPreNMR1Upgrade</span><br><span class="line">            ? <span class="keyword">new</span> File(parsedPackage.getCodePath()).lastModified()</span><br><span class="line">            : getLastModifiedTime(parsedPackage);</span><br><span class="line">    <span class="keyword">final</span> VersionInfo settingsVersionForPackage = getSettingsVersionForPackage(parsedPackage);</span><br><span class="line">    <span class="keyword">if</span> (ps != <span class="keyword">null</span> &amp;&amp; !forceCollect</span><br><span class="line">            &amp;&amp; ps.codePathString.equals(parsedPackage.getCodePath())</span><br><span class="line">            &amp;&amp; ps.timeStamp == lastModifiedTime</span><br><span class="line">            &amp;&amp; !isCompatSignatureUpdateNeeded(settingsVersionForPackage)</span><br><span class="line">            &amp;&amp; !isRecoverSignatureUpdateNeeded(settingsVersionForPackage)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (ps.signatures.mSigningDetails.signatures != <span class="keyword">null</span></span><br><span class="line">                &amp;&amp; ps.signatures.mSigningDetails.signatures.length != <span class="number">0</span></span><br><span class="line">                &amp;&amp; ps.signatures.mSigningDetails.signatureSchemeVersion</span><br><span class="line">                        != SignatureSchemeVersion.UNKNOWN) &#123;</span><br><span class="line">            <span class="comment">// 如果程序包没有变化，则继续使用现有的缓存签名数据。</span></span><br><span class="line">            parsedPackage.setSigningDetails(</span><br><span class="line">                    <span class="keyword">new</span> PackageParser.SigningDetails(ps.signatures.mSigningDetails));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        Slog.w(TAG, <span class="string">"PackageSetting for "</span> + ps.name</span><br><span class="line">                + <span class="string">" is missing signatures.  Collecting certs again to recover them."</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Slog.i(TAG, parsedPackage.getCodePath() + <span class="string">" changed; collecting certs"</span> +</span><br><span class="line">                (forceCollect ? <span class="string">" (forced)"</span> : <span class="string">""</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, <span class="string">"collectCertificates"</span>);</span><br><span class="line">        parsedPackage.setSigningDetails(</span><br><span class="line">                ParsingPackageUtils.getSigningDetails(parsedPackage, skipVerify));</span><br><span class="line">    &#125; <span class="keyword">catch</span> (PackageParserException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> PackageManagerException.from(e);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-PackageParser-setSigningDetails"><a href="#3-PackageParser-setSigningDetails" class="headerlink" title="3. PackageParser.setSigningDetails"></a>3. PackageParser.setSigningDetails</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/content/pm/PackageParser.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Package</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSigningDetails</span><span class="params">(@NonNull SigningDetails signingDetails)</span> </span>&#123;</span><br><span class="line">        mSigningDetails = signingDetails;</span><br><span class="line">        <span class="keyword">if</span> (childPackages != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> packageCount = childPackages.size();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; packageCount; i++) &#123;</span><br><span class="line">                childPackages.get(i).mSigningDetails = signingDetails;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-ParsingPackageUtils-getSigningDetails"><a href="#4-ParsingPackageUtils-getSigningDetails" class="headerlink" title="4. ParsingPackageUtils.getSigningDetails"></a>4. ParsingPackageUtils.getSigningDetails</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/content/pm/parsing/ParsingPackageUtils.java</span></span><br><span class="line"><span class="comment">// 从指定的 APK 中收集证书，判断所有 APK 内容是否已被正确签名。</span></span><br><span class="line"><span class="comment">// 如果被请求，则在原始解析调用期间取消此操作以收集证书。将其保留为调用方的可选方法意味着必须构造一个虚拟 ParseInput。</span></span><br><span class="line"><span class="meta">@CheckResult</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SigningDetails <span class="title">getSigningDetails</span><span class="params">(ParsingPackageRead pkg, <span class="keyword">boolean</span> skipVerify)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> PackageParserException </span>&#123;</span><br><span class="line">    SigningDetails signingDetails = SigningDetails.UNKNOWN;</span><br><span class="line">    ParseInput input = ParseTypeImpl.forDefaultParsing().reset();</span><br><span class="line">    Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, <span class="string">"collectCertificates"</span>);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ParseResult&lt;SigningDetails&gt; result = getSigningDetails(</span><br><span class="line">                input,</span><br><span class="line">                pkg.getBaseCodePath(),</span><br><span class="line">                skipVerify,</span><br><span class="line">                pkg.isStaticSharedLibrary(),</span><br><span class="line">                signingDetails,</span><br><span class="line">                pkg.getTargetSdkVersion()</span><br><span class="line">        );</span><br><span class="line">        <span class="keyword">if</span> (result.isError()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> PackageParser.PackageParserException(result.getErrorCode(),</span><br><span class="line">                    result.getErrorMessage(), result.getException());</span><br><span class="line">        &#125;</span><br><span class="line">        signingDetails = result.getResult();</span><br><span class="line">        String[] splitCodePaths = pkg.getSplitCodePaths();</span><br><span class="line">        <span class="keyword">if</span> (!ArrayUtils.isEmpty(splitCodePaths)) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; splitCodePaths.length; i++) &#123;</span><br><span class="line">                result = getSigningDetails(</span><br><span class="line">                        input,</span><br><span class="line">                        splitCodePaths[i],</span><br><span class="line">                        skipVerify,</span><br><span class="line">                        pkg.isStaticSharedLibrary(),</span><br><span class="line">                        signingDetails,</span><br><span class="line">                        pkg.getTargetSdkVersion()</span><br><span class="line">                );</span><br><span class="line">                <span class="keyword">if</span> (result.isError()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> PackageParser.PackageParserException(result.getErrorCode(),</span><br><span class="line">                            result.getErrorMessage(), result.getException());</span><br><span class="line">                &#125;</span><br><span class="line">                signingDetails = result.getResult();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> signingDetails;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@CheckResult</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ParseResult&lt;SigningDetails&gt; <span class="title">getSigningDetails</span><span class="params">(ParseInput input,</span></span></span><br><span class="line"><span class="function"><span class="params">        String baseCodePath, <span class="keyword">boolean</span> skipVerify, <span class="keyword">boolean</span> isStaticSharedLibrary,</span></span></span><br><span class="line"><span class="function"><span class="params">        @NonNull SigningDetails existingSigningDetails, <span class="keyword">int</span> targetSdk)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// android r及以上版本系统最低支持的 apk 签名是v2，android r以下系统支持最低的 apk 签名是v1。</span></span><br><span class="line">    <span class="keyword">int</span> minSignatureScheme = ApkSignatureVerifier.getMinimumSignatureSchemeVersionForTargetSdk(</span><br><span class="line">            targetSdk);</span><br><span class="line">    <span class="comment">// 静态共享库必须使用v2版本签名。</span></span><br><span class="line">    <span class="keyword">if</span> (isStaticSharedLibrary) &#123;</span><br><span class="line">        minSignatureScheme = SigningDetails.SignatureSchemeVersion.SIGNING_BLOCK_V2;</span><br><span class="line">    &#125;</span><br><span class="line">    SigningDetails verified;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (skipVerify) &#123;</span><br><span class="line">            <span class="comment">// 仅限系统分区的 APK，因为默认系统分区 APK 已获得信任，无需再验证以节省时间。</span></span><br><span class="line">            <span class="comment">// 因为这些应用签名没有验证，且部分系统应用的 v2 签名可以被移除，因为支持从 jar 签名（v1）获取证书。</span></span><br><span class="line">            verified = ApkSignatureVerifier.unsafeGetCertsWithoutVerification(</span><br><span class="line">                    baseCodePath, SigningDetails.SignatureSchemeVersion.JAR);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 验证 APK 的签名返回证书。</span></span><br><span class="line">            verified = ApkSignatureVerifier.verify(baseCodePath, minSignatureScheme);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (PackageParserException e) &#123;</span><br><span class="line">        <span class="keyword">return</span> input.error(PackageManager.INSTALL_PARSE_FAILED_NO_CERTIFICATES,</span><br><span class="line">                <span class="string">"Failed collecting certificates for "</span> + baseCodePath, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 验证条目是否与遇到的第一个 APK 包签名一致。证书可能已经在基 APK 的较早解析期间被填充了。</span></span><br><span class="line">    <span class="keyword">if</span> (existingSigningDetails == SigningDetails.UNKNOWN) &#123;</span><br><span class="line">        <span class="keyword">return</span> input.success(verified);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!Signature.areExactMatch(existingSigningDetails.signatures, verified.signatures)) &#123;</span><br><span class="line">            <span class="keyword">return</span> input.error(INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES,</span><br><span class="line">                    baseCodePath + <span class="string">" has mismatched certificates"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> input.success(existingSigningDetails);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="5-ApkSignatureVerifier-verify"><a href="#5-ApkSignatureVerifier-verify" class="headerlink" title="5. ApkSignatureVerifier.verify"></a>5. ApkSignatureVerifier.verify</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureVerifier.java</span></span><br><span class="line"><span class="comment">// 验证 APK 并返回与每个签名者关联的证书。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> PackageParser.<span class="function">SigningDetails <span class="title">verify</span><span class="params">(String apkPath,</span></span></span><br><span class="line"><span class="function"><span class="params">        @SignatureSchemeVersion <span class="keyword">int</span> minSignatureSchemeVersion)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> PackageParserException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> verifySignatures(apkPath, minSignatureSchemeVersion, <span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="6-ApkSignatureVerifier-verifySignatures"><a href="#6-ApkSignatureVerifier-verifySignatures" class="headerlink" title="6. ApkSignatureVerifier.verifySignatures"></a>6. ApkSignatureVerifier.verifySignatures</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureVerifier.java</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> PackageParser.<span class="function">SigningDetails <span class="title">verifySignatures</span><span class="params">(String apkPath,</span></span></span><br><span class="line"><span class="function"><span class="params">        @SignatureSchemeVersion <span class="keyword">int</span> minSignatureSchemeVersion, <span class="keyword">boolean</span> verifyFull)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> PackageParserException </span>&#123;</span><br><span class="line">    <span class="comment">// 最高支持 v4 版本签名。</span></span><br><span class="line">    <span class="keyword">if</span> (minSignatureSchemeVersion &gt; SignatureSchemeVersion.SIGNING_BLOCK_V4) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> PackageParserException(INSTALL_PARSE_FAILED_NO_CERTIFICATES,</span><br><span class="line">                <span class="string">"No signature found in package of version "</span> + minSignatureSchemeVersion</span><br><span class="line">                        + <span class="string">" or newer for package "</span> + apkPath);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 验证v4版本的签名的 APK。</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> verifyV4Signature(apkPath, minSignatureSchemeVersion, verifyFull);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (SignatureNotFoundException e) &#123;</span><br><span class="line">        <span class="keyword">if</span> (minSignatureSchemeVersion &gt;= SignatureSchemeVersion.SIGNING_BLOCK_V4) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> PackageParserException(INSTALL_PARSE_FAILED_NO_CERTIFICATES,</span><br><span class="line">                    <span class="string">"No APK Signature Scheme v4 signature in package "</span> + apkPath, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (minSignatureSchemeVersion &gt; SignatureSchemeVersion.SIGNING_BLOCK_V3) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> PackageParserException(INSTALL_PARSE_FAILED_NO_CERTIFICATES,</span><br><span class="line">                <span class="string">"No signature found in package of version "</span> + minSignatureSchemeVersion</span><br><span class="line">                        + <span class="string">" or newer for package "</span> + apkPath);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 验证v3及更低版本签名的 APK。</span></span><br><span class="line">    <span class="keyword">return</span> verifyV3AndBelowSignatures(apkPath, minSignatureSchemeVersion, verifyFull);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="7-ApkSignatureSchemeV4Verifier-verifyV4Signature"><a href="#7-ApkSignatureSchemeV4Verifier-verifyV4Signature" class="headerlink" title="7. ApkSignatureSchemeV4Verifier.verifyV4Signature"></a>7. ApkSignatureSchemeV4Verifier.verifyV4Signature</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV4Verifier.java</span></span><br><span class="line"><span class="comment">// 验证V4签名版本的APK的签名</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> PackageParser.<span class="function">SigningDetails <span class="title">verifyV4Signature</span><span class="params">(String apkPath,</span></span></span><br><span class="line"><span class="function"><span class="params">        @SignatureSchemeVersion <span class="keyword">int</span> minSignatureSchemeVersion, <span class="keyword">boolean</span> verifyFull)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> SignatureNotFoundException, PackageParserException </span>&#123;</span><br><span class="line">    Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, verifyFull ? <span class="string">"verifyV4"</span> : <span class="string">"certsOnlyV4"</span>);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ApkSignatureSchemeV4Verifier.VerifiedSigner vSigner =</span><br><span class="line">                ApkSignatureSchemeV4Verifier.extractCertificates(apkPath);</span><br><span class="line">        Certificate[][] signerCerts = <span class="keyword">new</span> Certificate[][]&#123;vSigner.certs&#125;;</span><br><span class="line">        Signature[] signerSigs = convertToSignatures(signerCerts);</span><br><span class="line">        <span class="keyword">if</span> (verifyFull) &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] nonstreamingDigest = <span class="keyword">null</span>;</span><br><span class="line">            Certificate[][] nonstreamingCerts = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// v4是附加组件，需要v2或v3签名才能针对其证书和摘要进行验证。</span></span><br><span class="line">                ApkSignatureSchemeV3Verifier.VerifiedSigner v3Signer =</span><br><span class="line">                        ApkSignatureSchemeV3Verifier.unsafeGetCertsWithoutVerification(apkPath);</span><br><span class="line">                nonstreamingDigest = v3Signer.digest;</span><br><span class="line">                nonstreamingCerts = <span class="keyword">new</span> Certificate[][]&#123;v3Signer.certs&#125;;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (SignatureNotFoundException e) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    ApkSignatureSchemeV2Verifier.VerifiedSigner v2Signer =</span><br><span class="line">                            ApkSignatureSchemeV2Verifier.verify(apkPath, <span class="keyword">false</span>);</span><br><span class="line">                    nonstreamingDigest = v2Signer.digest;</span><br><span class="line">                    nonstreamingCerts = v2Signer.certs;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (SignatureNotFoundException ee) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(</span><br><span class="line">                            <span class="string">"V4 verification failed to collect V2/V3 certificates from : "</span></span><br><span class="line">                                    + apkPath, ee);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            Signature[] nonstreamingSigs = convertToSignatures(nonstreamingCerts);</span><br><span class="line">            <span class="keyword">if</span> (nonstreamingSigs.length != signerSigs.length) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(</span><br><span class="line">                        <span class="string">"Invalid number of certificates: "</span> + nonstreamingSigs.length);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, size = signerSigs.length; i &lt; size; ++i) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!nonstreamingSigs[i].equals(signerSigs[i])) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(</span><br><span class="line">                            <span class="string">"V4 signature certificate does not match V2/V3"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!ArrayUtils.equals(vSigner.apkDigest, nonstreamingDigest,</span><br><span class="line">                    vSigner.apkDigest.length)) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">"APK digest in V4 signature does not match V2/V3"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> PackageParser.SigningDetails(signerSigs,</span><br><span class="line">                SignatureSchemeVersion.SIGNING_BLOCK_V4);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (SignatureNotFoundException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> e;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="comment">// 找到v4版本APK签名方案，但未验证。</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> PackageParserException(INSTALL_PARSE_FAILED_NO_CERTIFICATES,</span><br><span class="line">                <span class="string">"Failed to collect certificates from "</span> + apkPath</span><br><span class="line">                        + <span class="string">" using APK Signature Scheme v4"</span>, e);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="8-ApkSignatureSchemeV4Verifier-extractCertificates"><a href="#8-ApkSignatureSchemeV4Verifier-extractCertificates" class="headerlink" title="8. ApkSignatureSchemeV4Verifier.extractCertificates"></a>8. ApkSignatureSchemeV4Verifier.extractCertificates</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV4Verifier.java</span></span><br><span class="line"><span class="comment">// 提取并验证提供的APK的APK签名方案v4签名，并返回与每个签名者关联的证书。</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> VerifiedSigner <span class="title">extractCertificates</span><span class="params">(String apkFile)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> SignatureNotFoundException, SecurityException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> File apk = <span class="keyword">new</span> File(apkFile);</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] signatureBytes = IncrementalManager.unsafeGetFileSignature(</span><br><span class="line">            apk.getAbsolutePath());</span><br><span class="line">    <span class="keyword">if</span> (signatureBytes == <span class="keyword">null</span> || signatureBytes.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SignatureNotFoundException(<span class="string">"Failed to obtain signature bytes from IncFS."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> V4Signature signature;</span><br><span class="line">    <span class="keyword">final</span> V4Signature.HashingInfo hashingInfo;</span><br><span class="line">    <span class="keyword">final</span> V4Signature.SigningInfo signingInfo;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        signature = V4Signature.readFrom(signatureBytes);</span><br><span class="line">        <span class="keyword">if</span> (!signature.isVersionSupported()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(</span><br><span class="line">                    <span class="string">"v4 signature version "</span> + signature.version + <span class="string">" is not supported"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        hashingInfo = V4Signature.HashingInfo.fromByteArray(signature.hashingInfo);</span><br><span class="line">        signingInfo = V4Signature.SigningInfo.fromByteArray(signature.signingInfo);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SignatureNotFoundException(<span class="string">"Failed to read V4 signature."</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] signedData = V4Signature.getSigningData(apk.length(), hashingInfo,</span><br><span class="line">            signingInfo);</span><br><span class="line">    <span class="keyword">return</span> verifySigner(signingInfo, signedData);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="9-ApkSignatureSchemeV4Verifier-verifySigner"><a href="#9-ApkSignatureSchemeV4Verifier-verifySigner" class="headerlink" title="9. ApkSignatureSchemeV4Verifier.verifySigner"></a>9. ApkSignatureSchemeV4Verifier.verifySigner</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV4Verifier.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> VerifiedSigner <span class="title">verifySigner</span><span class="params">(V4Signature.SigningInfo signingInfo,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">final</span> <span class="keyword">byte</span>[] signedData)</span> <span class="keyword">throws</span> SecurityException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!isSupportedSignatureAlgorithm(signingInfo.signatureAlgorithmId)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">"No supported signatures found"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> signatureAlgorithmId = signingInfo.signatureAlgorithmId;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] signatureBytes = signingInfo.signature;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] publicKeyBytes = signingInfo.publicKey;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] encodedCert = signingInfo.certificate;</span><br><span class="line">    String keyAlgorithm = getSignatureAlgorithmJcaKeyAlgorithm(signatureAlgorithmId);</span><br><span class="line">    Pair&lt;String, ? extends AlgorithmParameterSpec&gt; signatureAlgorithmParams =</span><br><span class="line">            getSignatureAlgorithmJcaSignatureAlgorithm(signatureAlgorithmId);</span><br><span class="line">    String jcaSignatureAlgorithm = signatureAlgorithmParams.first;</span><br><span class="line">    AlgorithmParameterSpec jcaSignatureAlgorithmParams = signatureAlgorithmParams.second;</span><br><span class="line">    <span class="keyword">boolean</span> sigVerified;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        PublicKey publicKey =</span><br><span class="line">                KeyFactory.getInstance(keyAlgorithm)</span><br><span class="line">                        .generatePublic(<span class="keyword">new</span> X509EncodedKeySpec(publicKeyBytes));</span><br><span class="line">        Signature sig = Signature.getInstance(jcaSignatureAlgorithm);</span><br><span class="line">        sig.initVerify(publicKey);</span><br><span class="line">        <span class="keyword">if</span> (jcaSignatureAlgorithmParams != <span class="keyword">null</span>) &#123;</span><br><span class="line">            sig.setParameter(jcaSignatureAlgorithmParams);</span><br><span class="line">        &#125;</span><br><span class="line">        sig.update(signedData);</span><br><span class="line">        sigVerified = sig.verify(signatureBytes);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException</span><br><span class="line">            | InvalidAlgorithmParameterException | SignatureException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(</span><br><span class="line">                <span class="string">"Failed to verify "</span> + jcaSignatureAlgorithm + <span class="string">" signature"</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!sigVerified) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(jcaSignatureAlgorithm + <span class="string">" signature did not verify"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 签名数据已经被验证。</span></span><br><span class="line">    CertificateFactory certFactory;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        certFactory = CertificateFactory.getInstance(<span class="string">"X.509"</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (CertificateException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Failed to obtain X.509 CertificateFactory"</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    X509Certificate certificate;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        certificate = (X509Certificate)</span><br><span class="line">                certFactory.generateCertificate(<span class="keyword">new</span> ByteArrayInputStream(encodedCert));</span><br><span class="line">    &#125; <span class="keyword">catch</span> (CertificateException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">"Failed to decode certificate"</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    certificate = <span class="keyword">new</span> VerbatimX509Certificate(certificate, encodedCert);</span><br><span class="line">    <span class="keyword">byte</span>[] certificatePublicKeyBytes = certificate.getPublicKey().getEncoded();</span><br><span class="line">    <span class="keyword">if</span> (!Arrays.equals(publicKeyBytes, certificatePublicKeyBytes)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(</span><br><span class="line">                <span class="string">"Public key mismatch between certificate and signature record"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> VerifiedSigner(<span class="keyword">new</span> Certificate[]&#123;certificate&#125;, signingInfo.apkDigest);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="10-ApkSignatureSchemeV2Verifier-isSupportedSignatureAlgorithm"><a href="#10-ApkSignatureSchemeV2Verifier-isSupportedSignatureAlgorithm" class="headerlink" title="10. ApkSignatureSchemeV2Verifier.isSupportedSignatureAlgorithm"></a>10. ApkSignatureSchemeV2Verifier.isSupportedSignatureAlgorithm</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSigningBlockUtils.java</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isSupportedSignatureAlgorithm</span><span class="params">(<span class="keyword">int</span> sigAlgorithm)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (sigAlgorithm) &#123;</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PSS_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PSS_WITH_SHA512:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PKCS1_V1_5_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PKCS1_V1_5_WITH_SHA512:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_ECDSA_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_ECDSA_WITH_SHA512:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_DSA_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_RSA_PKCS1_V1_5_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_ECDSA_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_DSA_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="11-ApkSigningBlockUtils-getSignatureAlgorithmJcaKeyAlgorithm"><a href="#11-ApkSigningBlockUtils-getSignatureAlgorithmJcaKeyAlgorithm" class="headerlink" title="11. ApkSigningBlockUtils.getSignatureAlgorithmJcaKeyAlgorithm"></a>11. ApkSigningBlockUtils.getSignatureAlgorithmJcaKeyAlgorithm</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSigningBlockUtils.java</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> String <span class="title">getSignatureAlgorithmJcaKeyAlgorithm</span><span class="params">(<span class="keyword">int</span> sigAlgorithm)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (sigAlgorithm) &#123;</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PSS_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PSS_WITH_SHA512:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PKCS1_V1_5_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PKCS1_V1_5_WITH_SHA512:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_RSA_PKCS1_V1_5_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"RSA"</span>;</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_ECDSA_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_ECDSA_WITH_SHA512:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_ECDSA_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"EC"</span>;</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_DSA_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_DSA_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"DSA"</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                    <span class="string">"Unknown signature algorithm: 0x"</span></span><br><span class="line">                            + Long.toHexString(sigAlgorithm &amp; <span class="number">0xffffffff</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="12-ApkSigningBlockUtils-getSignatureAlgorithmJcaSignatureAlgorithm"><a href="#12-ApkSigningBlockUtils-getSignatureAlgorithmJcaSignatureAlgorithm" class="headerlink" title="12. ApkSigningBlockUtils.getSignatureAlgorithmJcaSignatureAlgorithm"></a>12. ApkSigningBlockUtils.getSignatureAlgorithmJcaSignatureAlgorithm</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSigningBlockUtils.java</span></span><br><span class="line"><span class="keyword">static</span> Pair&lt;String, ? extends AlgorithmParameterSpec&gt;</span><br><span class="line">        getSignatureAlgorithmJcaSignatureAlgorithm(<span class="keyword">int</span> sigAlgorithm) &#123;</span><br><span class="line">    <span class="keyword">switch</span> (sigAlgorithm) &#123;</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PSS_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> Pair.create(</span><br><span class="line">                    <span class="string">"SHA256withRSA/PSS"</span>,</span><br><span class="line">                    <span class="keyword">new</span> PSSParameterSpec(</span><br><span class="line">                            <span class="string">"SHA-256"</span>, <span class="string">"MGF1"</span>, MGF1ParameterSpec.SHA256, <span class="number">256</span> / <span class="number">8</span>, <span class="number">1</span>));</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PSS_WITH_SHA512:</span><br><span class="line">            <span class="keyword">return</span> Pair.create(</span><br><span class="line">                    <span class="string">"SHA512withRSA/PSS"</span>,</span><br><span class="line">                    <span class="keyword">new</span> PSSParameterSpec(</span><br><span class="line">                            <span class="string">"SHA-512"</span>, <span class="string">"MGF1"</span>, MGF1ParameterSpec.SHA512, <span class="number">512</span> / <span class="number">8</span>, <span class="number">1</span>));</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PKCS1_V1_5_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_RSA_PKCS1_V1_5_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> Pair.create(<span class="string">"SHA256withRSA"</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_RSA_PKCS1_V1_5_WITH_SHA512:</span><br><span class="line">            <span class="keyword">return</span> Pair.create(<span class="string">"SHA512withRSA"</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_ECDSA_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_ECDSA_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> Pair.create(<span class="string">"SHA256withECDSA"</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_ECDSA_WITH_SHA512:</span><br><span class="line">            <span class="keyword">return</span> Pair.create(<span class="string">"SHA512withECDSA"</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_DSA_WITH_SHA256:</span><br><span class="line">        <span class="keyword">case</span> SIGNATURE_VERITY_DSA_WITH_SHA256:</span><br><span class="line">            <span class="keyword">return</span> Pair.create(<span class="string">"SHA256withDSA"</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                    <span class="string">"Unknown signature algorithm: 0x"</span></span><br><span class="line">                            + Long.toHexString(sigAlgorithm &amp; <span class="number">0xffffffff</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="13-ApkSignatureSchemeV4Verifier-VerifiedSigner"><a href="#13-ApkSignatureSchemeV4Verifier-VerifiedSigner" class="headerlink" title="13. ApkSignatureSchemeV4Verifier.VerifiedSigner"></a>13. ApkSignatureSchemeV4Verifier.VerifiedSigner</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV4Verifier.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">VerifiedSigner</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> Certificate[] certs;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">byte</span>[] apkDigest;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">VerifiedSigner</span><span class="params">(Certificate[] certs, <span class="keyword">byte</span>[] apkDigest)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.certs = certs;</span><br><span class="line">        <span class="keyword">this</span>.apkDigest = apkDigest;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="14-ApkSignatureSchemeV3Verifier-unsafeGetCertsWithoutVerification"><a href="#14-ApkSignatureSchemeV3Verifier-unsafeGetCertsWithoutVerification" class="headerlink" title="14. ApkSignatureSchemeV3Verifier.unsafeGetCertsWithoutVerification"></a>14. ApkSignatureSchemeV3Verifier.unsafeGetCertsWithoutVerification</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> VerifiedSigner <span class="title">unsafeGetCertsWithoutVerification</span><span class="params">(String apkFile)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> SignatureNotFoundException, SecurityException, IOException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> verify(apkFile, <span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="15-ApkSignatureVerifier-convertToSignatures"><a href="#15-ApkSignatureVerifier-convertToSignatures" class="headerlink" title="15. ApkSignatureVerifier.convertToSignatures"></a>15. ApkSignatureVerifier.convertToSignatures</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/util/apk/ApkSignatureVerifier.java</span></span><br><span class="line"><span class="comment">// 将证书链数组转换为PackageManager使用的等效签名。</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Signature[] convertToSignatures(Certificate[][] certs)</span><br><span class="line">        <span class="keyword">throws</span> CertificateEncodingException &#123;</span><br><span class="line">    <span class="keyword">final</span> Signature[] res = <span class="keyword">new</span> Signature[certs.length];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; certs.length; i++) &#123;</span><br><span class="line">        res[i] = <span class="keyword">new</span> Signature(certs[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/05/Security/Apk_v3_签名方案验证过程/" rel="next" title="APK v3 签名方案验证过程">
+                <i class="fa fa-chevron-left"></i> APK v3 签名方案验证过程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/09/20/Security/APK签名方案概述/" rel="prev" title="APK 签名方案概述">
+                APK 签名方案概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">101</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">27</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-PackageManagerService-addForInitLI"><span class="nav-text">1. PackageManagerService.addForInitLI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-PackageManagerService-collectCertificatesLI"><span class="nav-text">2. PackageManagerService.collectCertificatesLI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-PackageParser-setSigningDetails"><span class="nav-text">3. PackageParser.setSigningDetails</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-ParsingPackageUtils-getSigningDetails"><span class="nav-text">4. ParsingPackageUtils.getSigningDetails</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-ApkSignatureVerifier-verify"><span class="nav-text">5. ApkSignatureVerifier.verify</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-ApkSignatureVerifier-verifySignatures"><span class="nav-text">6. ApkSignatureVerifier.verifySignatures</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-ApkSignatureSchemeV4Verifier-verifyV4Signature"><span class="nav-text">7. ApkSignatureSchemeV4Verifier.verifyV4Signature</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-ApkSignatureSchemeV4Verifier-extractCertificates"><span class="nav-text">8. ApkSignatureSchemeV4Verifier.extractCertificates</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-ApkSignatureSchemeV4Verifier-verifySigner"><span class="nav-text">9. ApkSignatureSchemeV4Verifier.verifySigner</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-ApkSignatureSchemeV2Verifier-isSupportedSignatureAlgorithm"><span class="nav-text">10. ApkSignatureSchemeV2Verifier.isSupportedSignatureAlgorithm</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-ApkSigningBlockUtils-getSignatureAlgorithmJcaKeyAlgorithm"><span class="nav-text">11. ApkSigningBlockUtils.getSignatureAlgorithmJcaKeyAlgorithm</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-ApkSigningBlockUtils-getSignatureAlgorithmJcaSignatureAlgorithm"><span class="nav-text">12. ApkSigningBlockUtils.getSignatureAlgorithmJcaSignatureAlgorithm</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#13-ApkSignatureSchemeV4Verifier-VerifiedSigner"><span class="nav-text">13. ApkSignatureSchemeV4Verifier.VerifiedSigner</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-ApkSignatureSchemeV3Verifier-unsafeGetCertsWithoutVerification"><span class="nav-text">14. ApkSignatureSchemeV3Verifier.unsafeGetCertsWithoutVerification</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#15-ApkSignatureVerifier-convertToSignatures"><span class="nav-text">15. ApkSignatureVerifier.convertToSignatures</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
