@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="123456789101112131415# system/core/rootdir/init.rcon post-fs-data    mark_post_data    # 在访问 data 分区之前先执行 checkpoint    exec - system system -- /system/bin/vdc checkpoint prepareCheckpoint    # 由于 dat">
+<meta name="keywords" content="Filesystem,Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FBE 文件级加密过程">
+<meta property="og:url" content="http://www.xiezeyang.com/2020/10/11/Security/FBE文件级加密流程/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="123456789101112131415# system/core/rootdir/init.rcon post-fs-data    mark_post_data    # 在访问 data 分区之前先执行 checkpoint    exec - system system -- /system/bin/vdc checkpoint prepareCheckpoint    # 由于 dat">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-10-14T16:02:09.223Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FBE 文件级加密过程">
+<meta name="twitter:description" content="123456789101112131415# system/core/rootdir/init.rcon post-fs-data    mark_post_data    # 在访问 data 分区之前先执行 checkpoint    exec - system system -- /system/bin/vdc checkpoint prepareCheckpoint    # 由于 dat">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2020/10/11/Security/FBE文件级加密流程/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>FBE 文件级加密过程 | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/10/11/Security/FBE文件级加密流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">FBE 文件级加密过程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-10-11 00:00:00" itemprop="dateCreated datePublished" datetime="2020-10-11T00:00:00+08:00">2020-10-11</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># system/core/rootdir/init.rc</span><br><span class="line">on post-fs-data</span><br><span class="line">    mark_post_data</span><br><span class="line">    # 在访问 data 分区之前先执行 checkpoint</span><br><span class="line">    exec - system system -- /system/bin/vdc checkpoint prepareCheckpoint</span><br><span class="line">    # 由于 data 分区默认是以 root 权限挂载的，此处调整用户群组读写可执行权限。</span><br><span class="line">    chown system system /data</span><br><span class="line">    chmod 0771 /data</span><br><span class="line">    # We restorecon /data in case the userdata partition has been reset.</span><br><span class="line">    // 恢复 data 分区的 selinux 权限</span><br><span class="line">    restorecon /data</span><br><span class="line">    # 确保有设备加密密钥（DE Key）</span><br><span class="line">    installkey /data</span><br><span class="line">    # 初始化 user0 （CE key）</span><br><span class="line">    init_user0</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="一、installkey"><a href="#一、installkey" class="headerlink" title="一、installkey"></a>一、installkey</h3><h4 id="1-1-builtins-do-installkey"><a href="#1-1-builtins-do-installkey" class="headerlink" title="1.1 builtins::do_installkey"></a>1.1 builtins::do_installkey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/core/init/builtins.cpp</span></span><br><span class="line"><span class="keyword">static</span> Result&lt;<span class="keyword">void</span>&gt; do_installkey(<span class="keyword">const</span> BuiltinArguments&amp; args) &#123;</span><br><span class="line">    <span class="comment">// 如果 ro.crypto.type 属性对应的不是 file 则表明不是文件级加密，返回空退出。</span></span><br><span class="line">    <span class="keyword">if</span> (!is_file_crypto()) <span class="keyword">return</span> &#123;&#125;;</span><br><span class="line">    <span class="comment">// 创建未加密目录：/data/unencrypted 。</span></span><br><span class="line">    <span class="keyword">auto</span> unencrypted_dir = args[<span class="number">1</span>] + fscrypt_unencrypted_folder;</span><br><span class="line">    <span class="keyword">if</span> (!make_dir(unencrypted_dir, <span class="number">0700</span>) &amp;&amp; errno != EEXIST) &#123;</span><br><span class="line">        <span class="keyword">return</span> ErrnoError() &lt;&lt; <span class="string">"Failed to create "</span> &lt;&lt; unencrypted_dir;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ExecVdcRebootOnFailure(<span class="string">"enablefilecrypto"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-2-builtins-ExecVdcRebootOnFailure"><a href="#1-2-builtins-ExecVdcRebootOnFailure" class="headerlink" title="1.2 builtins::ExecVdcRebootOnFailure"></a>1.2 builtins::ExecVdcRebootOnFailure</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/core/init/builtins.cpp</span></span><br><span class="line"><span class="keyword">static</span> Result&lt;<span class="keyword">void</span>&gt; ExecVdcRebootOnFailure(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; vdc_arg) &#123;</span><br><span class="line">    <span class="keyword">bool</span> should_reboot_into_recovery = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">auto</span> reboot_reason = vdc_arg + <span class="string">"_failed"</span>;</span><br><span class="line">    <span class="comment">// 用户空间重启（软重启）失败处理-android 11新功能。</span></span><br><span class="line">    <span class="keyword">if</span> (android::sysprop::InitProperties::userspace_reboot_in_progress().value_or(<span class="literal">false</span>)) &#123;</span><br><span class="line">        should_reboot_into_recovery = <span class="literal">false</span>;</span><br><span class="line">        reboot_reason = <span class="string">"userspace_failed,"</span> + vdc_arg;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> reboot = [reboot_reason, should_reboot_into_recovery](<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message) &#123;</span><br><span class="line">        <span class="keyword">if</span> (should_reboot_into_recovery) &#123;</span><br><span class="line">            <span class="comment">// 烧录 GSI 后重启进入 recovery 模式执行恢复出厂操作。</span></span><br><span class="line">            <span class="keyword">if</span> (fscrypt_is_native() &amp;&amp; !android::gsi::IsGsiRunning()) &#123;</span><br><span class="line">                LOG(ERROR) &lt;&lt; message &lt;&lt; <span class="string">": Rebooting into recovery, reason: "</span> &lt;&lt; reboot_reason;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">auto</span> result = reboot_into_recovery(</span><br><span class="line">                            &#123;<span class="string">"--prompt_and_wipe_data"</span>, <span class="string">"--reason="</span>s + reboot_reason&#125;);</span><br><span class="line">                    !result.ok()) &#123;</span><br><span class="line">                    LOG(FATAL) &lt;&lt; <span class="string">"Could not reboot into recovery: "</span> &lt;&lt; result.error();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                LOG(ERROR) &lt;&lt; <span class="string">"Failure (reboot suppressed): "</span> &lt;&lt; reboot_reason;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; message &lt;&lt; <span class="string">": rebooting, reason: "</span> &lt;&lt; reboot_reason;</span><br><span class="line">            trigger_shutdown(<span class="string">"reboot,"</span> + reboot_reason);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// 执行 "/system/bin/vdc --wait cryptfs enablefilecrypto" 命令。</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; args = &#123;<span class="string">"exec"</span>, <span class="string">"/system/bin/vdc"</span>, <span class="string">"--wait"</span>, <span class="string">"cryptfs"</span>, vdc_arg&#125;;</span><br><span class="line">    <span class="keyword">return</span> ExecWithFunctionOnFailure(args, reboot);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-vdc-main"><a href="#1-3-vdc-main" class="headerlink" title="1.3 vdc::main"></a>1.3 vdc::main</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/vdc.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    setenv(<span class="string">"ANDROID_LOG_TAGS"</span>, <span class="string">"*:v"</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (getppid() == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// If init is calling us then it's during boot and we should log to kmsg</span></span><br><span class="line">        <span class="comment">// 如果是 init 启动时候调用，则需要将日志写入kmsg。</span></span><br><span class="line">        android::base::InitLogging(argv, &amp;android::base::KernelLogger);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        android::base::InitLogging(argv, &amp;android::base::StderrLogger);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; args(argv + <span class="number">1</span>, argv + argc);</span><br><span class="line">    <span class="comment">// 忽略 "--wait" 参数。</span></span><br><span class="line">    <span class="keyword">if</span> (args.size() &gt; <span class="number">0</span> &amp;&amp; args[<span class="number">0</span>] == <span class="string">"--wait"</span>) &#123;</span><br><span class="line">        args.erase(args.begin());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 新参数个数检查，小于2则退出。</span></span><br><span class="line">    <span class="keyword">if</span> (args.size() &lt; <span class="number">2</span>) &#123;</span><br><span class="line">        usage(argv[<span class="number">0</span>]);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">5</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 获取 vold binder。</span></span><br><span class="line">    android::sp&lt;android::IBinder&gt; binder = getServiceAggressive();</span><br><span class="line">    <span class="keyword">if</span> (!binder) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Failed to obtain vold Binder"</span>;</span><br><span class="line">        <span class="built_in">exit</span>(EINVAL);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> vold = android::interface_cast&lt;android::os::IVold&gt;(binder);</span><br><span class="line">    <span class="comment">// 启用文件级加密。</span></span><br><span class="line">    <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"cryptfs"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"enablefilecrypto"</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;fbeEnable());</span><br><span class="line">    <span class="comment">// 初始化 user0 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"cryptfs"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"init_user0"</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;initUser0());</span><br><span class="line">    <span class="comment">// 启用全盘加密。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"cryptfs"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"enablecrypto"</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> passwordType = android::os::IVold::PASSWORD_TYPE_DEFAULT;</span><br><span class="line">        <span class="keyword">int</span> encryptionFlags = android::os::IVold::ENCRYPTION_FLAG_NO_UI;</span><br><span class="line">        checkStatus(args, vold-&gt;fdeEnable(passwordType, <span class="string">""</span>, encryptionFlags));</span><br><span class="line">    <span class="comment">// 默认加密挂载。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"cryptfs"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"mountdefaultencrypted"</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;mountDefaultEncrypted());</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 挂载 fstab 表中分区。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"cryptfs"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"mountFstab"</span> &amp;&amp; args.size() == <span class="number">4</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;mountFstab(args[<span class="number">2</span>], args[<span class="number">3</span>]));</span><br><span class="line">    <span class="comment">// 加密 fstab 表。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"cryptfs"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"encryptFstab"</span> &amp;&amp; args.size() == <span class="number">4</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;encryptFstab(args[<span class="number">2</span>], args[<span class="number">3</span>]));</span><br><span class="line">    <span class="comment">// 支持用户空间检查点。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"supportsCheckpoint"</span> &amp;&amp; args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">bool</span> supported = <span class="literal">false</span>;</span><br><span class="line">        checkStatus(args, vold-&gt;supportsCheckpoint(&amp;supported));</span><br><span class="line">        <span class="keyword">return</span> supported ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 支持块检查点。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"supportsBlockCheckpoint"</span> &amp;&amp;</span><br><span class="line">               args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">bool</span> supported = <span class="literal">false</span>;</span><br><span class="line">        checkStatus(args, vold-&gt;supportsBlockCheckpoint(&amp;supported));</span><br><span class="line">        <span class="keyword">return</span> supported ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 支持文件检查点。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"supportsFileCheckpoint"</span> &amp;&amp; args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">bool</span> supported = <span class="literal">false</span>;</span><br><span class="line">        checkStatus(args, vold-&gt;supportsFileCheckpoint(&amp;supported));</span><br><span class="line">        <span class="keyword">return</span> supported ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 开始 checkpoint 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"startCheckpoint"</span> &amp;&amp; args.size() == <span class="number">3</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> retry;</span><br><span class="line">        <span class="keyword">if</span> (!android::base::ParseInt(args[<span class="number">2</span>], &amp;retry)) <span class="built_in">exit</span>(EINVAL);</span><br><span class="line">        checkStatus(args, vold-&gt;startCheckpoint(retry));</span><br><span class="line">    <span class="comment">// 需要 checkpoint 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"needsCheckpoint"</span> &amp;&amp; args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">bool</span> enabled = <span class="literal">false</span>;</span><br><span class="line">        checkStatus(args, vold-&gt;needsCheckpoint(&amp;enabled));</span><br><span class="line">        <span class="keyword">return</span> enabled ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 需要回滚 checkpoint 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"needsRollback"</span> &amp;&amp; args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">bool</span> enabled = <span class="literal">false</span>;</span><br><span class="line">        checkStatus(args, vold-&gt;needsRollback(&amp;enabled));</span><br><span class="line">        <span class="keyword">return</span> enabled ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 提交 checkpoint 变更。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"commitChanges"</span> &amp;&amp; args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;commitChanges());</span><br><span class="line">    <span class="comment">// 准备 checkpoint 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"prepareCheckpoint"</span> &amp;&amp; args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;prepareCheckpoint());</span><br><span class="line">    <span class="comment">// 恢复 checkpoint 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"restoreCheckpoint"</span> &amp;&amp; args.size() == <span class="number">3</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;restoreCheckpoint(args[<span class="number">2</span>]));</span><br><span class="line">    <span class="comment">// 恢复部分 checkpoint 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"restoreCheckpointPart"</span> &amp;&amp; args.size() == <span class="number">4</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> count;</span><br><span class="line">        <span class="keyword">if</span> (!android::base::ParseInt(args[<span class="number">3</span>], &amp;count)) <span class="built_in">exit</span>(EINVAL);</span><br><span class="line">        checkStatus(args, vold-&gt;restoreCheckpointPart(args[<span class="number">2</span>], count));</span><br><span class="line">    <span class="comment">// 试图标记启动。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"markBootAttempt"</span> &amp;&amp; args.size() == <span class="number">2</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;markBootAttempt());</span><br><span class="line">    <span class="comment">// 中断 checkpoint 变更。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"abortChanges"</span> &amp;&amp; args.size() == <span class="number">4</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> retry;</span><br><span class="line">        <span class="keyword">if</span> (!android::base::ParseInt(args[<span class="number">2</span>], &amp;retry)) <span class="built_in">exit</span>(EINVAL);</span><br><span class="line">        checkStatus(args, vold-&gt;abortChanges(args[<span class="number">2</span>], retry != <span class="number">0</span>));</span><br><span class="line">    <span class="comment">// 重置 checkpoint 。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">0</span>] == <span class="string">"checkpoint"</span> &amp;&amp; args[<span class="number">1</span>] == <span class="string">"resetCheckpoint"</span>) &#123;</span><br><span class="line">        checkStatus(args, vold-&gt;resetCheckpoint());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Raw commands are no longer supported"</span>;</span><br><span class="line">        <span class="built_in">exit</span>(EINVAL);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-4-VoldNativeService-fbeEnable"><a href="#1-4-VoldNativeService-fbeEnable" class="headerlink" title="1.4 VoldNativeService::fbeEnable"></a>1.4 VoldNativeService::fbeEnable</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/VoldNativeService.cpp</span></span><br><span class="line">binder::Status VoldNativeService::fbeEnable() &#123;</span><br><span class="line">    <span class="comment">// 强制 system 或 root 用户群组。</span></span><br><span class="line">    ENFORCE_SYSTEM_OR_ROOT;</span><br><span class="line">    <span class="comment">// 获取加密锁。</span></span><br><span class="line">    ACQUIRE_CRYPT_LOCK;</span><br><span class="line">    <span class="comment">// 初始化系统范围加密 keys 。</span></span><br><span class="line">    <span class="keyword">return</span> translateBool(fscrypt_initialize_systemwide_keys());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-5-FsCrypt-fscrypt-initialize-systemwide-keys"><a href="#1-5-FsCrypt-fscrypt-initialize-systemwide-keys" class="headerlink" title="1.5 FsCrypt::fscrypt_initialize_systemwide_keys"></a>1.5 FsCrypt::fscrypt_initialize_systemwide_keys</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">fscrypt_initialize_systemwide_keys</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    LOG(INFO) &lt;&lt; <span class="string">"fscrypt_initialize_systemwide_keys"</span>;</span><br><span class="line">    EncryptionOptions options;</span><br><span class="line">    <span class="comment">// 检索用于 /data 文件系统上的加密策略的选项。</span></span><br><span class="line">    <span class="keyword">if</span> (!get_data_file_encryption_options(&amp;options)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    KeyBuffer device_key;</span><br><span class="line">    <span class="comment">// 如果检索或生成 key 失败则返回 false。</span></span><br><span class="line">    <span class="comment">// device_key_path--/data/unencrypted/key。</span></span><br><span class="line">    <span class="comment">// device_key_path--/data/unencrypted/temp。</span></span><br><span class="line">    <span class="keyword">if</span> (!retrieveOrGenerateKey(device_key_path, device_key_temp, kEmptyAuthentication,</span><br><span class="line">                               makeGen(options), &amp;device_key))</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    EncryptionPolicy device_policy;</span><br><span class="line">    <span class="comment">// 在 /data 目录安装 device key。</span></span><br><span class="line">    <span class="keyword">if</span> (!install_storage_key(DATA_MNT_POINT, options, device_key, &amp;device_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> options_string;</span><br><span class="line">    <span class="keyword">if</span> (!OptionsToString(device_policy.options, &amp;options_string)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Unable to serialize options"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> options_filename = <span class="built_in">std</span>::<span class="built_in">string</span>(DATA_MNT_POINT) + fscrypt_key_mode;</span><br><span class="line">    <span class="keyword">if</span> (!android::vold::writeStringToFile(options_string, options_filename)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> ref_filename = <span class="built_in">std</span>::<span class="built_in">string</span>(DATA_MNT_POINT) + fscrypt_key_ref;</span><br><span class="line">    <span class="keyword">if</span> (!android::vold::writeStringToFile(device_policy.key_raw_ref, ref_filename)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    LOG(INFO) &lt;&lt; <span class="string">"Wrote system DE key reference to:"</span> &lt;&lt; ref_filename;</span><br><span class="line">    KeyBuffer per_boot_key;</span><br><span class="line">    <span class="comment">// 如果生成存储 key 失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!generateStorageKey(makeGen(options), &amp;per_boot_key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    EncryptionPolicy per_boot_policy;</span><br><span class="line">    <span class="keyword">if</span> (!install_storage_key(DATA_MNT_POINT, options, per_boot_key, &amp;per_boot_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> per_boot_ref_filename = <span class="built_in">std</span>::<span class="built_in">string</span>(<span class="string">"/data"</span>) + fscrypt_key_per_boot_ref;</span><br><span class="line">    <span class="keyword">if</span> (!android::vold::writeStringToFile(per_boot_policy.key_raw_ref, per_boot_ref_filename))</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    LOG(INFO) &lt;&lt; <span class="string">"Wrote per boot key reference to:"</span> &lt;&lt; per_boot_ref_filename;</span><br><span class="line">    <span class="keyword">if</span> (!android::vold::FsyncDirectory(device_key_dir)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-6-FsCrypt-get-data-file-encryption-options"><a href="#1-6-FsCrypt-get-data-file-encryption-options" class="headerlink" title="1.6 FsCrypt::get_data_file_encryption_options"></a>1.6 FsCrypt::get_data_file_encryption_options</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">get_data_file_encryption_options</span><span class="params">(EncryptionOptions* options)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 从 fstab 中获取 data 分区挂载点-/data。</span></span><br><span class="line">    <span class="keyword">auto</span> entry = GetEntryForMountPoint(&amp;fstab_default, DATA_MNT_POINT);</span><br><span class="line">    <span class="keyword">if</span> (entry == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"No mount point entry for "</span> &lt;&lt; DATA_MNT_POINT;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!ParseOptions(entry-&gt;encryption_options, options)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Unable to parse encryption options for "</span> &lt;&lt; DATA_MNT_POINT <span class="string">": "</span></span><br><span class="line">                   &lt;&lt; entry-&gt;encryption_options;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// emmc flag -- FSCRYPT_POLICY_FLAG_IV_INO_LBLK_32--0x10。</span></span><br><span class="line">    <span class="keyword">if</span> ((options-&gt;flags &amp; FSCRYPT_POLICY_FLAG_IV_INO_LBLK_32) &amp;&amp;</span><br><span class="line">        !IsEmmcStorage(entry-&gt;blk_device)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"The emmc_optimized encryption flag is only allowed on eMMC storage.  Remove "</span></span><br><span class="line">                      <span class="string">"this flag from the device's fstab"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">IsEmmcStorage</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; blk_device)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 处理符号链接。</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> real_path;</span><br><span class="line">    <span class="keyword">if</span> (!Realpath(blk_device, &amp;real_path)) &#123;</span><br><span class="line">        real_path = blk_device;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 处理逻辑卷。</span></span><br><span class="line">    <span class="keyword">auto</span>&amp; dm = DeviceMapper::Instance();</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="keyword">auto</span> parent = dm.GetParentBlockDeviceByPath(real_path);</span><br><span class="line">        <span class="keyword">if</span> (!parent.has_value()) <span class="keyword">break</span>;</span><br><span class="line">        real_path = *parent;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 真实的块设备。</span></span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"IsEmmcStorage(): blk_device = "</span> &lt;&lt; blk_device &lt;&lt; <span class="string">", real_path="</span> &lt;&lt; real_path;</span><br><span class="line">    <span class="keyword">return</span> StartsWith(Basename(real_path), <span class="string">"mmcblk"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-7-KeyUtil-retrieveOrGenerateKey"><a href="#1-7-KeyUtil-retrieveOrGenerateKey" class="headerlink" title="1.7 KeyUtil::retrieveOrGenerateKey"></a>1.7 KeyUtil::retrieveOrGenerateKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyUtil.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">retrieveOrGenerateKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; key_path, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; tmp_path,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">const</span> KeyAuthentication&amp; key_authentication, <span class="keyword">const</span> KeyGeneration&amp; gen,</span></span></span><br><span class="line"><span class="function"><span class="params">                           KeyBuffer* key, <span class="keyword">bool</span> keepOld)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 如果 /data/unencrypted/key 目录存在则检查是否存在 key 。</span></span><br><span class="line">    <span class="keyword">if</span> (pathExists(key_path)) &#123;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Key exists, using: "</span> &lt;&lt; key_path;</span><br><span class="line">        <span class="keyword">if</span> (!retrieveKey(key_path, key_authentication, key, keepOld)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 不允许生成 key 则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!gen.allow_gen) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"No key found in "</span> &lt;&lt; key_path;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        LOG(INFO) &lt;&lt; <span class="string">"Creating new key in "</span> &lt;&lt; key_path;</span><br><span class="line">        <span class="comment">// 如果生成存储 key 失败则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!generateStorageKey(gen, key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">// 如果保存 key 失败则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!storeKeyAtomically(key_path, tmp_path, key_authentication, *key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-8-KeyStorage-retrieveKey"><a href="#1-8-KeyStorage-retrieveKey" class="headerlink" title="1.8 KeyStorage::retrieveKey"></a>1.8 KeyStorage::retrieveKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyStorage.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">retrieveKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; dir, <span class="keyword">const</span> KeyAuthentication&amp; auth, KeyBuffer* key,</span></span></span><br><span class="line"><span class="function"><span class="params">                 <span class="keyword">bool</span> keepOld)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> version;</span><br><span class="line">    <span class="comment">// 若读取 /data/unencrypted/key/version 失败返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!readFileToString(dir + <span class="string">"/"</span> + kFn_version, &amp;version)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 如果读取的版本不等于 1 则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (version != kCurrentVersion) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Version mismatch, expected "</span> &lt;&lt; kCurrentVersion &lt;&lt; <span class="string">" got "</span> &lt;&lt; version;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> secdiscardable_hash;</span><br><span class="line">    <span class="comment">// 若读取 /data/unencrypted/key/secdiscardable 失败返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!readSecdiscardable(dir + <span class="string">"/"</span> + kFn_secdiscardable, &amp;secdiscardable_hash)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> stretching;</span><br><span class="line">    <span class="comment">// 若读取 /data/unencrypted/key/stretching 失败返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!readFileToString(dir + <span class="string">"/"</span> + kFn_stretching, &amp;stretching)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> salt;</span><br><span class="line">    <span class="comment">// 若读取 /data/unencrypted/key/stretching 的返回结果不是 nopassword 或 none 则需要读取 /data/unencrypted/key/salt 。</span></span><br><span class="line">    <span class="keyword">if</span> (stretchingNeedsSalt(stretching)) &#123;</span><br><span class="line">        <span class="comment">// 若读取 /data/unencrypted/key/salt 失败返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!readFileToString(dir + <span class="string">"/"</span> + kFn_salt, &amp;salt)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> appId;</span><br><span class="line">    <span class="comment">// 生成 app id 失败则返回 false。</span></span><br><span class="line">    <span class="keyword">if</span> (!generateAppId(auth, stretching, salt, secdiscardable_hash, &amp;appId)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> encryptedMessage;</span><br><span class="line">    <span class="comment">// 若读取 /data/unencrypted/key/encrypted_key 失败返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!readFileToString(dir + <span class="string">"/"</span> + kFn_encrypted_key, &amp;encryptedMessage)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 如果 "token" 是非空的，则将其作为必需的 Gatekeeper 身份验证令牌传递。</span></span><br><span class="line">    <span class="comment">// 如果 "token" 和 "secret" 为非空值，则 "secret" 将附加到解锁所需的特定于应用程序的二进制文件中。</span></span><br><span class="line">    <span class="comment">// 如果只有 "token" 是非空的，则在非 Keymaster 进程中将其用于解密。</span></span><br><span class="line">    <span class="keyword">if</span> (auth.usesKeymaster()) &#123;</span><br><span class="line">        Keymaster keymaster;</span><br><span class="line">        <span class="keyword">if</span> (!keymaster) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        km::AuthorizationSet keyParams;</span><br><span class="line">        km::HardwareAuthToken authToken;</span><br><span class="line">        <span class="built_in">std</span>::tie(keyParams, authToken) = beginParams(auth, appId);</span><br><span class="line">        <span class="comment">// 若使用 keymaster key 解密失败则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!decryptWithKeymasterKey(keymaster, dir, keyParams, authToken, encryptedMessage, key,</span><br><span class="line">                                     keepOld))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 此时解密若有 keymaster 则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!decryptWithoutKeymaster(appId, encryptedMessage, key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-9-KeyUtil-generateStorageKey"><a href="#1-9-KeyUtil-generateStorageKey" class="headerlink" title="1.9 KeyUtil::generateStorageKey"></a>1.9 KeyUtil::generateStorageKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyUtil.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">generateStorageKey</span><span class="params">(<span class="keyword">const</span> KeyGeneration&amp; gen, KeyBuffer* key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!gen.allow_gen) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 判断是否使用硬件 wrapped key 。</span></span><br><span class="line">    <span class="keyword">if</span> (gen.use_hw_wrapped_key) &#123;</span><br><span class="line">        <span class="comment">// 如果 key 大小不等于32则生成 wrapped key 失败。</span></span><br><span class="line">        <span class="keyword">if</span> (gen.keysize != FSCRYPT_MAX_KEY_SIZE) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Cannot generate a wrapped key "</span> &lt;&lt; gen.keysize &lt;&lt; <span class="string">" bytes long"</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 通过 keymaster 生成 wrapper key 。</span></span><br><span class="line">        <span class="keyword">return</span> generateWrappedStorageKey(key);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 随机生成 key 。</span></span><br><span class="line">        <span class="keyword">return</span> randomKey(gen.keysize, key);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-10-KeyStorage-generateWrappedStorageKey"><a href="#1-10-KeyStorage-generateWrappedStorageKey" class="headerlink" title="1.10 KeyStorage::generateWrappedStorageKey"></a>1.10 KeyStorage::generateWrappedStorageKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyStorage.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">generateWrappedStorageKey</span><span class="params">(KeyBuffer* key)</span> </span>&#123;</span><br><span class="line">    Keymaster keymaster;</span><br><span class="line">    <span class="keyword">if</span> (!keymaster) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> key_temp;</span><br><span class="line">    <span class="keyword">auto</span> paramBuilder = km::AuthorizationSetBuilder().AesEncryptionKey(AES_KEY_BYTES * <span class="number">8</span>);</span><br><span class="line">    paramBuilder.Authorization(km::TAG_ROLLBACK_RESISTANCE);</span><br><span class="line">    paramBuilder.Authorization(km::TAG_STORAGE_KEY);</span><br><span class="line">    <span class="keyword">if</span> (!keymaster.generateKey(paramBuilder, &amp;key_temp)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    *key = KeyBuffer(key_temp.size());</span><br><span class="line">    <span class="built_in">memcpy</span>(<span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">void</span>*&gt;(key-&gt;data()), key_temp.c_str(), key-&gt;size());</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-11-KeyStorage-storeKeyAtomically"><a href="#1-11-KeyStorage-storeKeyAtomically" class="headerlink" title="1.11 KeyStorage::storeKeyAtomically"></a>1.11 KeyStorage::storeKeyAtomically</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyStorage.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">storeKeyAtomically</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; key_path, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; tmp_path,</span></span></span><br><span class="line"><span class="function"><span class="params">                        <span class="keyword">const</span> KeyAuthentication&amp; auth, <span class="keyword">const</span> KeyBuffer&amp; key)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 如果 /data/unencrypted/key 目录存在则不再创建 key ，返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (pathExists(key_path)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Already exists, cannot create key at: "</span> &lt;&lt; key_path;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果 /data/unencrypted/temp 目录存在则不再创建 key ，返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (pathExists(tmp_path)) &#123;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Already exists, destroying: "</span> &lt;&lt; tmp_path;</span><br><span class="line">        destroyKey(tmp_path);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果 /data/unencrypted/temp 目录存储 key 失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!storeKey(tmp_path, auth, key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (rename(tmp_path.c_str(), key_path.c_str()) != <span class="number">0</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Unable to move new key to location: "</span> &lt;&lt; key_path;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"Created key: "</span> &lt;&lt; key_path;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-12-KeyStorage-destroyKey"><a href="#1-12-KeyStorage-destroyKey" class="headerlink" title="1.12 KeyStorage::destroyKey"></a>1.12 KeyStorage::destroyKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyStorage.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">destroyKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; dir)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">bool</span> success = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// 如果 /data/unencrypted/temp/keymaster_key_blob 存在则说明使用了 keymaster ,则删除 key。</span></span><br><span class="line">    <span class="keyword">bool</span> uses_km = pathExists(dir + <span class="string">"/"</span> + kFn_keymaster_key_blob);</span><br><span class="line">    <span class="keyword">if</span> (uses_km) &#123;</span><br><span class="line">        success &amp;= deleteKey(dir);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 执行 "/system/bin/secdiscard --/data/unencrypted/temp/encrypted_key /data/unencrypted/temp/secdiscardable" 命令。</span></span><br><span class="line">    <span class="keyword">auto</span> secdiscard_cmd = <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt;&#123;</span><br><span class="line">        kSecdiscardPath,</span><br><span class="line">        <span class="string">"--"</span>,</span><br><span class="line">        dir + <span class="string">"/"</span> + kFn_encrypted_key,</span><br><span class="line">        dir + <span class="string">"/"</span> + kFn_secdiscardable,</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// 使用 keymaster 则执行 "/system/bin/secdiscard --/data/unencrypted/temp/encrypted_key /data/unencrypted/temp/keymaster_key_blob" 命令 。</span></span><br><span class="line">    <span class="keyword">if</span> (uses_km) &#123;</span><br><span class="line">        secdiscard_cmd.emplace_back(dir + <span class="string">"/"</span> + kFn_keymaster_key_blob);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (ForkExecvp(secdiscard_cmd) != <span class="number">0</span>) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"secdiscard failed"</span>;</span><br><span class="line">        success = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    success &amp;= recursiveDeleteKey(dir);</span><br><span class="line">    <span class="keyword">return</span> success;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-13-KeyStorage-deleteKey"><a href="#1-13-KeyStorage-deleteKey" class="headerlink" title="1.13 KeyStorage::deleteKey"></a>1.13 KeyStorage::deleteKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyStorage.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">deleteKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; dir)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> kmKey;</span><br><span class="line">    <span class="comment">// 如果读取 /data/unencrypted/temp/keymaster_key_blob 失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!readFileToString(dir + <span class="string">"/"</span> + kFn_keymaster_key_blob, &amp;kmKey)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    Keymaster keymaster;</span><br><span class="line">    <span class="keyword">if</span> (!keymaster) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 如果调用 keymaster 删除 key 失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!keymaster.deleteKey(kmKey)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-14-KeyStorage-recursiveDeleteKey"><a href="#1-14-KeyStorage-recursiveDeleteKey" class="headerlink" title="1.14 KeyStorage::recursiveDeleteKey"></a>1.14 KeyStorage::recursiveDeleteKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyStorage.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">recursiveDeleteKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; dir)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 执行 "/system/bin/rm -rf /data/unencrypted/temp/" 命令。</span></span><br><span class="line">    <span class="keyword">if</span> (ForkExecvp(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt;&#123;kRmPath, <span class="string">"-rf"</span>, dir&#125;) != <span class="number">0</span>) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"recursive delete failed"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-15-KeyStorage-storeKey"><a href="#1-15-KeyStorage-storeKey" class="headerlink" title="1.15 KeyStorage::storeKey"></a>1.15 KeyStorage::storeKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyStorage.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">storeKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; dir, <span class="keyword">const</span> KeyAuthentication&amp; auth, <span class="keyword">const</span> KeyBuffer&amp; key)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 赋予 0700 权限创建 /data/unencrypted/temp 目录失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (TEMP_FAILURE_RETRY(mkdir(dir.c_str(), <span class="number">0700</span>)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"key mkdir "</span> &lt;&lt; dir;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 往 /data/unencrypted/temp/version 写1失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!writeStringToFile(kCurrentVersion, dir + <span class="string">"/"</span> + kFn_version)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> secdiscardable_hash;</span><br><span class="line">    <span class="comment">// 往 /data/unencrypted/temp/secdiscardable 写数据失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!createSecdiscardable(dir + <span class="string">"/"</span> + kFn_secdiscardable, &amp;secdiscardable_hash)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> stretching = getStretching(auth);</span><br><span class="line">    <span class="comment">// 往 /data/unencrypted/temp/stretching 写数据则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!writeStringToFile(stretching, dir + <span class="string">"/"</span> + kFn_stretching)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> salt;</span><br><span class="line">    <span class="keyword">if</span> (stretchingNeedsSalt(stretching)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (ReadRandomBytes(SALT_BYTES, salt) != OK) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Random read failed"</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 往 /data/unencrypted/temp/salt 写数据则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!writeStringToFile(salt, dir + <span class="string">"/"</span> + kFn_salt)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> appId;</span><br><span class="line">    <span class="comment">// 生成 app id 失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!generateAppId(auth, stretching, salt, secdiscardable_hash, &amp;appId)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> encryptedKey;</span><br><span class="line">    <span class="keyword">if</span> (auth.usesKeymaster()) &#123;</span><br><span class="line">        Keymaster keymaster;</span><br><span class="line">        <span class="keyword">if</span> (!keymaster) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> kmKey;</span><br><span class="line">        <span class="comment">// 生成 keymaster key 失败则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!generateKeymasterKey(keymaster, auth, appId, &amp;kmKey)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">// 往 /data/unencrypted/temp/keymaster_key_blob 写数据失败则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!writeStringToFile(kmKey, dir + <span class="string">"/"</span> + kFn_keymaster_key_blob)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        km::AuthorizationSet keyParams;</span><br><span class="line">        km::HardwareAuthToken authToken;</span><br><span class="line">        <span class="built_in">std</span>::tie(keyParams, authToken) = beginParams(auth, appId);</span><br><span class="line">        <span class="comment">// 使用 keymaster key 加密失败则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!encryptWithKeymasterKey(keymaster, dir, keyParams, authToken, key, &amp;encryptedKey,</span><br><span class="line">                                     <span class="literal">false</span>))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 没有使用 keymaster key 加密则返回 false 。</span></span><br><span class="line">        <span class="keyword">if</span> (!encryptWithoutKeymaster(appId, key, &amp;encryptedKey)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 往 /data/unencrypted/temp/encrypted_key 目录写 key 失败则返回 false 。</span></span><br><span class="line">    <span class="keyword">if</span> (!writeStringToFile(encryptedKey, dir + <span class="string">"/"</span> + kFn_encrypted_key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (!FsyncDirectory(dir)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-16-FsCrypt-install-storage-key"><a href="#1-16-FsCrypt-install-storage-key" class="headerlink" title="1.16 FsCrypt::install_storage_key"></a>1.16 FsCrypt::install_storage_key</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">install_storage_key</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; mountpoint, <span class="keyword">const</span> EncryptionOptions&amp; options,</span></span></span><br><span class="line"><span class="function"><span class="params">                                <span class="keyword">const</span> KeyBuffer&amp; key, EncryptionPolicy* policy)</span> </span>&#123;</span><br><span class="line">    KeyBuffer ephemeral_wrapped_key;</span><br><span class="line">    <span class="keyword">if</span> (options.use_hw_wrapped_key) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!exportWrappedStorageKey(key, &amp;ephemeral_wrapped_key)) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Failed to get ephemeral wrapped key"</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> installKey(mountpoint, options, options.use_hw_wrapped_key ? ephemeral_wrapped_key : key,</span><br><span class="line">                      policy);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-17-KeyUtil-installKey"><a href="#1-17-KeyUtil-installKey" class="headerlink" title="1.17 KeyUtil::installKey"></a>1.17 KeyUtil::installKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyUtil.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">installKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; mountpoint, <span class="keyword">const</span> EncryptionOptions&amp; options,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="keyword">const</span> KeyBuffer&amp; key, EncryptionPolicy* policy)</span> </span>&#123;</span><br><span class="line">    policy-&gt;options = options;</span><br><span class="line">    <span class="function">KeyBuffer <span class="title">arg_buf</span><span class="params">(<span class="keyword">sizeof</span>(struct fscrypt_add_key_arg) + key.size(), <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fscrypt_add_key_arg</span>* <span class="title">arg</span> = (<span class="title">struct</span> <span class="title">fscrypt_add_key_arg</span>*)<span class="title">arg_buf</span>.<span class="title">data</span>();</span></span><br><span class="line">    <span class="keyword">switch</span> (options.version) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            <span class="comment">// v1策略的密钥由任意8字节的“descriptor”指定，该描述符必须由用户空间提供。使用密钥本身的双SHA-512中的前8个字节。</span></span><br><span class="line">            policy-&gt;key_raw_ref = generateKeyRef((<span class="keyword">const</span> <span class="keyword">uint8_t</span>*)key.data(), key.size());</span><br><span class="line">            <span class="keyword">if</span> (!isFsKeyringSupported()) &#123;</span><br><span class="line">                <span class="keyword">return</span> installKeyLegacy(key, policy-&gt;key_raw_ref);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!buildKeySpecifier(&amp;arg-&gt;key_spec, *policy)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            <span class="comment">// v2策略的密钥由16字节的“identifier”指定，这是内核自身计算并返回的密钥本身的加密哈希。</span></span><br><span class="line">            <span class="comment">// 用户提供的任何值都会被忽略；只需要设置说明符类型以表明正在添加这种类型的密钥。</span></span><br><span class="line">            arg-&gt;key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Invalid encryption policy version: "</span> &lt;&lt; options.version;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    arg-&gt;raw_size = key.size();</span><br><span class="line">    <span class="built_in">memcpy</span>(arg-&gt;raw, key.data(), key.size());</span><br><span class="line">    <span class="keyword">if</span> (!installFsKeyringKey(mountpoint, options, arg)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (arg-&gt;key_spec.type == FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER) &#123;</span><br><span class="line">        <span class="comment">// 检索内核计算的密钥标识符。</span></span><br><span class="line">        policy-&gt;key_raw_ref =</span><br><span class="line">                <span class="built_in">std</span>::<span class="built_in">string</span>((<span class="keyword">char</span>*)arg-&gt;key_spec.u.identifier, FSCRYPT_KEY_IDENTIFIER_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> ref = keyrefstring(policy-&gt;key_raw_ref);</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"Installed fscrypt key with ref "</span> &lt;&lt; ref &lt;&lt; <span class="string">" to "</span> &lt;&lt; mountpoint;</span><br><span class="line">    <span class="keyword">if</span> (!installProvisioningKey(key, ref, arg-&gt;key_spec)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-18-KeyUtil-installKeyLegacy"><a href="#1-18-KeyUtil-installKeyLegacy" class="headerlink" title="1.18 KeyUtil::installKeyLegacy"></a>1.18 KeyUtil::installKeyLegacy</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyUtil.cpp</span></span><br><span class="line"><span class="comment">// 将类型为“logon”的加密密钥添加到全局会话密钥环。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">installKeyLegacy</span><span class="params">(<span class="keyword">const</span> KeyBuffer&amp; key, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; raw_ref)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 将fscrypt_key放入自动归零缓冲区。</span></span><br><span class="line">    <span class="function">KeyBuffer <span class="title">fsKeyBuffer</span><span class="params">(<span class="keyword">sizeof</span>(fscrypt_key))</span></span>;</span><br><span class="line">    fscrypt_key&amp; fs_key = *<span class="keyword">reinterpret_cast</span>&lt;fscrypt_key*&gt;(fsKeyBuffer.data());</span><br><span class="line">    <span class="keyword">if</span> (!fillKey(key, &amp;fs_key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">key_serial_t</span> device_keyring;</span><br><span class="line">    <span class="keyword">if</span> (!fscryptKeyring(&amp;device_keyring)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">char</span> <span class="keyword">const</span>* <span class="keyword">const</span>* name_prefix = NAME_PREFIXES; *name_prefix != <span class="literal">nullptr</span>; name_prefix++) &#123;</span><br><span class="line">        <span class="keyword">auto</span> ref = buildLegacyKeyName(*name_prefix, raw_ref);</span><br><span class="line">        <span class="keyword">key_serial_t</span> key_id =</span><br><span class="line">            add_key(<span class="string">"logon"</span>, ref.c_str(), (<span class="keyword">void</span>*)&amp;fs_key, <span class="keyword">sizeof</span>(fs_key), device_keyring);</span><br><span class="line">        <span class="keyword">if</span> (key_id == <span class="number">-1</span>) &#123;</span><br><span class="line">            PLOG(ERROR) &lt;&lt; <span class="string">"Failed to insert key into keyring "</span> &lt;&lt; device_keyring;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Added key "</span> &lt;&lt; key_id &lt;&lt; <span class="string">" ("</span> &lt;&lt; ref &lt;&lt; <span class="string">") to keyring "</span> &lt;&lt; device_keyring</span><br><span class="line">                   &lt;&lt; <span class="string">" in process "</span> &lt;&lt; getpid();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-19-KeyUtil-installFsKeyringKey"><a href="#1-19-KeyUtil-installFsKeyringKey" class="headerlink" title="1.19 KeyUtil::installFsKeyringKey"></a>1.19 KeyUtil::installFsKeyringKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyUtil.cpp</span></span><br><span class="line"><span class="comment">// 将密钥安装到安装在挂载点上的文件系统的密钥环中。</span></span><br><span class="line"><span class="comment">// 填写密钥说明符负责调用arg-&gt;raw或arg-&gt;key_id。</span></span><br><span class="line"><span class="comment">// 如果arg-&gt;key_spec.type等于FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER，则arg-&gt; ey_spec.u.identifier将使用内核生成的原始密钥引用进行填充。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">installFsKeyringKey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; mountpoint, <span class="keyword">const</span> EncryptionOptions&amp; options,</span></span></span><br><span class="line"><span class="function"><span class="params">                                fscrypt_add_key_arg* arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (options.use_hw_wrapped_key) arg-&gt;flags |= FSCRYPT_ADD_KEY_FLAG_WRAPPED;</span><br><span class="line">    android::base::<span class="function">unique_fd <span class="title">fd</span><span class="params">(open(mountpoint.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC))</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Failed to open "</span> &lt;&lt; mountpoint &lt;&lt; <span class="string">" to install key"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, arg) != <span class="number">0</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Failed to install fscrypt key to "</span> &lt;&lt; mountpoint;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-20-KeyUtil-installProvisioningKey"><a href="#1-20-KeyUtil-installProvisioningKey" class="headerlink" title="1.20 KeyUtil::installProvisioningKey"></a>1.20 KeyUtil::installProvisioningKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/KeyUtil.cpp</span></span><br><span class="line"><span class="comment">// 将fscrypt-provisioning密钥安装到会话级内核密钥环中。</span></span><br><span class="line"><span class="comment">// 这样就可以将给定密钥重新安装到文件系统密钥环中。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">installProvisioningKey</span><span class="params">(<span class="keyword">const</span> KeyBuffer&amp; key, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; ref,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">const</span> fscrypt_key_specifier&amp; key_spec)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">key_serial_t</span> device_keyring;</span><br><span class="line">    <span class="keyword">if</span> (!fscryptKeyring(&amp;device_keyring)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 将fscrypt_provisioning_key_payload放入自动归零缓冲区。</span></span><br><span class="line">    <span class="function">KeyBuffer <span class="title">buf</span><span class="params">(<span class="keyword">sizeof</span>(fscrypt_provisioning_key_payload) + key.size(), <span class="number">0</span>)</span></span>;</span><br><span class="line">    fscrypt_provisioning_key_payload&amp; provisioning_key =</span><br><span class="line">            *<span class="keyword">reinterpret_cast</span>&lt;fscrypt_provisioning_key_payload*&gt;(buf.data());</span><br><span class="line">    <span class="built_in">memcpy</span>(provisioning_key.raw, key.data(), key.size());</span><br><span class="line">    provisioning_key.type = key_spec.type;</span><br><span class="line">    <span class="keyword">key_serial_t</span> key_id = add_key(<span class="string">"fscrypt-provisioning"</span>, ref.c_str(), (<span class="keyword">void</span>*)&amp;provisioning_key,</span><br><span class="line">                                  buf.size(), device_keyring);</span><br><span class="line">    <span class="keyword">if</span> (key_id == <span class="number">-1</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Failed to insert fscrypt-provisioning key for "</span> &lt;&lt; ref</span><br><span class="line">                    &lt;&lt; <span class="string">" into session keyring"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"Added fscrypt-provisioning key for "</span> &lt;&lt; ref &lt;&lt; <span class="string">" to session keyring"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二、init-user0"><a href="#二、init-user0" class="headerlink" title="二、init_user0"></a>二、init_user0</h3><h4 id="2-1-do-init-user0"><a href="#2-1-do-init-user0" class="headerlink" title="2.1 do_init_user0"></a>2.1 do_init_user0</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/core/init/builtins.cpp</span></span><br><span class="line"><span class="keyword">static</span> Result&lt;<span class="keyword">void</span>&gt; do_init_user0(<span class="keyword">const</span> BuiltinArguments&amp; args) &#123;</span><br><span class="line">    <span class="keyword">return</span> ExecVdcRebootOnFailure(<span class="string">"init_user0"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-2-VoldNativeService-initUser0"><a href="#2-2-VoldNativeService-initUser0" class="headerlink" title="2.2 VoldNativeService::initUser0"></a>2.2 VoldNativeService::initUser0</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/VoldNativeService.cpp</span></span><br><span class="line">binder::Status VoldNativeService::initUser0() &#123;</span><br><span class="line">    ENFORCE_SYSTEM_OR_ROOT;</span><br><span class="line">    ACQUIRE_CRYPT_LOCK;</span><br><span class="line">    <span class="keyword">return</span> translateBool(fscrypt_init_user0());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-FsCrypt-fscrypt-init-user0"><a href="#2-3-FsCrypt-fscrypt-init-user0" class="headerlink" title="2.3 FsCrypt::fscrypt_init_user0"></a>2.3 FsCrypt::fscrypt_init_user0</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">fscrypt_init_user0</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"fscrypt_init_user0"</span>;</span><br><span class="line">    <span class="keyword">if</span> (fscrypt_is_native()) &#123;</span><br><span class="line">        <span class="comment">// /data/misc/vold/user_keys root:root 0700</span></span><br><span class="line">        <span class="keyword">if</span> (!prepare_dir(user_key_dir, <span class="number">0700</span>, AID_ROOT, AID_ROOT)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">// /data/misc/vold/user_keys/ce root:root 0700</span></span><br><span class="line">        <span class="keyword">if</span> (!prepare_dir(user_key_dir + <span class="string">"/ce"</span>, <span class="number">0700</span>, AID_ROOT, AID_ROOT)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">// /data/misc/vold/user_keys/de root:root 0700</span></span><br><span class="line">        <span class="keyword">if</span> (!prepare_dir(user_key_dir + <span class="string">"/de"</span>, <span class="number">0700</span>, AID_ROOT, AID_ROOT)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (!android::vold::pathExists(get_de_key_path(<span class="number">0</span>))) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!create_and_install_user_keys(<span class="number">0</span>, <span class="literal">false</span>)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 一旦框架明确调用为二级用户安装DE键，就切换到仅加载DE_0。</span></span><br><span class="line">        <span class="keyword">if</span> (!load_all_de_keys()) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 只能在这里安全地准备DE存储，因为CE密钥可能与用户凭证纠缠在一起。一旦安装了CE密钥，框架将始终准备CE存储。</span></span><br><span class="line">    <span class="keyword">if</span> (!fscrypt_prepare_user_storage(<span class="string">""</span>, <span class="number">0</span>, <span class="number">0</span>, android::os::IVold::STORAGE_FLAG_DE)) &#123;</span><br><span class="line">        LOG(ERROR) &lt;&lt; <span class="string">"Failed to prepare user 0 storage"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果这是最近退出模拟器模式的非FBE设备，则将用户数据目录还原到已知良好状态。</span></span><br><span class="line">    <span class="comment">// persist.sys.emulate_fbe=false</span></span><br><span class="line">    <span class="keyword">if</span> (!fscrypt_is_native() &amp;&amp; !fscrypt_is_emulated()) &#123;</span><br><span class="line">        fscrypt_unlock_user_key(<span class="number">0</span>, <span class="number">0</span>, <span class="string">"!"</span>, <span class="string">"!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 在某些情况下（重启用户空间），可能会在不进行硬重启的情况下卸载用户数据。如果CE密钥存储在fs密钥环中，则在卸载后它们将丢失。尝试重新安装它们。</span></span><br><span class="line">    <span class="keyword">if</span> (fscrypt_is_native() &amp;&amp; android::vold::isFsKeyringSupported()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!try_reload_ce_keys()) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-4-FsCrypt-create-and-install-user-keys"><a href="#2-4-FsCrypt-create-and-install-user-keys" class="headerlink" title="2.4 FsCrypt::create_and_install_user_keys"></a>2.4 FsCrypt::create_and_install_user_keys</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="comment">// 这假定只有一个线程在监听crypt命令，因为它在固定位置创建密钥。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">create_and_install_user_keys</span><span class="params">(<span class="keyword">userid_t</span> user_id, <span class="keyword">bool</span> create_ephemeral)</span> </span>&#123;</span><br><span class="line">    EncryptionOptions options;</span><br><span class="line">    <span class="keyword">if</span> (!get_data_file_encryption_options(&amp;options)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    KeyBuffer de_key, ce_key;</span><br><span class="line">    <span class="comment">// 创建 DE key</span></span><br><span class="line">    <span class="keyword">if</span> (!generateStorageKey(makeGen(options), &amp;de_key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 创建 CE key</span></span><br><span class="line">    <span class="keyword">if</span> (!generateStorageKey(makeGen(options), &amp;ce_key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (create_ephemeral) &#123;</span><br><span class="line">        <span class="comment">// 如果所创建的 key 是临时的，则无需存储它。</span></span><br><span class="line">        s_ephemeral_users.insert(user_id);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// /data/misc/vold/user_keys/ce/$user_id root:root 0700</span></span><br><span class="line">        <span class="keyword">auto</span> <span class="keyword">const</span> directory_path = get_ce_key_directory_path(user_id);</span><br><span class="line">        <span class="keyword">if</span> (!prepare_dir(directory_path, <span class="number">0700</span>, AID_ROOT, AID_ROOT)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">auto</span> <span class="keyword">const</span> paths = get_ce_key_paths(directory_path);</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> ce_key_path;</span><br><span class="line">        <span class="keyword">if</span> (!get_ce_key_new_path(directory_path, paths, &amp;ce_key_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">// 将 ce key 存储到 /data/misc/vold/user_keys/temp</span></span><br><span class="line">        <span class="keyword">if</span> (!android::vold::storeKeyAtomically(ce_key_path, user_key_temp, kEmptyAuthentication,</span><br><span class="line">                                               ce_key))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        fixate_user_ce_key(directory_path, ce_key_path, paths);</span><br><span class="line">        <span class="comment">// 将 de key 存储到 /data/misc/vold/user_keys/temp</span></span><br><span class="line">        <span class="keyword">if</span> (!android::vold::storeKeyAtomically(get_de_key_path(user_id), user_key_temp,</span><br><span class="line">                                               kEmptyAuthentication, de_key))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    EncryptionPolicy de_policy;</span><br><span class="line">    <span class="comment">// 将 de key 存储到 /data/</span></span><br><span class="line">    <span class="keyword">if</span> (!install_storage_key(DATA_MNT_POINT, options, de_key, &amp;de_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    s_de_policies[user_id] = de_policy;</span><br><span class="line">    EncryptionPolicy ce_policy;</span><br><span class="line">    <span class="comment">// 将 ce key 存储到 /data/</span></span><br><span class="line">    <span class="keyword">if</span> (!install_storage_key(DATA_MNT_POINT, options, ce_key, &amp;ce_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    s_ce_policies[user_id] = ce_policy;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"Created keys for user "</span> &lt;&lt; user_id;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-5-FsCrypt-load-all-de-keys"><a href="#2-5-FsCrypt-load-all-de-keys" class="headerlink" title="2.5 FsCrypt::load_all_de_keys"></a>2.5 FsCrypt::load_all_de_keys</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">load_all_de_keys</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    EncryptionOptions options;</span><br><span class="line">    <span class="keyword">if</span> (!get_data_file_encryption_options(&amp;options)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// /data/misc/vold/user_keys/de</span></span><br><span class="line">    <span class="keyword">auto</span> de_dir = user_key_dir + <span class="string">"/de"</span>;</span><br><span class="line">    <span class="keyword">auto</span> dirp = <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;DIR, <span class="keyword">int</span> (*)(DIR*)&gt;(opendir(de_dir.c_str()), closedir);</span><br><span class="line">    <span class="keyword">if</span> (!dirp) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Unable to read de key directory"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        errno = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">auto</span> entry = readdir(dirp.get());</span><br><span class="line">        <span class="keyword">if</span> (!entry) &#123;</span><br><span class="line">            <span class="keyword">if</span> (errno) &#123;</span><br><span class="line">                PLOG(ERROR) &lt;&lt; <span class="string">"Unable to read de key directory"</span>;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (entry-&gt;d_type != DT_DIR || !is_numeric(entry-&gt;d_name)) &#123;</span><br><span class="line">            LOG(DEBUG) &lt;&lt; <span class="string">"Skipping non-de-key "</span> &lt;&lt; entry-&gt;d_name;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">userid_t</span> user_id = <span class="built_in">std</span>::stoi(entry-&gt;d_name);</span><br><span class="line">        <span class="keyword">auto</span> key_path = de_dir + <span class="string">"/"</span> + entry-&gt;d_name;</span><br><span class="line">        KeyBuffer de_key;</span><br><span class="line">        <span class="keyword">if</span> (!retrieveKey(key_path, kEmptyAuthentication, &amp;de_key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        EncryptionPolicy de_policy;</span><br><span class="line">        <span class="keyword">if</span> (!install_storage_key(DATA_MNT_POINT, options, de_key, &amp;de_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">auto</span> ret = s_de_policies.insert(&#123;user_id, de_policy&#125;);</span><br><span class="line">        <span class="keyword">if</span> (!ret.second &amp;&amp; ret.first-&gt;second != de_policy) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"DE policy for user"</span> &lt;&lt; user_id &lt;&lt; <span class="string">" changed"</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Installed de key for user "</span> &lt;&lt; user_id;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 遍历所有DE目录，确保所有用户目录都在其上设置了正确的策略，并且不存在流氓目录。</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-6-FsCrypt-fscrypt-prepare-user-storage"><a href="#2-6-FsCrypt-fscrypt-prepare-user-storage" class="headerlink" title="2.6 FsCrypt::fscrypt_prepare_user_storage"></a>2.6 FsCrypt::fscrypt_prepare_user_storage</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">fscrypt_prepare_user_storage</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; volume_uuid, <span class="keyword">userid_t</span> user_id, <span class="keyword">int</span> serial,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"fscrypt_prepare_user_storage for volume "</span> &lt;&lt; escape_empty(volume_uuid)</span><br><span class="line">               &lt;&lt; <span class="string">", user "</span> &lt;&lt; user_id &lt;&lt; <span class="string">", serial "</span> &lt;&lt; serial &lt;&lt; <span class="string">", flags "</span> &lt;&lt; flags;</span><br><span class="line">    <span class="keyword">if</span> (flags &amp; android::os::IVold::STORAGE_FLAG_DE) &#123;</span><br><span class="line">        <span class="comment">// DE_sys key</span></span><br><span class="line">        <span class="keyword">auto</span> system_legacy_path = android::vold::BuildDataSystemLegacyPath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> misc_legacy_path = android::vold::BuildDataMiscLegacyPath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> profiles_de_path = android::vold::BuildDataProfilesDePath(user_id);</span><br><span class="line">        <span class="comment">// DE_n key</span></span><br><span class="line">        <span class="keyword">auto</span> system_de_path = android::vold::BuildDataSystemDePath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> misc_de_path = android::vold::BuildDataMiscDePath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> vendor_de_path = android::vold::BuildDataVendorDePath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> user_de_path = android::vold::BuildDataUserDePath(volume_uuid, user_id);</span><br><span class="line">        <span class="keyword">if</span> (volume_uuid.empty()) &#123;</span><br><span class="line">            <span class="comment">// /data/system/users/$user_id system:system 0700</span></span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(system_legacy_path, <span class="number">0700</span>, AID_SYSTEM, AID_SYSTEM)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> MANAGE_MISC_DIRS</span></span><br><span class="line">            <span class="comment">// /data/misc/users/$user_id system:everybody 0750</span></span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(misc_legacy_path, <span class="number">0750</span>, multiuser_get_uid(user_id, AID_SYSTEM),</span><br><span class="line">                             multiuser_get_uid(user_id, AID_EVERYBODY)))</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">            <span class="comment">// /data/misc/profiles/$user_id system:system 0771</span></span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(profiles_de_path, <span class="number">0771</span>, AID_SYSTEM, AID_SYSTEM)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="comment">// /data/system_de/$user_id system:system 071</span></span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(system_de_path, <span class="number">0770</span>, AID_SYSTEM, AID_SYSTEM)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="comment">// /data/misc_de/$user_id system:misc 0771</span></span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(misc_de_path, <span class="number">01771</span>, AID_SYSTEM, AID_MISC)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="comment">// /data/vendor_de/$user_id system:root 0771</span></span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(vendor_de_path, <span class="number">0771</span>, AID_ROOT, AID_ROOT)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// /data/user_de/$user_id system:system 0711</span></span><br><span class="line">        <span class="keyword">if</span> (!prepare_dir(user_de_path, <span class="number">0771</span>, AID_SYSTEM, AID_SYSTEM)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (fscrypt_is_native()) &#123;</span><br><span class="line">            EncryptionPolicy de_policy;</span><br><span class="line">            <span class="keyword">if</span> (volume_uuid.empty()) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!lookup_policy(s_de_policies, user_id, &amp;de_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!EnsurePolicy(de_policy, system_de_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!EnsurePolicy(de_policy, misc_de_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!EnsurePolicy(de_policy, vendor_de_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!read_or_create_volkey(misc_de_path, volume_uuid, &amp;de_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!EnsurePolicy(de_policy, user_de_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (flags &amp; android::os::IVold::STORAGE_FLAG_CE) &#123;</span><br><span class="line">        <span class="comment">// CE_n key</span></span><br><span class="line">        <span class="keyword">auto</span> system_ce_path = android::vold::BuildDataSystemCePath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> misc_ce_path = android::vold::BuildDataMiscCePath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> vendor_ce_path = android::vold::BuildDataVendorCePath(user_id);</span><br><span class="line">        <span class="keyword">auto</span> media_ce_path = android::vold::BuildDataMediaCePath(volume_uuid, user_id);</span><br><span class="line">        <span class="keyword">auto</span> user_ce_path = android::vold::BuildDataUserCePath(volume_uuid, user_id);</span><br><span class="line">        <span class="keyword">if</span> (volume_uuid.empty()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(system_ce_path, <span class="number">0770</span>, AID_SYSTEM, AID_SYSTEM)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(misc_ce_path, <span class="number">01771</span>, AID_SYSTEM, AID_MISC)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span> (!prepare_dir(vendor_ce_path, <span class="number">0771</span>, AID_ROOT, AID_ROOT)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!prepare_dir(media_ce_path, <span class="number">0770</span>, AID_MEDIA_RW, AID_MEDIA_RW)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (!prepare_dir(user_ce_path, <span class="number">0771</span>, AID_SYSTEM, AID_SYSTEM)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (fscrypt_is_native()) &#123;</span><br><span class="line">            EncryptionPolicy ce_policy;</span><br><span class="line">            <span class="keyword">if</span> (volume_uuid.empty()) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!lookup_policy(s_ce_policies, user_id, &amp;ce_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!EnsurePolicy(ce_policy, system_ce_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!EnsurePolicy(ce_policy, misc_ce_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!EnsurePolicy(ce_policy, vendor_ce_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!read_or_create_volkey(misc_ce_path, volume_uuid, &amp;ce_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!EnsurePolicy(ce_policy, media_ce_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span> (!EnsurePolicy(ce_policy, user_ce_path)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (volume_uuid.empty()) &#123;</span><br><span class="line">            <span class="comment">// 现在已经安装了凭据，可以在这些路径上运行restorecon，这些路径需要与libselinux保持同步。</span></span><br><span class="line">            android::vold::RestoreconRecursive(system_ce_path);</span><br><span class="line">            android::vold::RestoreconRecursive(vendor_ce_path);</span><br><span class="line">            android::vold::RestoreconRecursive(misc_ce_path);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!prepare_subdirs(<span class="string">"prepare"</span>, volume_uuid, user_id, flags)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-7-FsCrypt-read-or-create-volkey"><a href="#2-7-FsCrypt-read-or-create-volkey" class="headerlink" title="2.7 FsCrypt::read_or_create_volkey"></a>2.7 FsCrypt::read_or_create_volkey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">read_or_create_volkey</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; misc_path, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; volume_uuid,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  EncryptionPolicy* policy)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> secdiscardable_path = volume_secdiscardable_path(volume_uuid);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> secdiscardable_hash;</span><br><span class="line">    <span class="keyword">if</span> (android::vold::pathExists(secdiscardable_path)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!android::vold::readSecdiscardable(secdiscardable_path, &amp;secdiscardable_hash))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (fs_mkdirs(secdiscardable_path.c_str(), <span class="number">0700</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">            PLOG(ERROR) &lt;&lt; <span class="string">"Creating directories for: "</span> &lt;&lt; secdiscardable_path;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!android::vold::createSecdiscardable(secdiscardable_path, &amp;secdiscardable_hash))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> key_path = volkey_path(misc_path, volume_uuid);</span><br><span class="line">    <span class="keyword">if</span> (fs_mkdirs(key_path.c_str(), <span class="number">0700</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        PLOG(ERROR) &lt;&lt; <span class="string">"Creating directories for: "</span> &lt;&lt; key_path;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    android::vold::<span class="function">KeyAuthentication <span class="title">auth</span><span class="params">(<span class="string">""</span>, secdiscardable_hash)</span></span>;</span><br><span class="line">    EncryptionOptions options;</span><br><span class="line">    <span class="keyword">if</span> (!get_volume_file_encryption_options(&amp;options)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    KeyBuffer key;</span><br><span class="line">    <span class="keyword">if</span> (!retrieveOrGenerateKey(key_path, key_path + <span class="string">"_tmp"</span>, auth, makeGen(options), &amp;key))</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (!install_storage_key(BuildDataPath(volume_uuid), options, key, policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-8-FsCrypt-fscrypt-unlock-user-key"><a href="#2-8-FsCrypt-fscrypt-unlock-user-key" class="headerlink" title="2.8 FsCrypt::fscrypt_unlock_user_key"></a>2.8 FsCrypt::fscrypt_unlock_user_key</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="comment">// 重命名为“install”以保持一致性，并带有标志以了解要安装的密钥。</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">fscrypt_unlock_user_key</span><span class="params">(<span class="keyword">userid_t</span> user_id, <span class="keyword">int</span> serial, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; token_hex,</span></span></span><br><span class="line"><span class="function"><span class="params">                             <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; secret_hex)</span> </span>&#123;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"fscrypt_unlock_user_key "</span> &lt;&lt; user_id &lt;&lt; <span class="string">" serial="</span> &lt;&lt; serial</span><br><span class="line">               &lt;&lt; <span class="string">" token_present="</span> &lt;&lt; (token_hex != <span class="string">"!"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fscrypt_is_native()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (s_ce_policies.count(user_id) != <span class="number">0</span>) &#123;</span><br><span class="line">            LOG(WARNING) &lt;&lt; <span class="string">"Tried to unlock already-unlocked key for user "</span> &lt;&lt; user_id;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">auto</span> auth = authentication_from_hex(token_hex, secret_hex);</span><br><span class="line">        <span class="keyword">if</span> (!auth) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (!read_and_install_user_ce_key(user_id, *auth)) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Couldn't read key for "</span> &lt;&lt; user_id;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 在模拟器模式下，仅使用chmod。但是，当不处于模拟器模式时，还会解锁目录，以使设备恢复为正常状态。</span></span><br><span class="line">        <span class="keyword">if</span> (!emulated_unlock(android::vold::BuildDataSystemCePath(user_id), <span class="number">0771</span>) ||</span><br><span class="line">            !emulated_unlock(android::vold::BuildDataMiscCePath(user_id), <span class="number">01771</span>) ||</span><br><span class="line">            !emulated_unlock(android::vold::BuildDataMediaCePath(<span class="string">""</span>, user_id), <span class="number">0770</span>) ||</span><br><span class="line">            !emulated_unlock(android::vold::BuildDataUserCePath(<span class="string">""</span>, user_id), <span class="number">0771</span>)) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Failed to unlock user "</span> &lt;&lt; user_id;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-9-FsCrypt-read-and-install-user-ce-key"><a href="#2-9-FsCrypt-read-and-install-user-ce-key" class="headerlink" title="2.9 FsCrypt::read_and_install_user_ce_key"></a>2.9 FsCrypt::read_and_install_user_ce_key</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">read_and_install_user_ce_key</span><span class="params">(<span class="keyword">userid_t</span> user_id,</span></span></span><br><span class="line"><span class="function"><span class="params">                                         <span class="keyword">const</span> android::vold::KeyAuthentication&amp; auth)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (s_ce_policies.count(user_id) != <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    EncryptionOptions options;</span><br><span class="line">    <span class="keyword">if</span> (!get_data_file_encryption_options(&amp;options)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    KeyBuffer ce_key;</span><br><span class="line">    <span class="keyword">if</span> (!read_and_fixate_user_ce_key(user_id, auth, &amp;ce_key)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    EncryptionPolicy ce_policy;</span><br><span class="line">    <span class="keyword">if</span> (!install_storage_key(DATA_MNT_POINT, options, ce_key, &amp;ce_policy)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    s_ce_policies[user_id] = ce_policy;</span><br><span class="line">    LOG(DEBUG) &lt;&lt; <span class="string">"Installed ce key for user "</span> &lt;&lt; user_id;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-10-FsCrypt-read-and-fixate-user-ce-key"><a href="#2-10-FsCrypt-read-and-fixate-user-ce-key" class="headerlink" title="2.10 FsCrypt::read_and_fixate_user_ce_key"></a>2.10 FsCrypt::read_and_fixate_user_ce_key</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">read_and_fixate_user_ce_key</span><span class="params">(<span class="keyword">userid_t</span> user_id,</span></span></span><br><span class="line"><span class="function"><span class="params">                                        <span class="keyword">const</span> android::vold::KeyAuthentication&amp; auth,</span></span></span><br><span class="line"><span class="function"><span class="params">                                        KeyBuffer* ce_key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> <span class="keyword">const</span> directory_path = get_ce_key_directory_path(user_id);</span><br><span class="line">    <span class="keyword">auto</span> <span class="keyword">const</span> paths = get_ce_key_paths(directory_path);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> <span class="keyword">const</span> ce_key_path : paths) &#123;</span><br><span class="line">        LOG(DEBUG) &lt;&lt; <span class="string">"Trying user CE key "</span> &lt;&lt; ce_key_path;</span><br><span class="line">        <span class="keyword">if</span> (retrieveKey(ce_key_path, auth, ce_key)) &#123;</span><br><span class="line">            LOG(DEBUG) &lt;&lt; <span class="string">"Successfully retrieved key"</span>;</span><br><span class="line">            fixate_user_ce_key(directory_path, ce_key_path, paths);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    LOG(ERROR) &lt;&lt; <span class="string">"Failed to find working ce key for user "</span> &lt;&lt; user_id;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-10-FsCrypt-try-reload-ce-keys"><a href="#2-10-FsCrypt-try-reload-ce-keys" class="headerlink" title="2.10 FsCrypt::try_reload_ce_keys"></a>2.10 FsCrypt::try_reload_ce_keys</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/FsCrypt.cpp</span></span><br><span class="line"><span class="comment">// 尝试为认为已解锁的用户重新安装CE密钥。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">try_reload_ce_keys</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; it : s_ce_policies) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!android::vold::reloadKeyFromSessionKeyring(DATA_MNT_POINT, it.second)) &#123;</span><br><span class="line">            LOG(ERROR) &lt;&lt; <span class="string">"Failed to load CE key from session keyring for user "</span> &lt;&lt; it.first;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三、unlockUserKey"><a href="#三、unlockUserKey" class="headerlink" title="三、unlockUserKey"></a>三、unlockUserKey</h3><h4 id="3-1-StorageManagerService-Lifecycle"><a href="#3-1-StorageManagerService-Lifecycle" class="headerlink" title="3.1 StorageManagerService::Lifecycle"></a>3.1 StorageManagerService::Lifecycle</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Lifecycle</span> <span class="keyword">extends</span> <span class="title">SystemService</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> StorageManagerService mStorageManagerService;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Lifecycle</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mStorageManagerService = <span class="keyword">new</span> StorageManagerService(getContext());</span><br><span class="line">        publishBinderService(<span class="string">"mount"</span>, mStorageManagerService);</span><br><span class="line">        mStorageManagerService.start();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBootPhase</span><span class="params">(<span class="keyword">int</span> phase)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) &#123;</span><br><span class="line">            mStorageManagerService.servicesReady();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) &#123;</span><br><span class="line">            mStorageManagerService.systemReady();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (phase == SystemService.PHASE_BOOT_COMPLETED) &#123;</span><br><span class="line">            mStorageManagerService.bootCompleted();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-2-StorageManagerService-bootCompleted"><a href="#3-2-StorageManagerService-bootCompleted" class="headerlink" title="3.2 StorageManagerService::bootCompleted"></a>3.2 StorageManagerService::bootCompleted</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">bootCompleted</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mBootCompleted = <span class="keyword">true</span>;</span><br><span class="line">    mHandler.obtainMessage(H_BOOT_COMPLETED).sendToTarget();</span><br><span class="line">    updateFusePropFromSettings();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-3-StorageManagerService-StorageManagerServiceHandler"><a href="#3-3-StorageManagerService-StorageManagerServiceHandler" class="headerlink" title="3.3 StorageManagerService::StorageManagerServiceHandler"></a>3.3 StorageManagerService::StorageManagerServiceHandler</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">StorageManagerServiceHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StorageManagerServiceHandler</span><span class="params">(Looper looper)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(looper);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">switch</span> (msg.what) &#123;</span><br><span class="line">            <span class="keyword">case</span> H_SYSTEM_READY: &#123;</span><br><span class="line">                handleSystemReady();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_BOOT_COMPLETED: &#123;</span><br><span class="line">                handleBootCompleted();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> H_DAEMON_CONNECTED: &#123;</span><br><span class="line">                handleDaemonConnected();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-4-StorageManagerService-handleBootCompleted"><a href="#3-4-StorageManagerService-handleBootCompleted" class="headerlink" title="3.4 StorageManagerService::handleBootCompleted"></a>3.4 StorageManagerService::handleBootCompleted</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleBootCompleted</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    initIfBootedAndConnected();</span><br><span class="line">    resetIfBootedAndConnected();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-5-StorageManagerService-initIfBootedAndConnected"><a href="#3-5-StorageManagerService-initIfBootedAndConnected" class="headerlink" title="3.5 StorageManagerService::initIfBootedAndConnected"></a>3.5 StorageManagerService::initIfBootedAndConnected</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initIfBootedAndConnected</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Slog.d(TAG, <span class="string">"Thinking about init, mBootCompleted="</span> + mBootCompleted</span><br><span class="line">            + <span class="string">", mDaemonConnected="</span> + mDaemonConnected);</span><br><span class="line">    <span class="keyword">if</span> (mBootCompleted &amp;&amp; mDaemonConnected</span><br><span class="line">            &amp;&amp; !StorageManager.isFileEncryptedNativeOnly()) &#123;</span><br><span class="line">        <span class="comment">// 当启动没有 native 支持的设备时，需确保根据当前模拟器状态锁定或解锁用户目录。</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> initLocked = StorageManager.isFileEncryptedEmulatedOnly();</span><br><span class="line">        Slog.d(TAG, <span class="string">"Setting up emulation state, initlocked="</span> + initLocked);</span><br><span class="line">        <span class="keyword">final</span> List&lt;UserInfo&gt; users = mContext.getSystemService(UserManager.class).getUsers();</span><br><span class="line">        <span class="keyword">for</span> (UserInfo user : users) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (initLocked) &#123;</span><br><span class="line">                    mVold.lockUserKey(user.id);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    mVold.unlockUserKey(user.id, user.serialNumber, encodeBytes(<span class="keyword">null</span>),</span><br><span class="line">                            encodeBytes(<span class="keyword">null</span>));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                Slog.wtf(TAG, e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-6-StorageManagerService-unlockUserKey"><a href="#3-6-StorageManagerService-unlockUserKey" class="headerlink" title="3.6 StorageManagerService::unlockUserKey"></a>3.6 StorageManagerService::unlockUserKey</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/StorageManagerService.java</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unlockUserKey</span><span class="params">(<span class="keyword">int</span> userId, <span class="keyword">int</span> serialNumber, <span class="keyword">byte</span>[] token, <span class="keyword">byte</span>[] secret)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> isFsEncrypted = StorageManager.isFileEncryptedNativeOrEmulated();</span><br><span class="line">        Slog.d(TAG, <span class="string">"unlockUserKey: "</span> + userId</span><br><span class="line">                + <span class="string">" isFileEncryptedNativeOrEmulated: "</span> + isFsEncrypted</span><br><span class="line">                + <span class="string">" hasToken: "</span> + (token != <span class="keyword">null</span>)</span><br><span class="line">                + <span class="string">" hasSecret: "</span> + (secret != <span class="keyword">null</span>));</span><br><span class="line">        enforcePermission(android.Manifest.permission.STORAGE_INTERNAL);</span><br><span class="line">        <span class="keyword">if</span> (isFsEncrypted) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                mVold.unlockUserKey(userId, serialNumber, encodeBytes(token),</span><br><span class="line">                        encodeBytes(secret));</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                Slog.wtf(TAG, e);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            mLocalUnlockedUsers.append(userId);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-7-VoldNativeService-unlockUserKey"><a href="#3-7-VoldNativeService-unlockUserKey" class="headerlink" title="3.7 VoldNativeService::unlockUserKey"></a>3.7 VoldNativeService::unlockUserKey</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system/vold/VoldNativeService.cpp</span></span><br><span class="line">binder::Status VoldNativeService::unlockUserKey(<span class="keyword">int32_t</span> userId, <span class="keyword">int32_t</span> userSerial,</span><br><span class="line">                                                <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; token,</span><br><span class="line">                                                <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; secret) &#123;</span><br><span class="line">    ENFORCE_SYSTEM_OR_ROOT;</span><br><span class="line">    ACQUIRE_CRYPT_LOCK;</span><br><span class="line">    <span class="keyword">return</span> translateBool(fscrypt_unlock_user_key(userId, userSerial, token, secret));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Filesystem/" rel="tag"># Filesystem</a>
+          
+            <a href="/tags/Security/" rel="tag"># Security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/26/Security/Linux及AndroidCapabilities概述/" rel="next" title="Linux 及 Android Capabilities 概述">
+                <i class="fa fa-chevron-left"></i> Linux 及 Android Capabilities 概述
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">102</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">27</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、installkey"><span class="nav-text">一、installkey</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-builtins-do-installkey"><span class="nav-text">1.1 builtins::do_installkey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-builtins-ExecVdcRebootOnFailure"><span class="nav-text">1.2 builtins::ExecVdcRebootOnFailure</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-vdc-main"><span class="nav-text">1.3 vdc::main</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-VoldNativeService-fbeEnable"><span class="nav-text">1.4 VoldNativeService::fbeEnable</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-5-FsCrypt-fscrypt-initialize-systemwide-keys"><span class="nav-text">1.5 FsCrypt::fscrypt_initialize_systemwide_keys</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-6-FsCrypt-get-data-file-encryption-options"><span class="nav-text">1.6 FsCrypt::get_data_file_encryption_options</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-KeyUtil-retrieveOrGenerateKey"><span class="nav-text">1.7 KeyUtil::retrieveOrGenerateKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-8-KeyStorage-retrieveKey"><span class="nav-text">1.8 KeyStorage::retrieveKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-9-KeyUtil-generateStorageKey"><span class="nav-text">1.9 KeyUtil::generateStorageKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-10-KeyStorage-generateWrappedStorageKey"><span class="nav-text">1.10 KeyStorage::generateWrappedStorageKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-11-KeyStorage-storeKeyAtomically"><span class="nav-text">1.11 KeyStorage::storeKeyAtomically</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-12-KeyStorage-destroyKey"><span class="nav-text">1.12 KeyStorage::destroyKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-13-KeyStorage-deleteKey"><span class="nav-text">1.13 KeyStorage::deleteKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-14-KeyStorage-recursiveDeleteKey"><span class="nav-text">1.14 KeyStorage::recursiveDeleteKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-15-KeyStorage-storeKey"><span class="nav-text">1.15 KeyStorage::storeKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-16-FsCrypt-install-storage-key"><span class="nav-text">1.16 FsCrypt::install_storage_key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-17-KeyUtil-installKey"><span class="nav-text">1.17 KeyUtil::installKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-18-KeyUtil-installKeyLegacy"><span class="nav-text">1.18 KeyUtil::installKeyLegacy</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-19-KeyUtil-installFsKeyringKey"><span class="nav-text">1.19 KeyUtil::installFsKeyringKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-20-KeyUtil-installProvisioningKey"><span class="nav-text">1.20 KeyUtil::installProvisioningKey</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、init-user0"><span class="nav-text">二、init_user0</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-do-init-user0"><span class="nav-text">2.1 do_init_user0</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-VoldNativeService-initUser0"><span class="nav-text">2.2 VoldNativeService::initUser0</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-FsCrypt-fscrypt-init-user0"><span class="nav-text">2.3 FsCrypt::fscrypt_init_user0</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-FsCrypt-create-and-install-user-keys"><span class="nav-text">2.4 FsCrypt::create_and_install_user_keys</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-FsCrypt-load-all-de-keys"><span class="nav-text">2.5 FsCrypt::load_all_de_keys</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-FsCrypt-fscrypt-prepare-user-storage"><span class="nav-text">2.6 FsCrypt::fscrypt_prepare_user_storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-7-FsCrypt-read-or-create-volkey"><span class="nav-text">2.7 FsCrypt::read_or_create_volkey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-8-FsCrypt-fscrypt-unlock-user-key"><span class="nav-text">2.8 FsCrypt::fscrypt_unlock_user_key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-9-FsCrypt-read-and-install-user-ce-key"><span class="nav-text">2.9 FsCrypt::read_and_install_user_ce_key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-10-FsCrypt-read-and-fixate-user-ce-key"><span class="nav-text">2.10 FsCrypt::read_and_fixate_user_ce_key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-10-FsCrypt-try-reload-ce-keys"><span class="nav-text">2.10 FsCrypt::try_reload_ce_keys</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、unlockUserKey"><span class="nav-text">三、unlockUserKey</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-StorageManagerService-Lifecycle"><span class="nav-text">3.1 StorageManagerService::Lifecycle</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-StorageManagerService-bootCompleted"><span class="nav-text">3.2 StorageManagerService::bootCompleted</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-StorageManagerService-StorageManagerServiceHandler"><span class="nav-text">3.3 StorageManagerService::StorageManagerServiceHandler</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-StorageManagerService-handleBootCompleted"><span class="nav-text">3.4 StorageManagerService::handleBootCompleted</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-StorageManagerService-initIfBootedAndConnected"><span class="nav-text">3.5 StorageManagerService::initIfBootedAndConnected</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-6-StorageManagerService-unlockUserKey"><span class="nav-text">3.6 StorageManagerService::unlockUserKey</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-7-VoldNativeService-unlockUserKey"><span class="nav-text">3.7 VoldNativeService::unlockUserKey</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
