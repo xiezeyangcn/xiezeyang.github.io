@@ -329,6 +329,170 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/30/Boot/Init-rc文件解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/30/Boot/Init-rc文件解析/" class="post-title-link" itemprop="url">Init rc 文件解析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-30 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-30T00:00:00+08:00">2019-03-30</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Boot/" itemprop="url" rel="index"><span itemprop="name">Boot</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>调用LoadBootScripts方法加载/解析rc文件。先创建一个解析器，支持解析’service’, ‘on’, ‘import’。<br>若ro.boot.init_rc为空，则开始解析init.rc文件。<br>然后依次解析/system,/product,/odm,/vendor/etc/init目录rc文件。</p>
+<h3 id="一、加载rc文件"><a href="#一、加载rc文件" class="headerlink" title="一、加载rc文件"></a>一、加载rc文件</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">LoadBootScripts</span><span class="params">(ActionManager&amp; action_manager, ServiceList&amp; service_list)</span> </span>&#123;</span><br><span class="line">    Parser parser = CreateParser(action_manager, service_list);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> bootscript = GetProperty(<span class="string">"ro.boot.init_rc"</span>, <span class="string">""</span>);</span><br><span class="line">    <span class="keyword">if</span> (bootscript.empty()) &#123;</span><br><span class="line">        parser.ParseConfig(<span class="string">"/init.rc"</span>);</span><br><span class="line">        <span class="keyword">if</span> (!parser.ParseConfig(<span class="string">"/system/etc/init"</span>)) &#123;</span><br><span class="line">            late_import_paths.emplace_back(<span class="string">"/system/etc/init"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!parser.ParseConfig(<span class="string">"/product/etc/init"</span>)) &#123;</span><br><span class="line">            late_import_paths.emplace_back(<span class="string">"/product/etc/init"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!parser.ParseConfig(<span class="string">"/odm/etc/init"</span>)) &#123;</span><br><span class="line">            late_import_paths.emplace_back(<span class="string">"/odm/etc/init"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!parser.ParseConfig(<span class="string">"/vendor/etc/init"</span>)) &#123;</span><br><span class="line">            late_import_paths.emplace_back(<span class="string">"/vendor/etc/init"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        parser.ParseConfig(bootscript);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/03/30/Boot/Init-rc文件解析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/03/24/Boot/Init-rc文件语法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1795,175 +1959,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/05/Security/Userdata分区加密方式/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/05/Security/Userdata分区加密方式/" class="post-title-link" itemprop="url">Userdata 分区加密方式</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-05 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-05T00:00:00+08:00">2019-01-05</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>Android系统主要支持FDE/FBE两种加密方式。<br>Android P及更高版本支持元数据加密。该密钥受keymaster保护，而keymaster受verified boot保护。使用元数据加密时，启动出现的单个密钥会加密未通过文件级加密进行加密的任何内容。</p>
-<h3 id="一、-Full-disk-encryption-FDE"><a href="#一、-Full-disk-encryption-FDE" class="headerlink" title="一、 Full-disk encryption(FDE)"></a>一、 Full-disk encryption(FDE)</h3><h4 id="1-1-概述"><a href="#1-1-概述" class="headerlink" title="1.1 概述"></a>1.1 概述</h4><p>Android L及更高版本支持全盘加密。全盘加密是使用密钥（由用户设备密码保护）对设备上用户数据进行编码的过程。设备加密后，所有由用户创建的数据在存入磁盘前都会字典加密，且所有读取操作都会在将数据返回给调用进程之前自动解密数据。用户必须提供credentials才能访问磁盘。</p>
-<p>全盘加密采用128位AES加密算法，支持‘默认’，‘PIN码’，‘密码’，‘Pattern图案解锁’四种加密状态。首次启动，会先随机生成128位主密钥，然后使用默认密码’default_password’（cryptfs.cpp）和存储的salt对其进行hash处理，接着由TEE生成hash签名以加密该主密钥。（16kb）</p>
-<p>快速加密方式：只对userdata分区已使用的分块进行加密，避免首次开机耗时过长。目前仅ext4和f2fs类型文件系统支持该快速加密方式。</p>
-<p>加密过程由init/vold进程管理。init负责调用vold，然后vold来设置相关属性以触发init中事件。系统会使用vdc的cryptfs命令来调用vold中的加密功能。主要命令有：checkpw、restart、enablecrypto、changepw、cryptocomplete、verifypw、setfield、getfield、mountdefaultencrypted、getpwtype、getpw、clearpw等。</p>
-<p>无论加解密还是清除data分区过程，data分区都不能处于挂载状态。所以为了确保framework启动，data分区就需要挂载一个临时文件系统，使得android可提示输入密码以清除数据此类建议。</p>
-<p>在实际工作中可能会遇到一些加解密错误，比如密码匹配无法解密，用户输错密码此次达到30次。若这些错误未解决，则会提示用户清除数据恢复出厂设置。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/01/05/Security/Userdata分区加密方式/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2012,7 +2007,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">102</span>
+                    <span class="site-state-item-count">103</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2126,7 +2121,11 @@
                     
                       
                     
-                    <span class="site-state-item-count">27</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">29</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2166,7 +2165,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2021</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="写过app的小伙伴们都知道在Activity中需要调用setContentView方法将layout xml文件加载到Activity中。下面我们就来看看它背后的逻辑（基于 Android 12 Preview 1 版本 AOSP 源代码）. 1. Activity.setContentView首先，来到四大组件之老大Actvity.java这里会看到，它会get window，然后再 set C">
+<meta name="keywords" content="Framework,View,Window">
+<meta property="og:type" content="article">
+<meta property="og:title" content="揭秘 setContentView">
+<meta property="og:url" content="http://www.xiezeyang.com/2021/01/03/Framework/揭秘setContentView/index.html">
+<meta property="og:site_name" content="Young&#39;s Blog">
+<meta property="og:description" content="写过app的小伙伴们都知道在Activity中需要调用setContentView方法将layout xml文件加载到Activity中。下面我们就来看看它背后的逻辑（基于 Android 12 Preview 1 版本 AOSP 源代码）. 1. Activity.setContentView首先，来到四大组件之老大Actvity.java这里会看到，它会get window，然后再 set C">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-02-28T15:18:07.494Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="揭秘 setContentView">
+<meta name="twitter:description" content="写过app的小伙伴们都知道在Activity中需要调用setContentView方法将layout xml文件加载到Activity中。下面我们就来看看它背后的逻辑（基于 Android 12 Preview 1 版本 AOSP 源代码）. 1. Activity.setContentView首先，来到四大组件之老大Actvity.java这里会看到，它会get window，然后再 set C">
+
+
+
+
+
+
+  <link rel="canonical" href="http://www.xiezeyang.com/2021/01/03/Framework/揭秘setContentView/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>揭秘 setContentView | Young's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Young's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Personal notes</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2021/01/03/Framework/揭秘setContentView/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">揭秘 setContentView
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2021-01-03 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-03T00:00:00+08:00">2021-01-03</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>写过app的小伙伴们都知道在Activity中需要调用setContentView方法将layout xml文件加载到Activity中。下面我们就来看看它背后的逻辑（基于 Android 12 Preview 1 版本 AOSP 源代码）.</p>
+<h4 id="1-Activity-setContentView"><a href="#1-Activity-setContentView" class="headerlink" title="1. Activity.setContentView"></a>1. Activity.setContentView</h4><p>首先，来到四大组件之老大Actvity.java这里会看到，它会get window，然后再 set ContentView。接着会根据需要初始化 window decor 之 actionbar （导航栏）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/app/Activity.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Activity</span> <span class="keyword">extends</span> <span class="title">ContextThemeWrapper</span></span></span><br><span class="line"><span class="class">        <span class="keyword">implements</span> <span class="title">LayoutInflater</span>.<span class="title">Factory2</span>,</span></span><br><span class="line"><span class="class">        <span class="title">Window</span>.<span class="title">Callback</span>, <span class="title">KeyEvent</span>.<span class="title">Callback</span>,</span></span><br><span class="line"><span class="class">        <span class="title">OnCreateContextMenuListener</span>, <span class="title">ComponentCallbacks2</span>,</span></span><br><span class="line"><span class="class">        <span class="title">Window</span>.<span class="title">OnWindowDismissedCallback</span>,</span></span><br><span class="line"><span class="class">        <span class="title">AutofillManager</span>.<span class="title">AutofillClient</span>, <span class="title">ContentCaptureManager</span>.<span class="title">ContentCaptureClient</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="meta">@UnsupportedAppUsage</span></span><br><span class="line">    <span class="keyword">private</span> Window mWindow;</span><br><span class="line">    <span class="comment">// activity 不可见时返回 null。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Window <span class="title">getWindow</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mWindow;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 根据 layout 资源设置 activity 内容。资源将被放大，将所有顶级 view 添加到 avtivity 中。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(@LayoutRes <span class="keyword">int</span> layoutResID)</span> </span>&#123;</span><br><span class="line">        getWindow().setContentView(layoutResID);</span><br><span class="line">        initWindowDecorActionBar();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-Window-setContentView"><a href="#2-Window-setContentView" class="headerlink" title="2. Window.setContentView"></a>2. Window.setContentView</h4><p>跟着 mWindow 这个最顶级得 window 我们来到了 Window.java, 很明显就能看到它仅仅是一个抽象类。那么问题来了，它得具体实现在哪里呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/view/Window.java</span></span><br><span class="line"><span class="comment">// 顶级 window 外观和行为策略的抽象基类。此类的实例应用作添加到 window manager 的 top view。 它提供标准的UI策略，例如背景，标题区域，默认键处理等。</span></span><br><span class="line"><span class="comment">// 此抽象类的唯一现有实现是 &#123;android.view.PhoneWindow&#125;，需要在需要Window时实例化该实例。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Window</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 设置 layout 资源中的屏幕内容。资源将被放大，将所有 top view 添加到屏幕。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(@LayoutRes <span class="keyword">int</span> layoutResID)</span></span>;</span><br><span class="line">    <span class="comment">// 将屏幕内容设置为显式 view。该 view 直接放置在屏幕的 view 层次结构中。 它本身可以是一个复杂的 view 层次结构。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(View view)</span></span>;</span><br><span class="line">    <span class="comment">// 调用此函数会“锁定”无法更改的window的各种特征：所请求的功能，以及某些window flag。</span></span><br><span class="line">    <span class="comment">// 如果设置了&#123;FEATURE_CONTENT_TRANSITIONS&#125;，则将使用 window 的TransitionManager为来自当前内容 view 的内容设置动画。</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(View view, ViewGroup.LayoutParams params)</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-Activity-attach"><a href="#3-Activity-attach" class="headerlink" title="3. Activity.attach"></a>3. Activity.attach</h4><p>为了揭秘上面这个问题，我们回到 Activity.java , 来找找看 mWindow 在哪里被赋值的。在 attach 方法中，我们能看见 mWindow 原来是 PhoneWindow 类的对象啊。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/app/Activity.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Activity</span> <span class="keyword">extends</span> <span class="title">ContextThemeWrapper</span></span></span><br><span class="line"><span class="class">        <span class="keyword">implements</span> <span class="title">LayoutInflater</span>.<span class="title">Factory2</span>,</span></span><br><span class="line"><span class="class">        <span class="title">Window</span>.<span class="title">Callback</span>, <span class="title">KeyEvent</span>.<span class="title">Callback</span>,</span></span><br><span class="line"><span class="class">        <span class="title">OnCreateContextMenuListener</span>, <span class="title">ComponentCallbacks2</span>,</span></span><br><span class="line"><span class="class">        <span class="title">Window</span>.<span class="title">OnWindowDismissedCallback</span>,</span></span><br><span class="line"><span class="class">        <span class="title">AutofillManager</span>.<span class="title">AutofillClient</span>, <span class="title">ContentCaptureManager</span>.<span class="title">ContentCaptureClient</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="meta">@UnsupportedAppUsage</span>(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = <span class="number">170729553</span>)</span><br><span class="line">    <span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">attach</span><span class="params">(Context context, ActivityThread aThread,</span></span></span><br><span class="line"><span class="function"><span class="params">            Instrumentation instr, IBinder token, <span class="keyword">int</span> ident,</span></span></span><br><span class="line"><span class="function"><span class="params">            Application application, Intent intent, ActivityInfo info,</span></span></span><br><span class="line"><span class="function"><span class="params">            CharSequence title, Activity parent, String id,</span></span></span><br><span class="line"><span class="function"><span class="params">            NonConfigurationInstances lastNonConfigurationInstances,</span></span></span><br><span class="line"><span class="function"><span class="params">            Configuration config, String referrer, IVoiceInteractor voiceInteractor,</span></span></span><br><span class="line"><span class="function"><span class="params">            Window window, ActivityConfigCallback activityConfigCallback, IBinder assistToken)</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">// 创建 mWindow 对象。</span></span><br><span class="line">        mWindow = <span class="keyword">new</span> PhoneWindow(<span class="keyword">this</span>, window, activityConfigCallback);</span><br><span class="line">        <span class="comment">// 设置触摸、按键等事件的回调。</span></span><br><span class="line">        mWindow.setWindowControllerCallback(mWindowControllerCallback);</span><br><span class="line">        mWindow.setCallback(<span class="keyword">this</span>);</span><br><span class="line">        mWindow.setOnWindowDismissedCallback(<span class="keyword">this</span>);</span><br><span class="line">        <span class="comment">// framework 调用 Factory2 来创建布局中view。</span></span><br><span class="line">        mWindow.getLayoutInflater().setPrivateFactory(<span class="keyword">this</span>);</span><br><span class="line">        <span class="comment">// 软键盘显示与否状态。</span></span><br><span class="line">        <span class="keyword">if</span> (info.softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED) &#123;</span><br><span class="line">            mWindow.setSoftInputMode(info.softInputMode);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 设置将影响此窗口的 UI 选项。</span></span><br><span class="line">        <span class="keyword">if</span> (info.uiOptions != <span class="number">0</span>) &#123;</span><br><span class="line">            mWindow.setUiOptions(info.uiOptions);</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">// 设定此窗口使用的窗口管理器，例如显示面板等。</span></span><br><span class="line">        mWindow.setWindowManager(</span><br><span class="line">                (WindowManager)context.getSystemService(Context.WINDOW_SERVICE),</span><br><span class="line">                mToken, mComponent.flattenToString(),</span><br><span class="line">                (info.flags &amp; ActivityInfo.FLAG_HARDWARE_ACCELERATED) != <span class="number">0</span>);</span><br><span class="line">        <span class="comment">// 获取父窗口来设定该窗口容器。</span></span><br><span class="line">        <span class="keyword">if</span> (mParent != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mWindow.setContainer(mParent.getWindow());</span><br><span class="line">        &#125;</span><br><span class="line">        mWindowManager = mWindow.getWindowManager();</span><br><span class="line">        mCurrentConfig = config;</span><br><span class="line">        <span class="comment">// 设置窗口的颜色模式。</span></span><br><span class="line">        mWindow.setColorMode(info.colorMode);</span><br><span class="line">        <span class="comment">// 窗口显示。</span></span><br><span class="line">        mWindow.setPreferMinimalPostProcessing(</span><br><span class="line">                (info.flags &amp; ActivityInfo.FLAG_PREFER_MINIMAL_POST_PROCESSING) != <span class="number">0</span>);</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-PhoneWindow-setContentView"><a href="#4-PhoneWindow-setContentView" class="headerlink" title="4. PhoneWindow.setContentView"></a>4. PhoneWindow.setContentView</h4><p>很明显看到 PhoneWindow 类用于实现 Window 的了吧。那接下来正式进入正题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/com/android/internal/policy/PhoneWindow.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneWindow</span> <span class="keyword">extends</span> <span class="title">Window</span> <span class="keyword">implements</span> <span class="title">MenuBuilder</span>.<span class="title">Callback</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    ViewGroup mContentParent;</span><br><span class="line">    ...</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(<span class="keyword">int</span> layoutResID)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 主题属性等明确后，可以创建添加 window decor 的过程中设置FEATURE_CONTENT_TRANSITIONS。</span></span><br><span class="line">        <span class="comment">// mContentParent 为空，表示第一次调用。</span></span><br><span class="line">        <span class="keyword">if</span> (mContentParent == <span class="keyword">null</span>) &#123;</span><br><span class="line">            installDecor();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!hasFeature(FEATURE_CONTENT_TRANSITIONS)) &#123;</span><br><span class="line">            <span class="comment">// 已经加载过切不需要动画时移除。</span></span><br><span class="line">            mContentParent.removeAllViews();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (hasFeature(FEATURE_CONTENT_TRANSITIONS)) &#123;</span><br><span class="line">            <span class="comment">// 添加 Scene 过渡动画启动。</span></span><br><span class="line">            <span class="keyword">final</span> Scene newScene = Scene.getSceneForLayout(mContentParent, layoutResID,</span><br><span class="line">                    getContext());</span><br><span class="line">            transitionTo(newScene);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 首次走这里，将其转换为 view 树添加到 mContentParent 视图中。</span></span><br><span class="line">            mLayoutInflater.inflate(layoutResID, mContentParent);</span><br><span class="line">        &#125;</span><br><span class="line">        mContentParent.requestApplyInsets();</span><br><span class="line">        <span class="comment">// 屏幕内容视图发生变化时回调。</span></span><br><span class="line">        <span class="keyword">final</span> Callback cb = getCallback();</span><br><span class="line">        <span class="keyword">if</span> (cb != <span class="keyword">null</span> &amp;&amp; !isDestroyed()) &#123;</span><br><span class="line">            cb.onContentChanged();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 是否显式设置内容视图。</span></span><br><span class="line">        mContentParentExplicitlySet = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="5-PhoneWindow-installDecor"><a href="#5-PhoneWindow-installDecor" class="headerlink" title="5. PhoneWindow.installDecor"></a>5. PhoneWindow.installDecor</h4><p>接下来看看调用 installDecor 是如何创建 decor view 的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/com/android/internal/policy/PhoneWindow.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneWindow</span> <span class="keyword">extends</span> <span class="title">Window</span> <span class="keyword">implements</span> <span class="title">MenuBuilder</span>.<span class="title">Callback</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 这是窗口的顶级 view，包含窗口 decor。</span></span><br><span class="line">    <span class="keyword">private</span> DecorView mDecor;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">installDecor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mForceDecorInstall = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (mDecor == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// new 一个 mDecor。</span></span><br><span class="line">            mDecor = generateDecor(-<span class="number">1</span>);</span><br><span class="line">            mDecor.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);</span><br><span class="line">            mDecor.setIsRootNamespace(<span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">if</span> (!mInvalidatePanelMenuPosted &amp;&amp; mInvalidatePanelMenuFeatures != <span class="number">0</span>) &#123;</span><br><span class="line">                mDecor.postOnAnimation(mInvalidatePanelMenuRunnable);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mDecor.setWindow(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mContentParent == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 将 mDecor 添加到 window 上绑定 layout 。</span></span><br><span class="line">            mContentParent = generateLayout(mDecor);</span><br><span class="line">            <span class="comment">// 如果适用，设置 UI 的 decor 部分以忽略 fitsSystemWindows。</span></span><br><span class="line">            mDecor.makeFrameworkOptionalFitsSystemWindows();</span><br><span class="line">            <span class="comment">// 找到带 actionbar 的容器。</span></span><br><span class="line">            <span class="keyword">final</span> DecorContentParent decorContentParent = (DecorContentParent) mDecor.findViewById(</span><br><span class="line">                    R.id.decor_content_parent);</span><br><span class="line">            <span class="keyword">if</span> (decorContentParent != <span class="keyword">null</span>) &#123;</span><br><span class="line">                mDecorContentParent = decorContentParent;</span><br><span class="line">                mDecorContentParent.setWindowCallback(getCallback());</span><br><span class="line">                <span class="comment">// 设置窗口标题。</span></span><br><span class="line">                <span class="keyword">if</span> (mDecorContentParent.getTitle() == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    mDecorContentParent.setWindowTitle(mTitle);</span><br><span class="line">                &#125;</span><br><span class="line">                ...</span><br><span class="line">                <span class="comment">// 设置 ui 选项。</span></span><br><span class="line">                mDecorContentParent.setUiOptions(mUiOptions);</span><br><span class="line">                ...</span><br><span class="line">                <span class="comment">// 使面板菜单无效，避免在onCreate或类似过程中调用应用 onCreateOptionsMenu。</span></span><br><span class="line">                <span class="comment">// 为了满足实例状态还原，通常会在发布的消息正常运行之前解决待处理的无效问题。 </span></span><br><span class="line">                PanelFeatureState st = getPanelState(FEATURE_OPTIONS_PANEL, <span class="keyword">false</span>);</span><br><span class="line">                <span class="keyword">if</span> (!isDestroyed() &amp;&amp; (st == <span class="keyword">null</span> || st.menu == <span class="keyword">null</span>) &amp;&amp; !mIsStartingWindow) &#123;</span><br><span class="line">                    invalidatePanelMenu(FEATURE_ACTION_BAR);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 标题相关设置。</span></span><br><span class="line">                ...</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 设置回滚的背景。</span></span><br><span class="line">            <span class="keyword">if</span> (mDecor.getBackground() == <span class="keyword">null</span> &amp;&amp; mBackgroundFallbackDrawable != <span class="keyword">null</span>) &#123;</span><br><span class="line">                mDecor.setBackgroundFallback(mBackgroundFallbackDrawable);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 仅在调用者尚未设置自定义变量的情况下 inflate 或 create 新的TransitionManager。 </span></span><br><span class="line">            <span class="keyword">if</span> (hasFeature(FEATURE_ACTIVITY_TRANSITIONS)) &#123;</span><br><span class="line">                <span class="comment">// 过渡动画风格设置。</span></span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="6-PhoneWindow-generateDecor"><a href="#6-PhoneWindow-generateDecor" class="headerlink" title="6. PhoneWindow.generateDecor"></a>6. PhoneWindow.generateDecor</h4><p>调用 generateDecor 方法初始化顶级视图-decorview。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/com/android/internal/policy/PhoneWindow.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneWindow</span> <span class="keyword">extends</span> <span class="title">Window</span> <span class="keyword">implements</span> <span class="title">MenuBuilder</span>.<span class="title">Callback</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mTheme = -<span class="number">1</span>;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> DecorView <span class="title">generateDecor</span><span class="params">(<span class="keyword">int</span> featureId)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 系统进程没有应用的上下文，在这种情况下，需要直接使用已有的上下文。否则，使用应用的上下文。</span></span><br><span class="line">        Context context;</span><br><span class="line">        <span class="keyword">if</span> (mUseDecorContext) &#123;</span><br><span class="line">            Context applicationContext = getContext().getApplicationContext();</span><br><span class="line">            <span class="keyword">if</span> (applicationContext == <span class="keyword">null</span>) &#123;</span><br><span class="line">                context = getContext();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                context = <span class="keyword">new</span> DecorContext(applicationContext, <span class="keyword">this</span>);</span><br><span class="line">                <span class="keyword">if</span> (mTheme != -<span class="number">1</span>) &#123;</span><br><span class="line">                    context.setTheme(mTheme);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            context = getContext();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// new 一个 decor view 。</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DecorView(context, featureId, <span class="keyword">this</span>, getAttributes());</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="7-PhoneWindow-generateLayout"><a href="#7-PhoneWindow-generateLayout" class="headerlink" title="7. PhoneWindow.generateLayout"></a>7. PhoneWindow.generateLayout</h4><p>再回过来看看 generateLayout 方法里都干了些啥。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/com/android/internal/policy/PhoneWindow.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneWindow</span> <span class="keyword">extends</span> <span class="title">Window</span> <span class="keyword">implements</span> <span class="title">MenuBuilder</span>.<span class="title">Callback</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> ViewGroup <span class="title">generateLayout</span><span class="params">(DecorView decor)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 窗口风格。 </span></span><br><span class="line">        TypedArray a = getWindowStyle();</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">final</span> Context context = getContext();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> targetSdk = context.getApplicationInfo().targetSdkVersion;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> targetPreL = targetSdk &lt; android.os.Build.VERSION_CODES.LOLLIPOP;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> targetPreQ = targetSdk &lt; Build.VERSION_CODES.Q;</span><br><span class="line">        <span class="comment">// 状态栏导航栏颜色。</span></span><br><span class="line">        <span class="keyword">if</span> (!mForcedStatusBarColor) &#123;</span><br><span class="line">            mStatusBarColor = a.getColor(R.styleable.Window_statusBarColor, <span class="number">0xFF000000</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!mForcedNavigationBarColor) &#123;</span><br><span class="line">            mNavigationBarColor = a.getColor(R.styleable.Window_navigationBarColor, <span class="number">0xFF000000</span>);</span><br><span class="line">            mNavigationBarDividerColor = a.getColor(R.styleable.Window_navigationBarDividerColor,</span><br><span class="line">                    <span class="number">0x00000000</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">// inflate window decor.</span></span><br><span class="line">        <span class="keyword">int</span> layoutResource;</span><br><span class="line">        ...</span><br><span class="line">        mDecor.startChanging();</span><br><span class="line">        <span class="comment">// 加载布局文件到 decorview 中。</span></span><br><span class="line">        mDecor.onResourcesLoaded(mLayoutInflater, layoutResource);</span><br><span class="line">        ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);</span><br><span class="line">        <span class="keyword">if</span> (contentParent == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Window couldn't find content container view"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">// 背景和标题-仅适用于顶层窗口。 </span></span><br><span class="line">        <span class="keyword">if</span> (getContainer() == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 设置窗口背景。</span></span><br><span class="line">            mDecor.setWindowBackground(mBackgroundDrawable);</span><br><span class="line">            <span class="keyword">final</span> Drawable frame;</span><br><span class="line">            <span class="keyword">if</span> (mFrameResource != <span class="number">0</span>) &#123;</span><br><span class="line">                frame = getContext().getDrawable(mFrameResource);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                frame = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            mDecor.setWindowFrame(frame);</span><br><span class="line">            <span class="comment">// 阴影效果。</span></span><br><span class="line">            mDecor.setElevation(mElevation);</span><br><span class="line">            <span class="comment">// 设置轮廓。</span></span><br><span class="line">            mDecor.setClipToOutline(mClipToOutline);</span><br><span class="line">            <span class="comment">// 设置标题颜色。</span></span><br><span class="line">            <span class="keyword">if</span> (mTitle != <span class="keyword">null</span>) &#123;</span><br><span class="line">                setTitle(mTitle);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (mTitleColor == <span class="number">0</span>) &#123;</span><br><span class="line">                mTitleColor = mTextColor;</span><br><span class="line">            &#125;</span><br><span class="line">            setTitleColor(mTitleColor);</span><br><span class="line">        &#125;</span><br><span class="line">        mDecor.finishChanging();</span><br><span class="line">        <span class="comment">// 将 layout 传回到 mContentParent 中。</span></span><br><span class="line">        <span class="keyword">return</span> contentParent;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>至此，关于 setContentView 相关源码流程简述完成，做个简单的总结吧：<br>先创建了 DecorView 的一个对象，它是应用窗口的根视图，然后设定UI风格啥的，再将布局放到ID_ANDROID_CONTENT对应的帧布局中，为后面显示出来做好准备工作。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Framework/" rel="tag"># Framework</a>
+          
+            <a href="/tags/View/" rel="tag"># View</a>
+          
+            <a href="/tags/Window/" rel="tag"># Window</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/10/11/Security/FBE文件级加密流程/" rel="next" title="FBE 文件级加密过程">
+                <i class="fa fa-chevron-left"></i> FBE 文件级加密过程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/light_house.jpg" alt="Young">
+            
+              <p class="site-author-name" itemprop="name">Young</p>
+              <div class="site-description motion-element" itemprop="description">自在独行</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">103</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">29</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Activity-setContentView"><span class="nav-text">1. Activity.setContentView</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Window-setContentView"><span class="nav-text">2. Window.setContentView</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Activity-attach"><span class="nav-text">3. Activity.attach</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-PhoneWindow-setContentView"><span class="nav-text">4. PhoneWindow.setContentView</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-PhoneWindow-installDecor"><span class="nav-text">5. PhoneWindow.installDecor</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-PhoneWindow-generateDecor"><span class="nav-text">6. PhoneWindow.generateDecor</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-PhoneWindow-generateLayout"><span class="nav-text">7. PhoneWindow.generateLayout</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Young</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+    
+    user-select: none;
+    outline: 0;
+  }
+
+  .highlight-wrap .copy-btn {
+    transition: opacity .3s ease-in-out;
+    opacity: 0;
+    padding: 2px 6px;
+    position: absolute;
+    
+      right: 4px;
+      top: 8px;
+    
+  }
+
+  .highlight-wrap:hover .copy-btn,
+  .highlight-wrap .copy-btn:focus {
+    opacity: 1;
+  }
+
+  .highlight-wrap {
+    position: relative;
+  }
+</style>
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+</body>
+</html>
