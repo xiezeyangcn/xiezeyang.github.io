@@ -101,14 +101,14 @@
   <meta name="description" content="写过app的小伙伴们都知道在Activity中需要调用setContentView方法将layout xml文件加载到Activity中。下面我们就来看看它背后的逻辑（基于 Android 12 Preview 1 版本 AOSP 源代码）. 1. Activity.setContentView首先，来到四大组件之老大Actvity.java这里会看到，它会get window，然后再 set C">
 <meta name="keywords" content="Framework,View,Window">
 <meta property="og:type" content="article">
-<meta property="og:title" content="揭秘 setContentView">
-<meta property="og:url" content="http://www.xiezeyang.com/2021/01/03/Framework/揭秘setContentView/index.html">
+<meta property="og:title" content="setContentView流程剖析">
+<meta property="og:url" content="http://www.xiezeyang.com/2021/01/03/Framework/setContentView流程剖析/index.html">
 <meta property="og:site_name" content="Young&#39;s Blog">
 <meta property="og:description" content="写过app的小伙伴们都知道在Activity中需要调用setContentView方法将layout xml文件加载到Activity中。下面我们就来看看它背后的逻辑（基于 Android 12 Preview 1 版本 AOSP 源代码）. 1. Activity.setContentView首先，来到四大组件之老大Actvity.java这里会看到，它会get window，然后再 set C">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-02-28T15:18:07.494Z">
+<meta property="og:updated_time" content="2021-03-09T14:37:04.061Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="揭秘 setContentView">
+<meta name="twitter:title" content="setContentView流程剖析">
 <meta name="twitter:description" content="写过app的小伙伴们都知道在Activity中需要调用setContentView方法将layout xml文件加载到Activity中。下面我们就来看看它背后的逻辑（基于 Android 12 Preview 1 版本 AOSP 源代码）. 1. Activity.setContentView首先，来到四大组件之老大Actvity.java这里会看到，它会get window，然后再 set C">
 
 
@@ -116,7 +116,7 @@
 
 
 
-  <link rel="canonical" href="http://www.xiezeyang.com/2021/01/03/Framework/揭秘setContentView/">
+  <link rel="canonical" href="http://www.xiezeyang.com/2021/01/03/Framework/setContentView流程剖析/">
 
 
 
@@ -126,7 +126,7 @@
   };
 </script>
 
-  <title>揭秘 setContentView | Young's Blog</title>
+  <title>setContentView流程剖析 | Young's Blog</title>
   
 
 
@@ -329,7 +329,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2021/01/03/Framework/揭秘setContentView/">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2021/01/03/Framework/setContentView流程剖析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Young">
@@ -346,7 +346,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">揭秘 setContentView
+          <h1 class="post-title" itemprop="name headline">setContentView流程剖析
 
               
             
@@ -491,6 +491,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2021/01/16/Framework/startActivity流程剖析/" rel="prev" title="startActivity流程剖析">
+                startActivity流程剖析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -560,7 +564,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">103</span>
+                    <span class="site-state-item-count">104</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -678,7 +682,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">29</span>
+                      
+                    
+                    <span class="site-state-item-count">30</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
