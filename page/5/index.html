@@ -329,6 +329,171 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/04/21/Filesystem/OTG的挂载流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/21/Filesystem/OTG的挂载流程/" class="post-title-link" itemprop="url">OTG 的挂载流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-21T00:00:00+08:00">2019-04-21</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Filesystem/" itemprop="url" rel="index"><span itemprop="name">Filesystem</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>USB既是一种数据通信方式，也是一种数据总线，硬件上它由插头连接，一边是公头(plug)，一边是母头(receptacle)。</p>
+<p>Android可通过USB host和USB accessory两种模式来实现对多种USB外设的支持。在USB accessory模式下，外部USB硬件即USB主机；而USB host模式下，Android设备即USB主机。两种模式的区别可参见下图<img src="/images/usb-host-accessory.png" alt></p>
+<p>下面将以最近处理的一个‘OTG无法访问U盘数据’问题为契机，来简单梳理一下U盘挂载流程。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/04/21/Filesystem/OTG的挂载流程/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/04/20/Filesystem/StorageManagerService的启动/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1793,173 +1958,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2019/01/27/Security/SELinux那点事儿/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/27/Security/SELinux那点事儿/" class="post-title-link" itemprop="url">SELinux 那点事儿</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-27 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-27T00:00:00+08:00">2019-01-27</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="1-SELinux的概述"><a href="#1-SELinux的概述" class="headerlink" title="1. SELinux的概述"></a>1. SELinux的概述</h3><p>Android安全模型是基于应用沙盒的，即每个应用都在自己的沙盒中运行，拥有独一无二的UID。为了更好保护、限制系统服务，控制对应用数据及系统日志的访问，降低恶意软件的影响，以进一步提升系统安全性，Google将Linux系统的强制访问机制(MAC) - SELinux(Security Enhanced Linux)引入到了Android系统中。</p>
-<p>一旦启用SELinux，任何未经允许的行为都会被拒绝，且dmeg和logcat中会打印出这些行为信息。SELinux主要包含2种模式(1)Permissive mode，在该模式下权限拒绝行为会被记录下来，但不会被强制执行；(2)Enforceing mode，在该模式权限拒绝行为会被记录下来并被强制执行。</p>
-<p>SELinux主要依靠label来匹配action和policy，label用于决定允许的事项，socket、file以及process都有label。其中policy的形式是<code>allow domains types:classes permissions</code>，domain是一个或一组process的label(域类型)，type是一个或一组对象的label，class是要访问的对象的类型，permission是要执行的操作。</p>
-<p>除了在rule中逐个列出domain或type外，还可以通过attribute引用一组domain或type。attribute是一组domain或type的名称，每个domain或type都可以与任意数量的attribute关联。当编写的rule指定了某个attribute名称时，该名称会自动扩展为与该attribute关联的所有domain或type。</p>
-<p>SELinux政策的avc规则形式：<br>RULE_VARIANT SOURCE_TYPES TARGET_TYPES : CLASSES PERMISSIONS<br>表示当任何source_types标签的主体尝试对包含任何classes类且带有target_types标签的对象执行与任何permissions对应的操作时，应该发生什么情况。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/01/27/Security/SELinux那点事儿/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2008,7 +2006,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">105</span>
+                    <span class="site-state-item-count">106</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

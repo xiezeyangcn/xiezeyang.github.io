@@ -329,6 +329,169 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2021/03/14/Framework/removeWindow流程剖析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Young">
+      <meta itemprop="description" content="自在独行">
+      <meta itemprop="image" content="/images/light_house.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Young's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2021/03/14/Framework/removeWindow流程剖析/" class="post-title-link" itemprop="url">removeWindow流程剖析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2021-03-14 00:00:00" itemprop="dateCreated datePublished" datetime="2021-03-14T00:00:00+08:00">2021-03-14</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Framework/" itemprop="url" rel="index"><span itemprop="name">Framework</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h4 id="1-ActivityThread-handleDestroyActivity"><a href="#1-ActivityThread-handleDestroyActivity" class="headerlink" title="1. ActivityThread.handleDestroyActivity"></a>1. ActivityThread.handleDestroyActivity</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/base/core/java/android/app/ActivityThread.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ActivityThread</span> <span class="keyword">extends</span> <span class="title">ClientTransactionHandler</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** <span class="doctag">@hide</span> */</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleDestroyActivity</span><span class="params">(IBinder token, <span class="keyword">boolean</span> finishing, <span class="keyword">int</span> configChanges,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">boolean</span> getNonConfigInstance, String reason)</span> </span>&#123;</span><br><span class="line">        ActivityClientRecord r = performDestroyActivity(token, finishing,</span><br><span class="line">                configChanges, getNonConfigInstance, reason);</span><br><span class="line">        <span class="keyword">if</span> (r != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cleanUpPendingRemoveWindows(r, finishing);</span><br><span class="line">            WindowManager wm = r.activity.getWindowManager();</span><br><span class="line">            View v = r.activity.mDecor;</span><br><span class="line">            <span class="keyword">if</span> (v != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (r.activity.mVisibleFromServer) &#123;</span><br><span class="line">                    mNumVisibleActivities--;</span><br><span class="line">                &#125;</span><br><span class="line">                IBinder wtoken = v.getWindowToken();</span><br><span class="line">                <span class="keyword">if</span> (r.activity.mWindowAdded) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (r.mPreserveWindow) &#123;</span><br><span class="line">                        <span class="comment">// 推迟删除它，直到添加新activity的窗口。</span></span><br><span class="line">                        r.mPendingRemoveWindow = r.window;</span><br><span class="line">                        r.mPendingRemoveWindowManager = wm;</span><br><span class="line">                        <span class="comment">// 只能保留所控制的view层次结构的一部分，必须删除所有其他内容，因为重新启动activity时，它可能无法正常工作。</span></span><br><span class="line">                        r.window.clearContentView();</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        wm.removeViewImmediate(v);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (wtoken != <span class="keyword">null</span> &amp;&amp; r.mPendingRemoveWindow == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    WindowManagerGlobal.getInstance().closeAll(wtoken,</span><br><span class="line">                            r.activity.getClass().getName(), <span class="string">"Activity"</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (r.mPendingRemoveWindow != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="comment">// 仅保留一个窗口，应关闭其他窗口，以便在最终拆除之前分离应用程序视图。</span></span><br><span class="line">                    <span class="comment">// 现在应该这样做，因为某些组件（例如WebView）依赖于分离回调来执行接收者注销和其他清除操作。</span></span><br><span class="line">                    WindowManagerGlobal.getInstance().closeAllExceptView(token, v,</span><br><span class="line">                            r.activity.getClass().getName(), <span class="string">"Activity"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                r.activity.mDecor = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (r.mPendingRemoveWindow == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 如果延迟删除activity窗口，则无法在此处清理所有窗口。这意味着该应用未关闭的任何窗口都将泄漏。</span></span><br><span class="line">                WindowManagerGlobal.getInstance().closeAll(token,</span><br><span class="line">                        r.activity.getClass().getName(), <span class="string">"Activity"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 模拟出的上下文不会参与正常的流程生命周期，但是如果使用适当的ApplicationContext运行，则需要使它干净整洁。</span></span><br><span class="line">            Context c = r.activity.getBaseContext();</span><br><span class="line">            <span class="keyword">if</span> (c <span class="keyword">instanceof</span> ContextImpl) &#123;</span><br><span class="line">                ((ContextImpl) c).scheduleFinalCleanup(</span><br><span class="line">                        r.activity.getClass().getName(), <span class="string">"Activity"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (finishing) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ActivityTaskManager.getService().activityDestroyed(token);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (RemoteException ex) &#123;</span><br><span class="line">                <span class="keyword">throw</span> ex.rethrowFromSystemServer();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        mSomeActivitiesChanged = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2021/03/14/Framework/removeWindow流程剖析/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2021/02/27/Framework/addWindow流程剖析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1789,172 +1952,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.xiezeyang.com/2020/08/23/Security/Apk_v1_签名方案验证过程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Young">
-      <meta itemprop="description" content="自在独行">
-      <meta itemprop="image" content="/images/light_house.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Young's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2020/08/23/Security/Apk_v1_签名方案验证过程/" class="post-title-link" itemprop="url">APK v1 签名方案验证过程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2020-08-23 00:00:00" itemprop="dateCreated datePublished" datetime="2020-08-23T00:00:00+08:00">2020-08-23</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Security/" itemprop="url" rel="index"><span itemprop="name">Security</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>若之前有跟过 APK 的安装过程，就会知道：无论是用户自己安装 APK 还是开机系统扫描安装预置 APK，都会在 PMS 的 addForInitLI 方法中调用 PackageParser 来解析它。只是系统预置的 APK 验证过程有些不同，因为系统分区受 AVB 保护，所以默认该分区中的应用是可信的，通常不会进行完整的验证，而是只验证 Signing Block 的数据加快安装速度。</p>
-<p>如果你有解压过 v1 签名的 APK 就会发现在 META-INF 文件夹，包含 CERT.RSA、CERT.SF、MANIFEST.MF 三个文件。这些文件在 APK 验签过程中分别扮演什么角色呢？请跟着本文来了解一下 v1 签名方案的验证过程吧。</p>
-<p>首先，来看看采用 v1 签名方案的 APK 的验证过程时序图：</p>
-<p><img src="/images/verify_v1_signature_flow.png" alt></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2020/08/23/Security/Apk_v1_签名方案验证过程/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2003,7 +2000,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">105</span>
+                    <span class="site-state-item-count">106</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
